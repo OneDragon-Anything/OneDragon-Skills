@@ -34,9 +34,9 @@
 
 | 行 | 元素 | 主检测法 | 结果(对拍手圈 GT)|
 |---|---|---|---|
-| 前排 | 4 大槽(带立绘) | vision grounding | ~5px ✅(CV 多峰,不用)|
-| 后排 | 6 大槽(带立绘) | vision grounding | ~5px ✅(CV 5/6,不用)|
-| 备战栏 | 9 小槽(6 空) | CV 投影峰值法 | 2.2px ✅(vision 漏检,不用)|
+| 前排 | 4 大槽(带立绘) | 视觉大模型 grounding | ~5px ✅(CV 多峰,不用)|
+| 后排 | 6 大槽(带立绘) | 视觉大模型 grounding | ~5px ✅(CV 5/6,不用)|
+| 备战栏 | 9 小槽(6 空) | CV 投影峰值法 | 2.2px ✅(视觉大模型 漏检,不用)|
 
-→ 印证 [ADR-0001](decisions/0001-method-selection-by-element-type.md):同一画面稀疏行用 vision、
+→ 印证 [ADR-0001](decisions/0001-method-selection-by-element-type.md):同一画面稀疏行用 视觉大模型、
 密集行用 CV 是常态,不是二选一。对拍脚本为一次性验证工具(本地 / 不入库),论据即上表数据。

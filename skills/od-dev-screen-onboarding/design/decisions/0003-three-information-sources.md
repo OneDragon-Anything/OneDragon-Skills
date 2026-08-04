@@ -13,13 +13,13 @@
 - **不假设代码 = 当前游戏**:代码可能落后于游戏版本(死代码 / 占位短路)。
 
 ## Considered Options
-1. **只看截图 analyze/vision**:漏 screen_info 已建模但当前帧未显示的子态 area。
+1. **只看截图 analyze/视觉大模型**:漏 screen_info 已建模但当前帧未显示的子态 area。
 2. **截图 + screen_info + 代码三层并读**(选中):全集对齐 + 流转理清。
 3. **只读代码**:漏画面视觉细节 / OCR 文本。
 
 ## Decision
 选 2。建档前并读三层:
-1. **截图** → `analyze_screen`(客观 area / OCR)+ vision(主观布局 / 状态图标)。
+1. **截图** → `analyze_screen`(客观 area / OCR)+ 视觉大模型(主观布局 / 状态图标)。
 2. **screen_info**(`assets/game_data/screen_info/<screen_id>.yml` 的 `area_list`)→ 该画面**全部已建模元素**,含当前帧未显示的子态 area(如弹窗按钮)。每个 area 的 `text` / `template_id` / `pc_rect` / `goto_list` / `pc_alt` / `gamepad_key` 直接说明它是啥、点后跳哪、PC 端怎么点。**analyze 只返回当前帧命中的 area,screen_info 才是全集**。
 3. **application/operation 代码**(`src/<project>/application/<app_id>/`)→ `@operation_node` 链 = 画面跳转与状态流转;`round_by_find_and_click_area` / `round_by_goto_screen` 调用 = 在哪画面点哪 area。
 
@@ -34,4 +34,4 @@
 
 ## Links
 - SKILL.md「信息源:理解画面三层并用」。
-- 相关:[ADR-0004](0004-vision-required.md)(vision 也是信息源之一)、[ADR-0001](0001-five-step-flow.md)(五步流)。
+- 相关:[ADR-0004](0004-vision-required.md)(视觉大模型 也是信息源之一)、[ADR-0001](0001-five-step-flow.md)(五步流)。

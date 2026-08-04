@@ -19,7 +19,7 @@
 ## Decision
 选 2。五步:
 1. **客观识别**(`analyze_screen`):匹配画面 / area / 全量 OCR。
-2. **主观理解**(多模态 vision):布局 / 图标 / 状态 / 模态性。
+2. **主观理解**(视觉大模型):布局 / 图标 / 状态 / 模态性。
 3. **建档**(doc):何时出现 / 状态流转 / 识别特征 / 可交互元素 / 识别快照。
 4. **缺口分析**:对照「匹配 area」与「可交互元素 / 识别特征」,显式化已知 / 未知。
 5. **主动建模**:基于缺口截模板 / 入 screen_info。
@@ -35,4 +35,4 @@
 
 ## Links
 - SKILL.md §1-§5 + 「玩法画面:先搜攻略」节。
-- 同源:[ADR-0003](0003-three-information-sources.md)(信息源)、[ADR-0004](0004-vision-required.md)(vision)。
+- 同源:[ADR-0003](0003-three-information-sources.md)(信息源)、[ADR-0004](0004-vision-required.md)(视觉大模型)。
