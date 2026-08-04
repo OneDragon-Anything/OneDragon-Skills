@@ -11,7 +11,7 @@ OneDragon 公共开发类 skill(`od-dev-*`)。每个 skill 一个目录:`SKILL.m
 迁入清单(待办):
 
 - `sr-od-dev-skill-guide` → `od-dev-writing-skills`(skill 写作规范,本仓库的方法论基石)✅ 已迁入
-- `sr-od-dev-write-operation` → `od-dev-write-operation`(写 / 改单个 Operation)
+- `sr-od-dev-write-operation` → `od-dev-write-operation`(写 / 改单个 Operation)✅ 已迁入
 - `sr-od-dev-gameplay-automation` → `od-dev-gameplay-automation`(从零开发新玩法自动化 pipeline)✅ 已迁入
 - `sr-od-dev-screen-onboarding` → `od-dev-screen-onboarding`(画面建档)✅ 已迁入
 - `sr-od-dev-ui-region-detect` → `od-dev-ui-region-detect`(UI 区域坐标检测)
