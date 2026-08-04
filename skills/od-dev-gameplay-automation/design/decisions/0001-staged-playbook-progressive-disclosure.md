@@ -18,7 +18,7 @@
 1. **保留单一大 SKILL.md(~190 行)**:简单,但 always-on token 重 + 结构无主脊。
 2. **阶段门控 playbook(SKILL.md 主脊)+ 渐进式披露(深度进 references/)**(选中):SKILL.md 留总流程阶段表 + 阶段 0/1/3/7 核心判据 + 跨阶段不变量;阶段 2/3/4/5/6/8/9 的深度细则进 4 个 references/ 文件按需读。
 3. **按阶段拆成多个 skill(每阶段一 skill)**:过度拆分,丢失"端到端流程 + 阶段门控判据"的整体价值(见 [ADR-0002](0002-lifecycle-scope-defer-to-siblings.md))。
-4. **拆 per-concern(画面/实现/调试各一 skill)**:同 3,且与协作 skill(screen-onboarding/ui-region-detect)重叠。
+4. **拆 per-concern(画面/实现/调试各一 skill)**:同 3,且与协作 skill(screen-onboarding/od-dev-ui-region-detect)重叠。
 
 ## Decision
 选 2:

@@ -14,7 +14,7 @@
 - 运行时识别(框架 screen matching 自己跑);
 - gameplay 跨画面流程文档(归 `docs/game/gameplay/`,本 skill 只管单画面;重 app 的玩法建档触发 gameplay-automation skill);
 - 整 screen 级 CRUD(增删整个画面,本 skill 只 area 级);
-- 检测 / 验证 UI 区域坐标(槽位网格 / 图标按钮阵列 / 卡牌阵列)—— 用 ui-region-detect skill。
+- 检测 / 验证 UI 区域坐标(槽位网格 / 图标按钮阵列 / 卡牌阵列)—— 用 od-dev-ui-region-detect skill。
 - **本游戏特定的操作事实(交互标记约定如「名字旁三角形=可交互」、导航副作用如「传送后朝向继承」)归消费方项目的画面约定 doc,不在本 skill 硬编码**(规范 4:具体游戏事实归 doc 不归 skill)。本 skill 只记「这类约定存在、建档前查它」的方法论;SR 侧的事实目前暂存本 skill ADR-0004/0005 Context 作决策论据,SR 正式落点待定(见 SR 仓 TODO)。
 
 ## 方法论构成(what;why 见 decisions/)

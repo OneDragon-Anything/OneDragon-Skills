@@ -6,7 +6,7 @@
 ## Context
 本 skill 管"从零开发新玩法自动化",覆盖阶段 0-9 全流程。但其中多个阶段有**更专精的协作 skill** 已存在:
 - 画面建档/screen_info area 维护 → `od-dev-screen-onboarding`
-- UI 区域坐标检测 → ui-region-detect skill(项目内)
+- UI 区域坐标检测 → od-dev-ui-region-detect
 - bug 决定怎么修 → deciding-a-fix skill(项目内)
 
 问题:本 skill 该**重复**这些协作 skill 的内容(自包含),还是**只 defer**(引用)?另外:本 skill 该覆盖**全生命周期**,还是**只覆盖实现**(更窄)?
@@ -24,7 +24,7 @@
 ## Decision
 选 3:
 - 本 skill **scope = 全生命周期**(阶段 0-9),给每阶段判据 + 跨阶段不变量 + 框架踩坑。
-- 专精深度**defer 给协作 skill**(写完整标识符):`od-dev-screen-onboarding`(画面建档/screen_info area)、ui-region-detect skill(项目内,坐标检测)、deciding-a-fix skill(项目内,bug 修复决策)。本 skill 只在相关阶段一句指针 + 该 skill 才管的核心判据摘要,不重复其完整方法论。
+- 专精深度**defer 给协作 skill**(写完整标识符):`od-dev-screen-onboarding`(画面建档/screen_info area)、od-dev-ui-region-detect、deciding-a-fix skill(项目内,bug 修复决策)。本 skill 只在相关阶段一句指针 + 该 skill 才管的核心判据摘要,不重复其完整方法论。
 - SKILL.md「协作 skill」节集中列指针。
 
 ## Consequences

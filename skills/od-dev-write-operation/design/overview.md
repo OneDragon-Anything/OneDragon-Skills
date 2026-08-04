@@ -36,7 +36,7 @@ OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法�
 - 从零做新玩法全程 → `od-dev-gameplay-automation`
 - app 产品化(factory / config / GUI / run-record / app 级编排)→ application skill(项目内,待建;app 节点复用本 skill 的节点图机制,不重复讲)
 - 建一张屏的机制(analyze → vision → doc → screen_info area → 存模板)→ `od-dev-screen-onboarding`
-- 检测 / 验证 UI 区域坐标(槽位网格 / 图标阵列)→ ui-region-detect skill(项目内)
+- 检测 / 验证 UI 区域坐标(槽位网格 / 图标阵列)→ od-dev-ui-region-detect
 - 通用 bug 定位 / 修复流程 → `superpowers:systematic-debugging` / deciding-a-fix skill(项目内;本 skill 只给 op 领域知识,通用流程走它们)
 
 ## 构成(文件结构)

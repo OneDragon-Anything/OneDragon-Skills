@@ -52,5 +52,5 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 ## 协作 skill(深度细则 defer,不重复)
 - **写 / 改 / 调试单个 Operation**(节点图 / round 结果 / `round_by_*`)+ **探索式开发主线 + op 级运行时技术(信息密度 / 调试 / 预料外调研 / 重复建op)+ 框架踩坑** → `od-dev-write-operation`(op 粒度地基,本 skill 引用其 `runtime-craft.md` / `framework-pitfalls.md`)
 - 画面建档 / screen_info area 维护 / 图标按钮模板建模 → `od-dev-screen-onboarding`
-- UI 区域坐标检测(槽位网格/图标按钮阵列/卡牌阵列)→ ui-region-detect skill(项目内)
+- UI 区域坐标检测(槽位网格/图标按钮阵列/卡牌阵列)→ od-dev-ui-region-detect
 - bug 已知故障机制、决定怎么修(修哪里/根因多深/临时 vs 永久)→ deciding-a-fix skill(项目内)

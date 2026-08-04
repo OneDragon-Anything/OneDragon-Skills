@@ -5,7 +5,7 @@
 
 ## Context
 SKILL.md「两类 skill」说 **GREEN 验证不可省**,但一直没给具体方法。superpowers 的 `testing-skills-with-subagents` 给的是 **pressure-scenario 法**(专注 discipline / compliance,one-shot A/B/C + 多重压力 + 抓 rationalization)—— 但它自己明说"别测 reference / 无规则可违 / agent 无动机绕过的 skill"。
-本项目**多数 skill 是方法论覆盖型 / how-to / reference**(gameplay-automation / screen-onboarding / ui-region-detect / deciding-a-fix / debug-automation),要测的是"**能不能照方法论把活干好**",不是"守不守纪律"。pressure test 不对症。
+本项目**多数 skill 是方法论覆盖型 / how-to / reference**(gameplay-automation / screen-onboarding / od-dev-ui-region-detect / deciding-a-fix / debug-automation),要测的是"**能不能照方法论把活干好**",不是"守不守纪律"。pressure test 不对症。
 用户做法:**干净工作空间 + 可交互子 agent + 扮用户只答所问 + 观察 gap + 修 skill + 循环** —— 正是方法论型的 GREEN 方法(可用性测试 / dogfooding 思路)。
 
 ## Decision Drivers

@@ -25,7 +25,7 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 ## 写一个 op 的主线(按序)
 
 1. **先找兄弟 op 抄骨架,别从零**。在 `src/<project>/` 找一个职责相近的已有 op(同类画面 / 同类动作),照它的 `__init__` / `handle_init` / 节点结构写。比从零省一个数量级,也符合项目"先复用现有 Operation"硬约束。
-2. **要碰的屏先建档,再写逻辑**。op 依赖的每个画面必须先有 screen_info area / 模板 —— 没建档的屏不写逻辑(坐标 / 关键词会全靠猜)。建档走 `od-dev-screen-onboarding`;坐标检测 / 验证走 ui-region-detect skill(项目内)。
+2. **要碰的屏先建档,再写逻辑**。op 依赖的每个画面必须先有 screen_info area / 模板 —— 没建档的屏不写逻辑(坐标 / 关键词会全靠猜)。建档走 `od-dev-screen-onboarding`;坐标检测 / 验证走 od-dev-ui-region-detect。
 3. **拆节点**:一节点 = 一类画面 / 一个动作。激进拆小 op —— 某方法 if-elif ≥ 3 个不同画面/动作,或单 op 超 ~80 行 → 拆成独立 op(便于 `run_operation` 单跑定位失败步)。
 4. **每节点**:读屏 → 判定 → 动作 → **返回 round 结果**(语义见下)。
 5. **单 op 实测**:`run_operation '<op_id>'` 单跑通过,再接入主流程。测试机制见 `references/testing.md`。
