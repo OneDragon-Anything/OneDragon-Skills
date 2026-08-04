@@ -54,8 +54,8 @@ SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文
 5. **挂载到 AI 工具读 skill 的目录**(如 Claude Code 的 `.claude/skills/`),验证 skill 可被触发。
 6. 提交(见所在仓库提交流程)。
 
-## skill 反馈机制(开发中迭代优化)
-skill 写完后,**真实开发是发现其 gap 最好的时机**。开发中发现 skill 可优化点 → **别中断开发**,抓反馈 → 自然断点在**干净上下文**(隔离子 agent)按本 skill 4 硬规范改进 → 干净上下文重测「触发任务」验效(就地 GREEN)。完整回路(RCA 过滤 / 干净上下文 / 份量缩放 / 执行细节归各仓库)见 `references/skill-feedback.md`。
+## skill 改进反馈(开发中迭代)
+skill 在真实开发中会暴露 gap。开发中发现可优化点 → 写条**规范反馈**(观察 + RCA + 方法论级拟改),让迭代方据此优化。**反馈怎么写、写什么**见 `references/skill-feedback.md`;反馈的处理流程(谁改 / 怎么改 / 改哪 / 怎么验)归各消费方 harness(取决于本地有无 skill 源仓 / 挂载方式)。
 
 ## SKILL.md 写法(细则)
 frontmatter(`name` 仅字母数字连字符 / `description` 只写「Use when…」触发、**绝不总结 workflow**)/ SDO(keyword 覆盖、命名)/ token 效率 / 正文结构 / **form-to-failure**(按失败类型选指令形态)/ 拆分(progressive disclosure)/ 编写中重构 / 例子与反模式 / 何时建 —— **细则见 `references/writing-craft.md`**(锚定 Anthropic context engineering + lost-in-the-middle + Diátaxis)。SKILL.md 保持 compact、情境细节进 references/(just-in-time)、定期重构不无脑追加。
