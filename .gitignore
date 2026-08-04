@@ -1,0 +1,18 @@
+# 编辑器 / OS
+.idea/
+.vscode/
+__pycache__/
+.DS_Store
+Thumbs.db
+
+# AI 入口:.claude/ 整个不入库(个人本地;团队共享走根 AGENTS.md)
+.claude/
+CLAUDE.local.md
+
+# 个人 / 会话产物
+.debug/
+.env
+
+# 规划文档 / 会话产物
+docs/superpowers/
+.superpowers/
