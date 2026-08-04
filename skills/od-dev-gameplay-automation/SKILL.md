@@ -21,7 +21,7 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 | 5 | 实现:先零件后整体 | 每个零件单独 `run_operation` 实测过 | `references/build-craft.md` §实现 |
 | 6 | 验证:串成 app 端到端跑 | `run_standalone_app` 跑通 | `references/build-craft.md` §验证 |
 | 7 | 策略设计(若有决策) | 客观指标 + A/B,迭代到目标 | 见下「策略设计」 |
-| 8 | 事件长尾:遇预料外补逻辑 | loop 覆盖已知全部事件类型 | `references/runtime-iteration.md` |
+| 8 | 探索式迭代:实现→测试→发现→补建档+补分支 | loop 覆盖已知全部事件类型;骨架→稳定 | `references/runtime-iteration.md` |
 | 9 | 测试 + 文档 + 成文 | ruff 干净 + 测试仓 + docs/game | `references/build-craft.md` §测试 |
 
 **阶段 0**(最易漏):钻机制前先确认外部依赖还在不在 —— 常驻 or 限时(限时可能已结束 → 只能"研究+骨架",没法实机验证);能实机打开(客户端版本/入口还在);有无反作弊/锁光标/全屏独占(影响 controller 能否操作)。
@@ -45,11 +45,12 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 
 **知识维护(边干边补)**:文档没写、或与实际矛盾、而你在干活时又需要它 = 知识缺口,补上 —— 能查官方文档/工具说明的**先查,别凭猜试错**(API/模型用法/坐标系/grounding 格式,查文档比反复试错快得多);能确定答案的提议补 docs(只补会重复用到的);确定不了的问用户。**游戏数据/描述/原生数值优先官网 + 游戏内(图鉴/词条)**(权威源);只有"攻略/玩法技巧"这类主观总结才信第三方网站。**遇工具/API/模型行为反常,先查文档** —— 这条比任何具体技巧都重要。
 
-**调试纪律**:bot 卡死/失败时**先读日志再动手**,别凭猜改或盲点坐标 —— 日志(MCP server 日志,项目 `.debug/` 下)常直接暴露根因(OCR 没读到锚点/节点循环/命中错屏);日志解释不了就**在决策点补日志**(OCR 摘要 + 点击坐标 + 分支结果)+ 临时存图(`screenshot()`);再结合日志客观事实 + 玩法知识形成假设验证。深度(意外屏调研、运行时不确定性、重复操作建 op)见 `references/runtime-iteration.md`。
+**调试纪律**:bot 卡死/失败时**先读日志再动手**,别凭猜改或盲点坐标 —— 日志常直接暴露根因(OCR 没读到锚点/节点循环/命中错屏)。op 级调试 / 信息密度(多 log 多截图)/ 预料外画面调研 / 运行时不确定性 / 重复建op 的完整方法论见 `od-dev-write-operation`(探索式主线 + `references/runtime-craft.md`,op 级运行时技术 single source)。
 
-**框架级踩坑**(bug #1 截图吞 click、MCP 异步、ONNX 异步、配置生效、录屏、GBK 日志等)见 `references/framework-pitfalls.md` —— 遇 op 点不中/行为怪先查这里。
+**框架级踩坑**(bug #1 截图吞 click、MCP 异步、ONNX 异步、配置生效、录屏、GBK 日志等)见 `od-dev-write-operation/references/framework-pitfalls.md`(single source)—— 遇 op 点不中/行为怪先查那里。
 
 ## 协作 skill(深度细则 defer,不重复)
+- **写 / 改 / 调试单个 Operation**(节点图 / round 结果 / `round_by_*`)+ **探索式开发主线 + op 级运行时技术(信息密度 / 调试 / 预料外调研 / 重复建op)+ 框架踩坑** → `od-dev-write-operation`(op 粒度地基,本 skill 引用其 `runtime-craft.md` / `framework-pitfalls.md`)
 - 画面建档 / screen_info area 维护 / 图标按钮模板建模 → `od-dev-screen-onboarding`
 - UI 区域坐标检测(槽位网格/图标按钮阵列/卡牌阵列)→ ui-region-detect skill(项目内)
 - bug 已知故障机制、决定怎么修(修哪里/根因多深/临时 vs 永久)→ deciding-a-fix skill(项目内)
