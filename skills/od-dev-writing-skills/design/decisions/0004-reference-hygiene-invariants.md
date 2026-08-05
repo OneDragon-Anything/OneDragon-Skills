@@ -28,7 +28,7 @@
 ## Consequences
 - **正向**:消除闭包外依赖(禁 memory / gitignored);编辑时自查新引用,防违规混入;过时应对有谱可循(不再只有「抽象化」一档)。
 - **负向**:轻档**无自动过时检测**,仍靠人自觉 + PR review;第 2 档(CI checker)、第 3 档(运行时读)未落地。
-- **follow-up**:① 重档建 CI checker(第 2 档);② 扫现有 skill 修已存在的 memory / gitignored 引用违规;③ `sr-od-miyoushe` 等「见 design.md」类违规(使用信息误进 design)一并清。
+- **follow-up**:① 重档建 CI checker(第 2 档);② 扫现有 skill 修已存在的 memory / gitignored 引用违规;③ 某 skill 等「见 design.md」类违规(使用信息误进 design)一并清。
 
 ## Links
 - SKILL.md 规范 3(硬门)+ 硬规范头部(不变量 callout)+ 流程 step 4。

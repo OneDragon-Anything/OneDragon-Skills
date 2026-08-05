@@ -12,9 +12,6 @@
 本 skill 把「按元素类型选 视觉大模型/CV/OCR + 密集网格的 CV 投影峰值法 + 带框元素的形状轮廓法
 + 数值验证」固化成方法论,避免每次重新踩坑。
 
-> 由 SR `sr-od-dev-ui-region-detect` 迁入并泛化(OneDragon 系列通用;视觉大模型 工具命名空间等
-> 项目专属引用泛化为通用说法,GLM-4.5V + 0-1000 等 model 方法论保留)。
-
 ## 定位与边界
 
 - **定位**:`od-dev-screen-onboarding` 的**补充**。onboarding 管画面**建档**全流程

@@ -8,7 +8,7 @@
 ## 4 条硬规范(是什么;各条 why 见对应 ADR)
 1. **必须有 design/ 文件夹,design 与 ADR 分开**(迁移自旧「单 design.md」;why 见 [ADR-0001](decisions/0001-design-adr-separation.md))。
 2. **内容给智能体看(指令式)**:正文是祈使句 + 判据;`description` 只写触发条件(SDO 结论:description 写流程 → 智能体照 description 走、不读正文;整合自 superpowers,见 [`../../references/writing-craft.md`](../../references/writing-craft.md) §1.3)—— 非本项目新决策,故不单列 ADR。
-3. **自包含(分场景)+ 框架地基级接口名可写进 SKILL.md**(why + PR #2575 incident 见 [ADR-0002](decisions/0002-self-contained-framework-interface-names.md))。
+3. **自包含(分场景)+ 框架地基级接口名可写进 SKILL.md**(why + CodeRabbit 误报 incident 见 [ADR-0002](decisions/0002-self-contained-framework-interface-names.md))。
 4. **写方法论,不写具体例子**(why 见 [ADR-0003](decisions/0003-methodology-not-examples.md))。
 
 ## 落点
@@ -25,6 +25,3 @@
 
 ## 自身一致性
 本 skill 遵守自己的规范:有 `design/`(design 与 ADR 分开);SKILL.md 指令式;**不引 skill 目录外的 docs 文件**,写法细则自含在 `references/`(不外引 superpowers:writing-skills);正文是规范 / 判据 / 流程,无具体项目叙事例子。
-
-## 当前状态
-团队已统一采用 superpowers;本 skill 原在 StarRailOneDragon 仓(`sr-od-dev-skill-guide`),已迁入 OneDragon-Skills 公共 skills 仓并更名 `od-dev-writing-skills`,供 SR/ZZZ 等 OneDragon 系列项目共用。

@@ -92,7 +92,7 @@
 - **design 文档数**:简单 skill 一个 `overview.md` 就合法。超 ~300 行、或一个文件混了多个关注点 → 才拆成 `<concern>.md`。
 - **design/README.md(总索引)可选**:只有 overview + decisions 时可省(overview 即入口、`decisions/INDEX.md` 已列 ADR);有多 concern 文档需导航时才加。
 - **decisions/**:有 ≥1 个架构决策才建;确实没有架构决策(极少)可不建空目录。`INDEX.md` 随第一条 ADR 一起建。
-- **skill vs 子项目**:skill 的 design 通常轻(方法论 + 几条 ADR);子项目(如 currency_war)design 重(多关注点文档 + 多 ADR)。**结构同,深度不同**。
+- **skill vs 子项目**:skill 的 design 通常轻(方法论 + 几条 ADR);子项目(如某大型玩法)design 重(多关注点文档 + 多 ADR)。**结构同,深度不同**。
 
 ### 3.5 INDEX 替代单文件日志
 `decisions/INDEX.md` 一张表给全貌(替代旧「单文件 decisions 日志」的概览功能):
