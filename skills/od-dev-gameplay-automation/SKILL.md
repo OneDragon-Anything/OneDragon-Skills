@@ -47,7 +47,7 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 
 **调试纪律**:bot 卡死/失败时**先读日志再动手**,别凭猜改或盲点坐标 —— 日志常直接暴露根因(OCR 没读到锚点/节点循环/命中错屏)。op 级调试 / 信息密度(多 log 多截图)/ 预料外画面调研 / 运行时不确定性 / 重复建op 的完整方法论见 `od-dev-write-operation`(探索式主线 + `references/runtime-craft.md`,op 级运行时技术 single source)。
 
-**框架级踩坑**(bug #1 截图吞 click、MCP 异步、ONNX 异步、配置生效、录屏、GBK 日志等)见 `od-dev-write-operation/references/framework-pitfalls.md`(single source)—— 遇 op 点不中/行为怪先查那里。
+**框架级踩坑**(click 与鼠标移动无间隔被判拖拽、MCP 异步、ONNX 异步、配置生效、录屏、GBK 日志等)见 `od-dev-write-operation/references/framework-pitfalls.md`(single source)—— 遇 op 点不中/行为怪先查那里。
 
 ## 协作 skill(深度细则 defer,不重复)
 - **写 / 改 / 调试单个 Operation**(节点图 / round 结果 / `round_by_*`)+ **探索式开发主线 + op 级运行时技术(信息密度 / 调试 / 预料外调研 / 重复建op)+ 框架踩坑** → `od-dev-write-operation`(op 粒度地基,本 skill 引用其 `runtime-craft.md` / `framework-pitfalls.md`)

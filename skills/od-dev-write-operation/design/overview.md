@@ -7,7 +7,7 @@
 OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法论 skill。三条主线织在一起:
 1. **探索式开发主线**(地基,见 ADR-0002):自动化脚本需求不可完备 → **建档-led 增量**(建档先粗 → 实现 → 测试 → 发现 → 补建档+补分支 → loop)。它决定 op 该怎么写(拆小 / 多log多截图 / 预料外调研建档 / 调试读日志 / 重复建op)。
 2. **mechanics**:节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱)、round 结果语义、`round_by_*` 选型、op 内工具、单 op 测试机制、**循环驱动玩法的 op 结构选型(flat loop vs node-per-op)**。
-3. **op 粒度规范**:看动等验、识别方式选型、建档前置、OCR 关键词独有、bug#1 缓解。
+3. **op 粒度规范**:看动等验、识别方式选型、建档前置、OCR 关键词独有、click 时序可靠性(项目相关,见 framework-pitfalls)。
 
 给 coding agent 看,框架通用(不绑具体玩法)。
 
@@ -27,9 +27,9 @@ OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法�
 
 **mechanics**:Operation 结构(`__init__` / `handle_init` / `node_max_retry_times` / `need_check_game_win`);节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱 / `previous_node`);round 结果语义;`round_by_*` 选型 + LCS 机制;op 内工具(`screenshot` / `controller` / `ocr` / 子 op);单 op 测试机制(`run_operation` 单跑 / mock 截图 / TDD vs 刻画);**循环驱动玩法的 op 结构选型**(flat loop vs node-per-op,见 ADR-0003)。
 
-**op 粒度规范(织入主线)**:看动等验;每屏定识别方式;建档前置(引 `od-dev-screen-onboarding`);OCR 关键词独有(LCS 坑);bug#1 缓解(mouse_move + click)。
+**op 粒度规范(织入主线)**:看动等验;每屏定识别方式;建档前置(引 `od-dev-screen-onboarding`);OCR 关键词独有(LCS 坑);click 时序可靠性(项目相关,见 framework-pitfalls)。
 
-**框架踩坑**(single source,`framework-pitfalls.md`):bug#1 / MCP 异步 / ONNX / 配置生效 / 录屏 / GBK 日志。`od-dev-gameplay-automation` 引用本文件。
+**框架踩坑**(single source,`framework-pitfalls.md`):click 与鼠标移动无间隔(项目相关)/ MCP 异步 / ONNX / 配置生效 / 录屏 / GBK 日志。`od-dev-gameplay-automation` 引用本文件。
 
 ## 范围 OUT(指针,不重复)
 

@@ -3,16 +3,15 @@
 > 本 skill(`od-dev-write-operation`)的 situational reference。这些是 op 里反复发作的 **one_dragon 公共框架**行为,遇过就守;SR/ZZZ 等 OneDragon 系列共有。SKILL.md 列了最频发的;本文件给完整 + 缓解。
 > **单源**:本文件是框架踩坑清单的唯一源;`od-dev-gameplay-automation` 也引用它(不重复维护)。
 
-## 1. bug#1:`before_screenshot` 移鼠标 → 吞掉紧接的 click
+## 1. click 与鼠标移动无间隔 → 被游戏判拖拽(通用;举例:截图卫生移鼠标)
 
-框架每个 op 轮次开始(`_execute_one_round` 进节点前,若 `screenshot_before_round=True`)自动 `self.screenshot()`,截图前把鼠标移到角落;紧接的 `controller.click`(从角落到目标)被游戏判成**拖拽** → click **落空**(不 register)。
+游戏会把「按键按下期间 / 刚 click 后没间隔的鼠标移动」判成拖拽 → click 落不到目标。间歇发生,多打 `round_by_ocr_and_click` / 过渡按钮 / 结算翻页这类。
 
-**症状**:op 里某坐标点不中;手动 `click_game` 同坐标一发即中(手动无前置截图)。
-
-**缓解(按场景)**:
-- **关键 click 前 `mouse_move(target)` 再 `click(target)`**:`mouse_move` 是纯移动不触发拖拽判断 → 鼠标已到目标 → `click` 零移动 → 不被判拖拽 → 必落。这是通用修复模式。
-- **click 之间别再截图**:截图会再次移鼠标,把上一个 click 的鼠标到位状态打掉。
-- **active_window 紧贴 click,别留间隙**:`round_by_ocr_and_click` 有 `pre_delay=0.3`(点击前等);若节点起手 `active_window()` 再走 helper,active_window 到 click 间有 0.3s+ 间隙,游戏窗口可能在此间隙失焦 → click 落空。需焦点时 `active_window` 紧贴 `controller.click`,无 pre_delay 间隙。
+- **通用根因**:click 和鼠标移动挨得太近(移动发生在 click 过程中,或 click 后立刻移动),游戏分不清单击还是拖拽。
+- **举例(常见来源之一)**:有的项目 controller 在 `before_screenshot` 把光标移到角落(截图卫生,避免光标进画面 / 挡 OCR 区)。这类项目里 op 截图后紧接 click(target),光标从角落移动到目标的过程 =「click 过程中移动」→ 判拖拽。**先查你项目**:controller 的 `before_screenshot` 移不移鼠标?(框架基类是空操作,有项目覆盖移鼠标才会这么触发。)
+- **缓解**:关键 click 前 `mouse_move(target)` 再 `click`(click 时光标已到位、零移动,不被判拖拽);或 click 后留间隔再移鼠标。
+- **别滥用**:多数自动运行 click 正常,只在观察到间歇落空处加,别每个 op 都铺。
+- 手动测 click 不稳,先怀疑你自己在抢鼠标,别急着归框架 bug 铺防御。
 
 ## 2. MCP click / key 异步
 

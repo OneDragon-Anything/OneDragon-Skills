@@ -6,3 +6,4 @@
 | 0002 | 探索式为主线 + op 级方法论归 write-operation(gameplay 瘦身) | accepted | 2026-08-04 |
 | 0003 | 循环驱动玩法用 node-per-op(flat loop 的结构性卡死缺陷) | accepted | 2026-08-05 |
 | 0004 | 区域识别为默认首选(全屏 OCR 降为 fallback) | accepted | 2026-08-05 |
+| 0005 | click 与鼠标移动无间隔(判拖拽):从项目专属措辞改为泛化条件式提示 | accepted | 2026-08-05 |

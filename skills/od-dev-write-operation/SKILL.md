@@ -28,7 +28,7 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 1. **先找兄弟 op 抄骨架,别从零**。在 `src/<project>/` 找一个职责相近的已有 op(同类画面 / 同类动作),照它的 `__init__` / `handle_init` / 节点结构写。比从零省一个数量级,也符合项目"先复用现有 Operation"硬约束。
 2. **要碰的屏先建档,再写逻辑**。op 依赖的每个画面必须先有 screen_info area / 模板 —— 没建档的屏不写逻辑(坐标 / 关键词会全靠猜)。建档走 `od-dev-screen-onboarding`;坐标检测 / 验证走 od-dev-ui-region-detect。
-3. **拆节点**:一节点 = 一类画面 / 一个动作。激进拆小 op —— 某方法 if-elif ≥ 3 个不同画面/动作,或单 op 超 ~80 行 → 拆成独立 op(便于 `run_operation` 单跑定位失败步)。
+3. **拆节点**:一节点 = 一类画面 / 一个动作。**粒度判据(两头卡)**:太粗——某方法 if-elif ≥ 3 个不同画面/动作,或单 op 超 ~80 行 → 拆成独立 op(便于 `run_operation` 单跑定位失败步);**太细**——拆出来的 op **单跑没法自验证**(单跑看不出对错,要靠上下游 op 才知道流程对不对)→ 太细,这步(读/点单元素)归 op 内函数 / 节点,别拆成 op。op 粒度 ≈ 一次游戏内导航能覆盖的实测单元(难导航的屏,op 该一次做完,别拆细让每 op 都重导航)。一句话:细到单步(读/点)归 op 内函数,粗到多画面就该拆。
 4. **每节点**:读屏 → 判定 → 动作 → **返回 round 结果**(语义见下)。
 5. **单 op 实测**:`run_operation '<op_id>'` 单跑通过,再接入主流程。测试机制见 `references/testing.md`。
 
@@ -91,15 +91,14 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 ## 必守不变量(反复发作的坑 + 探索式开发的技术)
 
-1. **bug#1:每轮 `before_screenshot` 把鼠标移到角落 → 紧接的 `click` 被游戏判拖拽落空**。症状:op 同坐标点不中、手动 `click_game` 一发即中。缓解:关键 click 前 `mouse_move(target)` 再 `click(target)`(鼠标已到位 = 零移动 = 不被判拖拽);click 之间别再截图。详 + 其他坑见 `references/framework-pitfalls.md`。
-2. **MCP click/key 异步**:立即返回但 ~1s 才落地;操作后 `sleep` 再验,否则截到点击前画面。
-3. **调试先读日志,不够就补日志**:bot 卡住 / op 失败 → 先读 MCP server 日志(项目 `.debug/` 下;实际 OCR / 走到哪个节点 / 决策状态),别盲点坐标。日志解释不了 → 在决策点补日志(OCR 摘要 + 点击坐标 + 分支结果)+ `save_screenshot()` 存图。
-4. **预料外画面别只 ESC**:先调研"上一步代码点了什么 → 落到哪个 UI 元素 → 游戏对该元素的交互",**建档后改 click 避开误触元素**(不只加 ESC handler)—— 这就是探索式循环里"补建档 + 补分支"的一步。
-5. **多样本核实**:验证 OCR / 读取器跨多样本看统计分布,别凭一张图 / 单次推断下结论。
-6. **决策点多 log 多截图(信息密度论)**:探索式开发里每次实跑都在暴露建档缺口,要从一次跑榨取**最多信息**(OCR 到啥 / 评估了啥 / 点了哪 / 结果 / 关键分支截图),而非跑一次只找一个坑。**判据:实跑后看日志能复盘每个决策点发生了什么**;做不到 = 日志不够,补。验证通过后逐步去掉减开销。详 `references/runtime-craft.md`。
-7. **重复手动操作 → 尽早建成 op**:开发/测试中同一手动操作做了 2+ 次(导航序列 / 退出对局多页 / 进玩法入口)→ 建成 op(`run_operation` 一键调),别每次手动点 N 个按钮。
+1. **MCP click/key 异步**:立即返回但 ~1s 才落地;操作后 `sleep` 再验,否则截到点击前画面。
+2. **调试先读日志,不够就补日志**:bot 卡住 / op 失败 → 先读 MCP server 日志(项目 `.debug/` 下;实际 OCR / 走到哪个节点 / 决策状态),别盲点坐标。日志解释不了 → 在决策点补日志(OCR 摘要 + 点击坐标 + 分支结果)+ `save_screenshot()` 存图。
+3. **预料外画面别只 ESC**:先调研"上一步代码点了什么 → 落到哪个 UI 元素 → 游戏对该元素的交互",**建档后改 click 避开误触元素**(不只加 ESC handler)—— 这就是探索式循环里"补建档 + 补分支"的一步。
+4. **多样本核实**:验证 OCR / 读取器跨多样本看统计分布,别凭一张图 / 单次推断下结论。
+5. **决策点多 log 多截图(信息密度论)**:探索式开发里每次实跑都在暴露建档缺口,要从一次跑榨取**最多信息**(OCR 到啥 / 评估了啥 / 点了哪 / 结果 / 关键分支截图),而非跑一次只找一个坑。**判据:实跑后看日志能复盘每个决策点发生了什么**;做不到 = 日志不够,补。验证通过后逐步去掉减开销。详 `references/runtime-craft.md`。
+6. **重复手动操作 → 尽早建成 op**:开发/测试中同一手动操作做了 2+ 次(导航序列 / 退出对局多页 / 进玩法入口)→ 建成 op(`run_operation` 一键调),别每次手动点 N 个按钮。
 
-> 框架级踩坑完整清单(bug#1 / MCP 异步 / ONNX / 配置生效 / 录屏 / GBK 日志)见 `references/framework-pitfalls.md`(single source;od-dev-gameplay-automation 也引用它)。
+> 框架级踩坑完整清单(click 与鼠标移动无间隔被判拖拽 / MCP 异步 / ONNX / 配置生效 / 录屏 / GBK 日志)见 `references/framework-pitfalls.md`(single source;od-dev-gameplay-automation 也引用它)。
 
 ## 边界(这些去别的 skill)
 
@@ -111,9 +110,8 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 ## 写完自检
 
 - [ ] 碰到的屏都建了档(screen_info area / 模板),检测/点击坐标进 area、不是凭猜 / 硬编码 `Point(x,y)`?
-- [ ] op 拆得够小(单一职责),能 `run_operation` 单跑定位?
+- [ ] op 粒度两头卡——太粗(if-elif ≥ 3 画面/动作、超 ~80 行)拆开;太细(单跑没法自验证、读/点单步)归 op 内函数不拆 op?能 `run_operation` 单跑定位失败步?
 - [ ] 固定位置元素用区域识别(`round_by_find*_area`);全屏 OCR 只在位置真漂移 / 区域定不准时 last-resort(带高 lcs + 独有关键词),不是常规 fallback?
-- [ ] 关键 click 加了 bug#1 缓解(`mouse_move` + `click`)?
 - [ ] 决策点有日志 + 存图,卡了能复盘(信息密度)?
 - [ ] 单 op `run_operation` 实测通过再接入?
 - [ ] 循环驱动玩法选了正确结构(flat loop / node-per-op)?node op 有完成检测 + 节点预算,不会"完成不了也 `round_success`"假完成?
