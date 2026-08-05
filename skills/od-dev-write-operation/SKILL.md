@@ -90,7 +90,7 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 | 多目标按优先级点一个 | `round_by_ocr_and_click_by_priority` |
 | 导航到某画面 | `round_by_goto_screen`(按 screen_info route) |
 
-> ⚠️ **全屏 OCR(`round_by_ocr*` 不传 `area`)= 偷懒 + 误匹配高发,仅 rare last-resort**。框架默认 `lcs_percent=0.5`(子序列匹配):关键词与同屏/邻屏文字**共享 2+ 字子串即 ≥ 0.5 误匹配** → 节点不触发或走到错误画面。固定位置元素别用(先建 area 走区域识别);确需全屏(位置真漂移)必带 `lcs_percent=0.7~0.9` + 独有长关键词。逐 helper 全参数 + LCS 机制见 `references/round-by-helpers.md`。
+> ⚠️ **全屏 OCR(`round_by_ocr*` 不传 `area`)= 偷懒 + 误匹配高发,仅 rare last-resort**。框架默认 `lcs_percent=0.5`(子序列匹配):关键词与同屏/邻屏文字**共享 2+ 字子串即 ≥ 0.5 误匹配**(≤4 字短词天然高危)。**写前自查:这关键词在别的屏 / 同屏别处也会出现吗(子序列 / 全等)?是 → 必用 area 位置区分**(id_mark area)—— `lcs` 收紧**救不了全等 / 高重叠子序列**(别处 4 字全等 = LCS 1.0,提多高都误匹配),只有 area 的位置约束能根治。固定位置元素别用全屏;确需全屏(位置真漂移)必带 `lcs_percent=0.7~0.9` + **确认该词不在别屏全等出现** + 独有长关键词。逐 helper 全参数 + LCS 机制见 `references/round-by-helpers.md`。
 - **别在 op 代码里硬编码 `Point(x,y)` / `Rect(...)` 做检测/点击**:坐标进 screen_info area(`pc_rect`),与「坐标进 screen_info」规范一致 —— 检测的文字 + 点击目标分离时(检测用 OCR、点的是另一处),点击坐标同样进 area。
 
 ## 选择类画面 op:通常 选择→推进;多选重试才需识别选中态
@@ -130,6 +130,7 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 - [ ] 碰到的屏都建了档(screen_info area / 模板),检测/点击坐标进 area、不是凭猜 / 硬编码 `Point(x,y)`?
 - [ ] op 粒度两头卡——太粗(if-elif ≥ 3 画面/动作、超 ~80 行)拆开;太细(单跑没法自验证、读/点单步)归 op 内函数不拆 op?能 `run_operation` 单跑定位失败步?
 - [ ] 固定位置元素用区域识别(`round_by_find*_area`);全屏 OCR 只在位置真漂移 / 区域定不准时 last-resort(带高 lcs + 独有关键词),不是常规 fallback?
+- [ ] 用 `round_by_ocr*` 全屏前自查过:**这关键词在别的屏 / 同屏别处也会出现吗(子序列 / 全等)**?是 → 用 area 位置区分(`lcs` 收紧救不了全等 / 高重叠子序列,见上)?
 - [ ] 决策点有日志 + 存图,卡了能复盘(信息密度)?
 - [ ] 单 op `run_operation` 实测通过再接入?
 - [ ] 循环驱动玩法选了正确结构(flat loop / node-per-op)?node op 有完成检测 + 节点预算,不会"完成不了也 `round_success`"假完成?
