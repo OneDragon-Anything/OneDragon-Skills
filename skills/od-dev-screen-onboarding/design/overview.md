@@ -22,7 +22,7 @@
 2. **工具用法**:MCP 工具直调(`analyze_screen` / `upsert_screen_area` / `delete_screen_area`);area 改动一律走 CRUD 工具(经 `save_screen` 同步独立 yml + `_od_merged.yml` + reload),禁止手编 yml / 手改模板目录。见 [ADR-0002](decisions/0002-mcp-direct-call-crud-over-handedit.md)。
 3. **信息源三层并用**:截图 analyze/视觉大模型 + screen_info `area_list`(全集)+ application/operation 代码(`@operation_node` 链)。代码层 caveat = 版本迁移核对(代码可能落后于游戏版本)。见 [ADR-0003](decisions/0003-three-information-sources.md)。
 4. **视觉大模型 必需**:每张建档截图都要视觉大模型 看(OCR 看不见图形 / 布局 / 状态图标 / 模态性 / 朝向);视觉大模型 失败必重试。「描述画面有什么」可信、「判断状态 / 作用」不可信;朝向以 OCR 交互提示 + interact 结果为准。见 [ADR-0004](decisions/0004-vision-required.md)。
-5. **截图手动分解**:app/op 内部连续动作按 `@operation_node` 节点逻辑手动分解成单步 + capture;跑 app / run_operation 仅用于验证流程通 / 到位。配套:操作后 sleep 等动画、导航/传送复现读 op 代码 + 按本游戏副作用校正、边缘状态态标「待条件」+ 请用户帮切。见 [ADR-0005](decisions/0005-manual-decomposition-screenshots.md)。
+5. **截图手动分解**:app/op 内部连续动作按 `@operation_node` 节点逻辑手动分解成单步 + capture;跑 app / run_operation 仅用于验证流程通 / 到位。配套:操作后 sleep 等动画、边缘状态态标「待条件」+ 请用户帮切。见 [ADR-0005](decisions/0005-manual-decomposition-screenshots.md)。
 6. **重 app 多子玩法按 app 维度建档**:app 编排进 develop doc、玩法机制进 gameplay doc、跨画面 op 联动 screen 记入口 / develop 记编排。见 [ADR-0006](decisions/0006-heavy-app-dimension-onboarding.md)。
 7. **建档文档 = 稳定的画面参考(事实)**:描述类章节只写画面本身的事实;测试结果 / bug 修复历史 / 开放问题不混入描述章节(归测试仓 / commit-PR / 备注节)。见 [ADR-0007](decisions/0007-doc-stable-facts-only.md)。
 8. **自包含 webp 工具**:`convert_to_webp.py` 自带在 skill 目录,命令内联 SKILL.md;归档 webp 兼作 mock 测试 fixture。见 [ADR-0008](decisions/0008-bundled-webp-tool-inline.md)。
