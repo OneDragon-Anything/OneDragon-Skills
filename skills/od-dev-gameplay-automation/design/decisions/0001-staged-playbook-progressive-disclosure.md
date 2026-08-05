@@ -4,7 +4,7 @@
 - **Date**: 2026-08-04
 
 ## Context
-本 skill 的方法论从 SR「货币战争」自动化开发提炼,随实战增长,SKILL.md 一度膨胀到 ~190 行密集正文(LCS 误匹配深挖、调试纪律、事件长尾、运行时不确定性、框架踩坑……全堆 always-on)。问题:
+本 skill 的方法论从某个实际玩法的自动化开发提炼,随实战增长,SKILL.md 一度膨胀到 ~190 行密集正文(LCS 误匹配深挖、调试纪律、事件长尾、运行时不确定性、框架踩坑……全堆 always-on)。问题:
 - **always-on token 成本**:SKILL.md 每次触发都注入上下文;lost-in-the-middle(Liu et al. 2023)+ context rot → 越长回忆精度越降。always-on 应只放**每次都要的核心**(方法论/不变量/判据),情境性深度应按需加载(progressive disclosure)。
 - **结构缺主脊**:一堆平行"通用经验"段落,缺"先做什么再做什么"的可复现骨架 → agent 不知从哪进。
 - 违反 token 效率 / progressive disclosure 原则(指令式 compact + 按需加载)。

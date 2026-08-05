@@ -5,8 +5,6 @@
 ## 为什么做
 建游戏知识库(`docs/game/screens/`)+ 维护 `screen_info` 时,每来一张新画面都要重复「分析 → 建档 → 建模」。把这套流程沉淀成 skill,保证后续画面:流程一致、不漏可交互元素、不踩「工具绕路 / 手编 yml」的坑。做成 skill(而非 docs)是因为 skill 触发时自动注入执行上下文(主动),docs 要记得翻(被动)。
 
-> 本 skill 由 StarRail-OneDragon 的 `sr-od-dev-screen-onboarding` 迁入并泛化(OneDragon 系列通用,SR / ZZZ 等建画面方式一致:screen_info / area_list / `@operation_node` / analyze MCP 后端都是共享 common package + 共享 MCP 架构)。SR 专属的游戏事实(见下「边界」)留 SR 侧,不在本 skill。
-
 ## 定位与边界
 **管**:拿到截图后的离线分析 + 建档(`docs/game/screens/`)+ 建模可交互元素(模板 + screen_info area)。
 
@@ -15,7 +13,7 @@
 - gameplay 跨画面流程文档(归 `docs/game/gameplay/`,本 skill 只管单画面;重 app 的玩法建档触发 gameplay-automation skill);
 - 整 screen 级 CRUD(增删整个画面,本 skill 只 area 级);
 - 检测 / 验证 UI 区域坐标(槽位网格 / 图标按钮阵列 / 卡牌阵列)—— 用 od-dev-ui-region-detect skill。
-- **本游戏特定的操作事实(交互标记约定如「名字旁三角形=可交互」、导航副作用如「传送后朝向继承」)归消费方项目的画面约定 doc,不在本 skill 硬编码**(规范 4:具体游戏事实归 doc 不归 skill)。本 skill 只记「这类约定存在、建档前查它」的方法论;SR 侧的事实目前暂存本 skill ADR-0004/0005 Context 作决策论据,SR 正式落点待定(见 SR 仓 TODO)。
+- **本游戏特定的操作事实(交互标记约定如「名字旁三角形=可交互」、导航副作用如「传送后朝向继承」)归消费方项目的画面约定 doc,不在本 skill 硬编码**(规范 4:具体游戏事实归 doc 不归 skill)。本 skill 只记「这类约定存在、建档前查它」的方法论;ADR 例子已匿名化,只留通用结论。
 
 ## 方法论构成(what;why 见 decisions/)
 1. **五步流**(客观 → 主观 → 建档 → 缺口 → 建模):先客观(analyze,识别器视角)再主观(视觉大模型,人视角)避免只看一方漏信息;缺口分析把「已知 / 未知」显式化;建模放最后(基于缺口,不盲目)。玩法画面在前加「先搜攻略理解机制」前置;无匹配时走兜底画面(loading / 对话)。见 [ADR-0001](decisions/0001-five-step-flow.md)。
@@ -34,10 +32,6 @@
 - 公共仓开发类前缀 `od-dev-`(通用);消费方项目内可另有项目专属 skill(如 SR 的 `sr-od-dev-*`)。挂载 / 命名 / 路径约定是**所在仓库的 setup**,不在本 skill(见 od-dev-writing-skills)。
 
 ## 当前状态
-- 初版基于 SR 实战跑通(打开游戏 / 大世界 / 邮件 / 随便观 7 子玩法 / 各类玩法画面),后续随 onboard 更多画面逐步补强;迁公共仓时泛化 SR 专属引用。
-- **2026-08-04**:按 `od-dev-writing-skills` 4 条硬规范重构(从单 `design.md` 迁移到 `design/`:design + ADR 分开;SKILL.md 抽象化,具体 app / 场景例子迁入 ADR Context);迁公共仓(泛化 MCP 命名空间 / 路径 / sibling 引用;SR 操作事实移出 SKILL.md)。
-- **2026-08-04**:补 ADR-0009(探索未知画面:open prompt + 三工具交叉 + 穷尽自查,防 视觉大模型 以偏概全;补 ADR-0004 对称面)。
-- **2026-08-05**:补 ADR-0010(`description` 补被动触发「调试撞陌生画面」+ 正文加「建档 vs 快修」硬判据;补 ADR-0001 触发面的被动对称面)。RCA 来自 SR 货币战争 encounter 分发卡死时猜修不建档的反馈。
 - **GREEN 状态:draft**(待 utility test:干净上下文子 agent 拿一张新截图按本 skill 建档,观察 gap 再修)。按 od-dev-writing-skills「两类 skill」,本 skill 是**方法论覆盖型**(整合画面建档方法论),RED 可省、GREEN 必做(方法见 `od-dev-writing-skills/references/skill-testing.md`)。
 
 ## 已知 todo(非架构决策,不配 ADR)
@@ -47,4 +41,4 @@
 - screen_info 缺口的常见模式。
 
 ## 自身一致性
-遵守 od-dev-writing-skills 4 条硬规范:有 `design/`(design 与 ADR 分开);SKILL.md 指令式 + 判据;自包含(不引 memory / gitignored 依赖,自带 `convert_to_webp.py`);写方法论不写具体游戏事实(具体 app / 场景例子进 ADR Context;SR 操作事实归消费方项目 doc)。
+遵守 od-dev-writing-skills 4 条硬规范:有 `design/`(design 与 ADR 分开);SKILL.md 指令式 + 判据;自包含(不引 memory / gitignored 依赖,自带 `convert_to_webp.py`);写方法论不写具体游戏事实(具体 app / 场景例子进 ADR Context;项目特定操作事实归消费方项目 doc)。

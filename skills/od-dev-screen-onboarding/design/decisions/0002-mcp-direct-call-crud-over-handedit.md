@@ -4,7 +4,7 @@
 - **Date**: 2026-08-04(形式化;原始踩坑 2026-07 初)
 
 ## Context
-两个早期踩坑(SR 侧):
+两个早期踩坑:
 1. 早期写过 `streamablehttp` 客户端脚本调 MCP server —— 其实项目的 MCP 工具(`analyze_screen` 等,命名空间前缀 per-project)一开始就在工具列表里,写 HTTP 客户端是绕路。
 2. 改名模板时手编了 `enter_game.yml` + 重命名模板目录,漏了 `_od_merged.yml` 合并缓存 → 后端按旧缓存加载报「未找到模板」。根因:只有 `save_screen` 同步独立 yml + `_od_merged.yml` 合并缓存;手编 yml 不重算合并缓存。
 

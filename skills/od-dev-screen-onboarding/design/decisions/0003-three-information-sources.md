@@ -4,9 +4,9 @@
 - **Date**: 2026-08-04(形式化;原始踩坑 2026-07-11 起)
 
 ## Context
-两个观察(SR 侧):
-1. onboard「大世界」时 doc 漏写左上角「按钮-菜单」(汉堡 ≡)—— `normal_world_basic.yml` 的 `area_list` 本有此 area,但它是纯坐标(无 text / template)不参与 analyze 匹配,**只看截图就漏了**;同期 onboard「邮件」靠读 `email.yml` 的 `area_list` + email app 的 `@operation_node` 链快速理清跳转。
-2. 代码层 caveat:onboard 随便观「德丰大押」发现画面只剩「德丰珍宝」单一商店,无「百通宝 / 云纹徽」tab —— 但 `SuibianTemplePawnshop` op 的 `goto_omnicoin` / `goto_crest` 还在点这俩 tab(死代码)。搜官方更新说明:**2.5 版本移除这俩 tab**。app 层 `handle_pawnshop` 占位直返「未开启」短路(config 默认开但不调 op,故无运行错误)。
+两个观察:
+1. onboard 某基础画面(大世界类)时 doc 漏写左上角菜单按钮 —— 该画面的 screen_info yml 的 `area_list` 本有此 area,但它是纯坐标(无 text / template)不参与 analyze 匹配,**只看截图就漏了**;同期 onboard 另一画面(邮件类)靠读其 screen_info yml 的 `area_list` + app 的 `@operation_node` 链快速理清跳转。
+2. 代码层 caveat:onboard 某多 tab 商店画面发现只剩单一 tab,原本的另两个 tab 没了 —— 但对应 op 代码还在点这俩 tab(死代码)。搜官方更新说明:**后续版本移除了这俩 tab**。app 层有占位短路直返「未开启」(config 默认开但不调 op,故无运行错误)。
 
 ## Decision Drivers
 - **不漏元素**:截图只覆盖「当前帧看得到」的;screen_info 才是该画面全部已建模元素全集(含当前帧未显示的子态 area);代码补画面跳转 / 状态流转。
@@ -25,7 +25,7 @@
 
 **对齐判据**:doc 的「可交互元素」「状态流转」要与 screen_info `area_list` + 代码**逐条对齐** —— screen_info 有、doc 无 = 建档漏,补上。截图没显示的子态 area,先按 screen_info + 代码记入流转、标「待现场快照」。
 
-**版本迁移核对(代码层 caveat,老 app / 大版本更新后必查)**:游戏版本更新会改画面 / UI / 流程。判据:**建档前核对 op 代码假设的画面元素(tab / 按钮 / 流程)在当前游戏版本还在吗** —— 不假设「代码 = 当前游戏」。发现不符:① doc 记版本差异 + 标「代码与当前版本不符」;② 搜官方更新说明确认改动版本;③ app 层若有占位短路(如 `handle_xxx` 直返「未开启」)说明已知情,标「待重写」。教训:德丰大押 op 基于 2.4、2.5 tab 移除,靠用户观察 + 搜官方说明才发现 —— 代码默认有效是建档盲区。
+**版本迁移核对(代码层 caveat,老 app / 大版本更新后必查)**:游戏版本更新会改画面 / UI / 流程。判据:**建档前核对 op 代码假设的画面元素(tab / 按钮 / 流程)在当前游戏版本还在吗** —— 不假设「代码 = 当前游戏」。发现不符:① doc 记版本差异 + 标「代码与当前版本不符」;② 搜官方更新说明确认改动版本;③ app 层若有占位短路(如 `handle_xxx` 直返「未开启」)说明已知情,标「待重写」。教训:上面那个商店 op 基于旧版本 tab(后续版本移除),靠用户观察 + 搜官方说明才发现 —— 代码默认有效是建档盲区。
 
 ## Consequences
 - **正向**:不漏元素;doc 与 screen_info / 代码对齐;版本漂移能被发现。

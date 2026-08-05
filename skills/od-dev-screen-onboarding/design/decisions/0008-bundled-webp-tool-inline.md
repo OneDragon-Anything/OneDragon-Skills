@@ -4,11 +4,11 @@
 - **Date**: 2026-08-04(形式化;原始决策 2026-07)
 
 ## Context
-归档代表截图要转 webp q90(整屏 OCR / 模板匹配实测识别无损效;省空间)。两个踩坑(SR 侧):
-1. 早期 SKILL.md 写「(转换)见 design.md」放转换说明 —— review #2300 时 AI 见「见 design.md」**没去读**,手写了重复转换脚本(还漏 Windows 中文路径坑:`cv2.imwrite` 在 Windows 中文路径会挂,需 `cv2.imencode` + `ndarray.tofile`)。
+归档代表截图要转 webp q90(整屏 OCR / 模板匹配实测识别无损效;省空间)。两个踩坑:
+1. 早期 SKILL.md 写「(转换)见 design.md」放转换说明 —— 某次 review 时 AI 见「见 design.md」**没去读**,手写了重复转换脚本(还漏 Windows 中文路径坑:`cv2.imwrite` 在 Windows 中文路径会挂,需 `cv2.imencode` + `ndarray.tofile`)。
 2. webp 归档版**不能当模板裁剪源**(lossy → 小区域裁剪放大 artifacts → conf 降),需保留原 PNG 作模板裁剪源。
 
-另:归档 webp 兼作 mock 测试 fixture —— 测试靠归档图做 mock 输入。踩坑:SR trigrams_collection 测试照搬 scratch_card 的 `assert result.is_success` 失败 —— `get_trigram` 主界面态返 `round_wait(status='卦象集录')`(点 area 后等下一轮,`is_success=False`),而 scratch node 返 `round_success`(`is_success=True`)。诊断证实 OCR 全链路正常(webp q90 离线 OCR 完美识别),失败纯因 `is_success` 判 `round_wait`。
+另:归档 webp 兼作 mock 测试 fixture —— 测试靠归档图做 mock 输入。踩坑:某玩法的测试照搬另一玩法的 `assert result.is_success` 失败 —— 前者主界面态返 `round_wait(status='某匹配词')`(点 area 后等下一轮,`is_success=False`),而后者返 `round_success`(`is_success=True`)。诊断证实 OCR 全链路正常(webp q90 离线 OCR 完美识别),失败纯因 `is_success` 判 `round_wait`。
 
 ## Decision Drivers
 - **不漏读造轮子**:把工具命令内联 SKILL.md,避免 AI 见「见 design.md」跳过、手写重复脚本。
@@ -16,7 +16,7 @@
 - **双用途**:归档 webp 兼作文档溯源 + mock 测试 fixture。
 
 ## Considered Options
-1. **转换说明放 design.md,SKILL.md 写「见 design.md」**:AI 漏读造轮子(#2300 实证)。
+1. **转换说明放 design.md,SKILL.md 写「见 design.md」**:AI 漏读造轮子(实测)。
 2. **工具进 skill 目录 + 命令内联 SKILL.md**(选中):自包含 + 防漏读。
 3. **依赖外部 / 框架转换工具**:不确定目标环境有没有,不自包含。
 

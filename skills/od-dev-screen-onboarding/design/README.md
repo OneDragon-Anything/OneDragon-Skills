@@ -14,6 +14,4 @@
   - [0007 建档文档只写画面事实,过程产物不进描述章节](decisions/0007-doc-stable-facts-only.md)
   - [0008 自包含:webp 转换工具内联进 SKILL.md](decisions/0008-bundled-webp-tool-inline.md)
 
-> ADR 中的 SR 例子(随便观 / scratch_card / 德丰大押 / 邮件等)是本方法论从 SR 实战沉淀时的决策论据(规范 4 允许 design 有例子);ZZZ 等其它消费方按本项目实际情况类比。
-
 本 skill 遵守 `od-dev-writing-skills` 4 条硬规范(目录结构 / 指令式 / 自包含 / 方法论不写具体例子)。
