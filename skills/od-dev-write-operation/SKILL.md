@@ -43,6 +43,24 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 `status` 字符串给 `@node_from(status=...)` 精确路由(多出口节点按状态分流)。完整路由规则 / 自环陷阱 / `previous_node` / `handle_init` 见 `references/node-graph.md`。
 
+## 循环驱动玩法:flat loop vs node-per-op(结构判据)
+
+写「**外层 loop 不断跑、每轮重新发现状态再推进**」的玩法(自走棋对局 / 肉鸽一层 / 多阶段流程)时,**先选结构** —— 选错会结构性卡死:
+
+| 结构 | 适用(判据) |
+|---|---|
+| **flat loop**(每轮:截屏→分类"在哪种状态"→一条优先级阶梯选 handler→`round_wait` 重跑) | **纯帧级、无逻辑单元生命周期**的反应式推进(点空白加速战斗 / 结算翻页) |
+| **node-per-op**(一个 op 拥有一个**逻辑单元的完整生命周期**;外层只分类 + 委派) | 流程有**逻辑单元生命周期**(开始→处理→结束)+ 单元内**多阶段** + 需要**单元作用域卡死判据**。满足任一即拆 |
+
+**node-per-op 三件套(缺一退化成 flat loop 的卡死)**:
+1. **两条正交问题分开**:外层只回答"我在哪种逻辑单元"(小集合分类,委派);node op 只回答"这单元的哪一步"(单元内多阶段)。塞进同一条优先级阶梯 = 优先级脆弱 / LCS 误匹配噪音的根因。
+2. **committed-but-verifying**:node op **拥有**单元生命周期(刻意驱动已知阶段),但**每步重核"还在本单元?"**,被意外弹出(进下一单元 / 意外 overlay)→ bail 回外层。**不是盲目顺序执行**(丢自愈),是"拥有 + 持续核对"。
+3. **节点作用域预算 + 完成检测**:node op 有**自己的 retry 预算 + 完成检测**;N 次没完成 = 判定卡死 → **bail / 降级**(退而求其次 / 跳过),不是无限 retry 烧全局预算。预算按单元算。
+
+> ⚠️ **反模式(必踩)**:node op 某步完成不了(如 2 步单元只做了第 1 步)却 `round_success` 返回 → 外层 `round_wait` **不计 retry** → retry 永 0 → 转到 MAX_ITER(可能数小时)才超时。完成检测不通过用 `round_retry`(计节点预算)→ 超预算 bail。
+
+**地基:边界检测先于结构** —— 建 node-per-op 前,**先实地确认"单元开始/结束"有可锁信号**(OCR / 模板);边界不稳先补画面建档(`od-dev-screen-onboarding`)再建结构。完整方法论(flat loop 卡死分析 / committed-but-verifying 伪码 / round 结果映射单元生命周期 / 迁移策略)见 `references/loop-driven-op-structure.md`。
+
 ## 画面判定与点击:`round_by_*` 选型
 
 | 场景 | 用 |
@@ -91,3 +109,4 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 - [ ] 关键 click 加了 bug#1 缓解(`mouse_move` + `click`)?
 - [ ] 决策点有日志 + 存图,卡了能复盘(信息密度)?
 - [ ] 单 op `run_operation` 实测通过再接入?
+- [ ] 循环驱动玩法选了正确结构(flat loop / node-per-op)?node op 有完成检测 + 节点预算,不会"完成不了也 `round_success`"假完成?
