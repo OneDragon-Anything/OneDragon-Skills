@@ -1,11 +1,23 @@
 ---
 name: od-dev-screen-onboarding
-description: 当拿到一张待建档的游戏截图时用(画面建档 / screen_info area 维护 / 图标按钮模板建模;用 analyze_screen + upsert_screen_area)。英文:onboard a game screen, build screen_info areas, screenshot onboarding。
+description: 当拿到一张待建档的游戏截图时用,或调试 / 排查 op 卡在你不完全认识的画面 / 子屏 / 交互上时用(先建档搞清画面再继续改,别猜 escape / 套兜底)。画面建档 / screen_info area 维护 / 图标按钮模板建模;用 analyze_screen + upsert_screen_area。英文:onboard a game screen / build screen_info areas; also when debugging an op blocked on an unfamiliar screen — onboard before patching。
 ---
 
 # 画面建档(analyze → 建档 → 建模)
 
 拿到截图后按「客观识别 → 主观理解 → 建档 → 缺口分析 → 主动建模」推进,每步给判据。**先判建档规模**(单画面 vs 重 app,见下方「建档规模」节)。
+
+## 何时该建档(主动 + 被动两种触发)
+
+不只「主动拿来一张截图要建档」才用本 skill。**两种触发**:
+
+1. **主动**:拿到待建档的游戏截图(建新画面 / 维护 screen_info)。
+2. **被动(调试中,别漏)**:调试 / 修 / 排查 op 时,op 卡在一个你**不完全认识其交互**的画面 / 子屏 / 交互上(卡死 / 报错画面不符 / 找不到 op 假设该有的按钮)。这时**先建档搞清画面,再继续改 op**。
+
+**建档 vs 快修 判据(硬规则)**:你能说出**当前画面全部可交互元素 + 各自点后跳哪**吗?
+
+- **能**(`screen_info` 的 `area_list` 已覆盖 + op 代码流转已读清)→ 画面认知完整,继续 debug / 改 op。
+- **不能 / 只能猜**(有元素没建模、点后跳哪未知)→ **先建档**:走下方 §1-§6(`analyze_screen` + 视觉大模型 open 探索 + click 逐元素验证),别在不完整的画面认知上猜 escape 机制 / 套兜底结构 / 改 op。
 
 ## 守则(每步都守)
 - **MCP 工具直调 + area 走 CRUD > 手编 yml**:用 `analyze_screen` / `upsert_screen_area` / `delete_screen_area`(项目 MCP 后端暴露的工具,命名空间前缀 per-project),别写 HTTP 客户端脚本;area 改动经 `save_screen` 同步合并缓存,**禁止手编 screen_info yml 或手改模板目录**(手编不重算 `_od_merged.yml`,后端按旧缓存加载 → 找不到模板 / area)。

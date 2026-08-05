@@ -27,6 +27,7 @@
 7. **建档文档 = 稳定的画面参考(事实)**:描述类章节只写画面本身的事实;测试结果 / bug 修复历史 / 开放问题不混入描述章节(归测试仓 / commit-PR / 备注节)。见 [ADR-0007](decisions/0007-doc-stable-facts-only.md)。
 8. **自包含 webp 工具**:`convert_to_webp.py` 自带在 skill 目录,命令内联 SKILL.md;归档 webp 兼作 mock 测试 fixture。见 [ADR-0008](decisions/0008-bundled-webp-tool-inline.md)。
 9. **探索未知画面:open prompt + 三工具交叉 + 穷尽自查**:画面未知时 VLM 单看会以偏概全(显著性漏看非显眼区域 / 非文本状态 + leading prompt 压制输出);先 open 枚举再 narrow,视觉大模型 / OCR / click 交叉(冲突即信号),穷尽自查后才问用户。补 ADR-0004 的对称面(ADR-0004 讲「OCR 看不见的要 视觉大模型 补」,本条讲「视觉大模型 也会漏看,要 OCR + click 补」)。见 [ADR-0009](decisions/0009-open-prompt-cross-tool-exhaustive.md)。
+10. **何时该建档:主动 + 被动两种触发 + 建档/快修硬判据**:`description` 不只「主动拿来截图建档」一个触发面,「调试 / 排查 op 卡在不完全认识的画面」也是(否则 debug framing 下猜修不触发本 skill)。判据:说不出画面全部可交互元素 + 各自点后跳哪 → 先建档别猜修。补 ADR-0001 的触发面对称面(ADR-0001 锚定主动,本条补被动 + 刹车判据)。见 [ADR-0010](decisions/0010-debug-hit-unfamiliar-screen-onboard-not-patch.md)。
 
 ## 落点
 - 公共仓 `OneDragon-Skills/skills/od-dev-screen-onboarding/`(`SKILL.md` + `design/` + 自带 `convert_to_webp.py`),OneDragon 系列通用(SR / ZZZ 等)。各消费方仓库按其 setup 约定挂载(如 Claude Code junction 进 `.claude/skills/`)。
@@ -36,6 +37,7 @@
 - 初版基于 SR 实战跑通(打开游戏 / 大世界 / 邮件 / 随便观 7 子玩法 / 各类玩法画面),后续随 onboard 更多画面逐步补强;迁公共仓时泛化 SR 专属引用。
 - **2026-08-04**:按 `od-dev-writing-skills` 4 条硬规范重构(从单 `design.md` 迁移到 `design/`:design + ADR 分开;SKILL.md 抽象化,具体 app / 场景例子迁入 ADR Context);迁公共仓(泛化 MCP 命名空间 / 路径 / sibling 引用;SR 操作事实移出 SKILL.md)。
 - **2026-08-04**:补 ADR-0009(探索未知画面:open prompt + 三工具交叉 + 穷尽自查,防 视觉大模型 以偏概全;补 ADR-0004 对称面)。
+- **2026-08-05**:补 ADR-0010(`description` 补被动触发「调试撞陌生画面」+ 正文加「建档 vs 快修」硬判据;补 ADR-0001 触发面的被动对称面)。RCA 来自 SR 货币战争 encounter 分发卡死时猜修不建档的反馈。
 - **GREEN 状态:draft**(待 utility test:干净上下文子 agent 拿一张新截图按本 skill 建档,观察 gap 再修)。按 od-dev-writing-skills「两类 skill」,本 skill 是**方法论覆盖型**(整合画面建档方法论),RED 可省、GREEN 必做(方法见 `od-dev-writing-skills/references/skill-testing.md`)。
 
 ## 已知 todo(非架构决策,不配 ADR)
