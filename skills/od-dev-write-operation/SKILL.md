@@ -63,17 +63,22 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 ## 画面判定与点击:`round_by_*` 选型
 
+**首选判据:要检测/点击的元素在画面上有固定位置吗?**
+- **有固定位置**(每次同屏同坐标,如某按钮 / 标签 / 卡牌区)→ **先建 screen_info area(`pc_rect`),用区域识别**(坐标进 area = 单一真相源 + 不全文扫不误匹配)。这是**默认首选习惯**,不是出问题才用的补救。
+- **位置运行时漂移 / 动态**(随机弹出的提示、文字位置不固定)→ 才用全屏 OCR(`round_by_ocr*`),**且必带 `lcs_percent=0.7~0.9`** + 画面独有的长关键词(误匹配机制见下)。
+
 | 场景 | 用 |
 |---|---|
-| OCR 找文字并点击 | `round_by_ocr_and_click` |
-| OCR 只判定不点 | `round_by_ocr` |
+| 固定位置:判定在不在 | `round_by_find_area` |
+| 固定位置:判定 + 点击 | `round_by_find_and_click_area` |
+| 已知该处可点、不需判定,直接点 | `round_by_click_area` |
+| 漂移/动态文字:只判定 | `round_by_ocr`(`area` 能定就传;必带高 lcs) |
+| 漂移/动态文字:判定 + 点击 | `round_by_ocr_and_click`(`area` 能定就传;必带高 lcs) |
 | 多目标按优先级点一个 | `round_by_ocr_and_click_by_priority` |
-| screen_info area 找图/字并点 | `round_by_find_and_click_area` |
-| 固定区域只判定 | `round_by_find_area` |
-| 直接点固定坐标区域 | `round_by_click_area`(不判定) |
 | 导航到某画面 | `round_by_goto_screen`(按 screen_info route) |
 
-> ⚠️ **OCR 关键词必须画面独有**。框架 `round_by_ocr*` 默认 `lcs_percent=0.5`(子序列匹配),关键词与同屏/邻屏文字**共享 2+ 字子串即误匹配** → 该节点不触发或走到错误画面。止血:传 `lcs_percent=0.7~0.9` 或用更长独有关键词;根治:用**固定位置识别**(screen_info area 圈定关键词所在位置,不全文扫)。逐 helper 全参数 + LCS 机制见 `references/round-by-helpers.md`。
+> ⚠️ **全屏 OCR(`round_by_ocr*` 不传 `area`)是误匹配高发区,仅作 fallback**。框架默认 `lcs_percent=0.5`(子序列匹配):关键词与同屏/邻屏文字**共享 2+ 字子串即 ≥ 0.5 误匹配** → 节点不触发或走到错误画面。固定位置元素别用全屏 OCR(先建 area 走区域识别);确需全屏 OCR 时必带 `lcs_percent=0.7~0.9` + 独有长关键词。逐 helper 全参数 + LCS 机制见 `references/round-by-helpers.md`。
+- **别在 op 代码里硬编码 `Point(x,y)` / `Rect(...)` 做检测/点击**:坐标进 screen_info area(`pc_rect`),与「坐标进 screen_info」规范一致 —— 检测的文字 + 点击目标分离时(检测用 OCR、点的是另一处),点击坐标同样进 area。
 
 ## op 内工具
 
@@ -103,9 +108,9 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 ## 写完自检
 
-- [ ] 碰到的屏都建了档(screen_info area / 模板),不是凭猜坐标/关键词?
+- [ ] 碰到的屏都建了档(screen_info area / 模板),检测/点击坐标进 area、不是凭猜 / 硬编码 `Point(x,y)`?
 - [ ] op 拆得够小(单一职责),能 `run_operation` 单跑定位?
-- [ ] OCR 关键词画面独有(查了 LCS 共享子串)?
+- [ ] 固定位置元素用区域识别(`round_by_find*_area`),不默认全屏 OCR;确需全屏 OCR 时带高 lcs + 独有关键词(查了 LCS 共享子串)?
 - [ ] 关键 click 加了 bug#1 缓解(`mouse_move` + `click`)?
 - [ ] 决策点有日志 + 存图,卡了能复盘(信息密度)?
 - [ ] 单 op `run_operation` 实测通过再接入?
