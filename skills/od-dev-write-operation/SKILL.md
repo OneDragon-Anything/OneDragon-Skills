@@ -104,7 +104,7 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 ## 边界(这些去别的 skill)
 
 - 从零做新玩法全程 → `od-dev-gameplay-automation`
-- app 产品化(factory / config / GUI / run-record / app 编排)→ application skill(项目内,待建)
+- app 产品化(factory / config / GUI / run-record / app 编排)→ `od-dev-write-application`
 - 建一张屏的机制 → `od-dev-screen-onboarding`
 - 通用 bug 定位 / 修复流程 → `superpowers:systematic-debugging` / deciding-a-fix skill(项目内)
 

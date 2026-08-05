@@ -62,4 +62,4 @@
 ## Links
 
 - 相关 design 章节:`../overview.md`(范围 IN/OUT、构成、phasing)
-- 相关 skill:`od-dev-gameplay-automation`(已瘦身)、application skill(项目内待建)、`od-dev-screen-onboarding`(建档前置引用)
+- 相关 skill:`od-dev-gameplay-automation`(已瘦身)、`od-dev-write-application`(common;本 ADR 的 app skill「项目内」定位已被其 [ADR-0001](../../od-dev-write-application/design/decisions/0001-common-not-project-internal.md) 推翻)、`od-dev-screen-onboarding`(建档前置引用)

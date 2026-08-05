@@ -16,7 +16,7 @@ OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法�
 按**粒度**把"玩法自动化开发"拆成三层,每层一个自洽完整的 skill(理由见 ADR-0001):
 
 - **op 粒度**(单 Operation)→ 本 skill(`od-dev-write-operation`)。高频:写 / 改 / 修 op。**也是探索式开发 + 框架踩坑的地基**(op 是最具体单元;gameplay-automation 引用本 skill 的 op 级方法论 + framework-pitfalls)。
-- **app 粒度**(整个 Application 产品化:factory / config / GUI / run-record / app 级编排)→ application skill(项目内,待建)。
+- **app 粒度**(整个 Application 产品化:factory / config / GUI / run-record / app 级编排)→ `od-dev-write-application`(common)。
 - **玩法粒度**(从零做新玩法的全程 pipeline)→ `od-dev-gameplay-automation`(已存在;op 级方法论已迁入本 skill,它瘦成纯生命周期 + 引用本 skill)。
 
 判单项归哪层,问:这是「单个 Operation 的写 / 改 / 修」,还是「整个 app 的搭 / 配 / 编排」,还是「从零做新玩法的全程」?
@@ -34,7 +34,7 @@ OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法�
 ## 范围 OUT(指针,不重复)
 
 - 从零做新玩法全程 → `od-dev-gameplay-automation`
-- app 产品化(factory / config / GUI / run-record / app 级编排)→ application skill(项目内,待建;app 节点复用本 skill 的节点图机制,不重复讲)
+- app 产品化(factory / config / GUI / run-record / app 级编排)→ `od-dev-write-application`(common;app 节点复用本 skill 的节点图机制,不重复讲)
 - 建一张屏的机制(analyze → 视觉大模型 → doc → screen_info area → 存模板)→ `od-dev-screen-onboarding`
 - 检测 / 验证 UI 区域坐标(槽位网格 / 图标阵列)→ od-dev-ui-region-detect
 - 通用 bug 定位 / 修复流程 → `superpowers:systematic-debugging` / deciding-a-fix skill(项目内;本 skill 只给 op 领域知识,通用流程走它们)
