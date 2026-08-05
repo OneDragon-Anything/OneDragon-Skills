@@ -1,6 +1,6 @@
 # 运行时工艺(探索式开发的 op 级技术,reference)
 
-> 本 skill(`od-dev-write-operation`)的 situational reference。SKILL.md 给了**探索式主线**(建档-led 增量)+ 必守不变量要点;本文件给 op 级运行时技术的完整展开。`od-dev-gameplay-automation` 的生命周期视角也引用本文件(单源,不重复)。
+> 本 skill(`od-dev-write-operation`)的 situational reference。SKILL.md 给了**探索式主线**(逐画面微循环)+ 必守不变量要点;本文件给 op 级运行时技术(微循环 ③测试 + ④分支补档 的 how)的完整展开。`od-dev-gameplay-automation` 的生命周期视角也引用本文件(单源,不重复)。
 
 ## 信息密度论:一次实跑榨取最多信息(多 log 多截图的根因)
 

@@ -13,7 +13,7 @@
 
 ## Decision Drivers
 
-- **结构性规避 > 依赖审查**:全屏 OCR 误匹配是结构性脆弱(换关键词还会撞别的);区域识别对固定位置元素是结构性规避(不全文扫 = 不误匹配)。让作者默认走结构性稳妥的路,而非依赖每次审查 LCS 共享子串。
+- **结构性规避 > 依赖审查**:全屏 OCR 误匹配是结构性脆弱(换关键词还会撞别的);区域识别对固定位置元素是结构性规避(不全文扫 = 不误匹配)。让作者**压倒性默认**走结构性稳妥的路,而非依赖每次审查 LCS 共享子串。
 - **与「坐标进 screen_info」规范一致**:固定位置 UI 的坐标本就该进 screen_info area(`pc_rect`),区域识别顺势用同一 area,单一真相源。
 - **泛化**:任何固定位置 UI 元素(按钮 / 标签 / 卡牌区)都该优先区域识别 —— 判据是方法论(位置固定 vs 漂移),不绑具体玩法。
 
@@ -26,8 +26,8 @@
 ## Decision
 
 选 **2**。选型判据从「用什么技术(OCR vs area 找图)」改为**「元素在画面上有没有固定位置」**:
-- 有固定位置 → 先建 screen_info area,走区域识别(`round_by_find_area` / `round_by_find_and_click_area` / `round_by_click_area`)—— 默认首选习惯。
-- 位置漂移 / 动态 → 才用全屏 OCR(`round_by_ocr*`),必带 `lcs_percent=0.7~0.9` + 独有长关键词。
+- 有固定位置 → 建 screen_info area,走区域识别(`round_by_find_area` / `round_by_find_and_click_area` / `round_by_click_area`)—— **压倒性默认(几乎总是)**。
+- 全屏 OCR(`round_by_ocr*`)= **rare last-resort**(非常规 fallback),仅当位置真运行时漂移且区域定不准;必带 `lcs_percent=0.7~0.9` + 独有长关键词。**对固定位置元素用全屏 = 偷懒**(LCS 0.5 子序列匹配会误匹配)。
 
 SKILL.md 选型表按位置判据重排(固定位置场景置顶),LCS 误匹配说明从「根治补救」改述为「全屏 fallback 的必带防护」;op 代码硬编码 `Point(x,y)` / `Rect(...)` 做检测/点击也归入「坐标进 area」(检测用 OCR、点击另一处时,点击坐标同样进 area)。
 

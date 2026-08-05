@@ -18,7 +18,7 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 | 2 | 找结构同构兄弟 + 读现有代码 | 定下复用/丢弃清单 | `references/build-craft.md` §找兄弟 |
 | 3 | 画面建档(核心环节) | 每画面定识别方式(OCR/CV/YOLO)+ screen_info/模板 | `references/screen-identification.md` |
 | 4 | 设计:范围+前置+op 链+配置 | 定范围/前置 + op 链 + 配置项 | `references/build-craft.md` §设计 |
-| 5 | 实现:先零件后整体 | 每个零件单独 `run_operation` 实测过 | `references/build-craft.md` §实现 |
+| 5 | 实现:流程驱动 + 逐画面微循环 | 每画面 `run_operation` 实测 + 代码测试 + 主要分支覆盖 | `references/build-craft.md` §实现 |
 | 6 | 验证:串成 app 端到端跑 | `run_standalone_app` 跑通 | `references/build-craft.md` §验证 |
 | 7 | 策略设计(若有决策) | 客观指标 + A/B,迭代到目标 | 见下「策略设计」 |
 | 8 | 探索式迭代:实现→测试→发现→补建档+补分支 | loop 覆盖已知全部事件类型;骨架→稳定 | `references/runtime-iteration.md` |
