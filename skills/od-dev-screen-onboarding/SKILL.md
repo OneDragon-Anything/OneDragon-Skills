@@ -155,7 +155,7 @@ description: 当拿到一张待建档的游戏截图时用,或调试 / 排查 op
 文字按钮 OCR 多已覆盖,无需此步。**图形 / 图标按钮**(OCR 看不见)按下面流程。**状态指示图标**(radio 选中/未选中、下拉 ▽/△、勾选框)同属此类 —— OCR 读不准状态,用**每态一个模板**(如 ▽ 收起 / △ 展开)+ 适高阈值(如 0.9)区分状态。
 1. **定位**:圆形 → `cv2.HoughCircles`(扫 param2 / 半径,取稳定命中数);其它形状 → 轮廓 + 圆度 `4πA/P² > 0.7` 或颜色阈值。两法互相印证。
 2. **裁模板**:用项目 `TemplateInfo` 生成(结构对齐既有模板:`raw.png` + `mask.png` + `config.yml`,`template_shape: circle` / `auto_mask: true` / `point_list: [圆心, 边缘点]`)。⚠️ `screen_image` 必须用**原始截图**(PNG / 未压缩),不要用 webp 归档版(lossy → 小区域裁剪放大 artifacts → 模板 conf 降)。
-3. **入 screen_info**:`upsert_screen_area(screen_name, area_name, pc_rect=[x1,y1,x2,y2], template_sub_dir, template_id, ...)`。area_name 用功能名(中文),template_id 用英文 snake_case;`pc_rect` = 模板 bbox **每边 +10px** 再**夹到画面边界**(`max(0,·)` / `min(1920,·)` / `min(1080,·)`,贴边时余量自动收窄;项目编辑器约定「稍微比模板大一点」),防匹配大小/位移偏差;且不重叠邻接按钮。
+3. **入 screen_info**:`upsert_screen_area(screen_name, area_name, pc_rect=[x1,y1,x2,y2], template_sub_dir, template_id, ...)`。area_name 用功能名(中文),template_id 用英文 snake_case。**检测到的图标框,裁模板和写 pc_rect 大小不同**:裁模板(上步)框**紧贴图标**(图标多大裁多大);写 pc_rect 框**比图标大一圈**(紧贴框每边 +10px,夹到画面边界内 `max(0,·)` / `min(1920,·)` / `min(1080,·)`,贴边时余量自动收窄)—— 大一圈给 opencv template match 留余量,图标位置稍偏也能在 pc_rect 范围里找到;pc_rect 别重叠邻接按钮。⚠️ **错的(别犯)**:pc_rect 写成紧框(没加 +10px)→ 匹配范围刚好图标大,图标偏几 px 就匹配不上;模板用大框裁(带 +10px)→ 模板多一圈背景,匹配分降低。
 4. **回验**:再跑 `analyze_screen`,确认新 area 命中、conf 高。
 
 ## 6. 归档代表截图
