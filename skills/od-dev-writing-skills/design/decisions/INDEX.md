@@ -8,3 +8,4 @@
 | [0004](0004-reference-hygiene-invariants.md) | 引用卫生硬门(target 已提交)+ 硬规范作不变量(编辑也守) | accepted | 2026-08-04 |
 | [0005](0005-drop-superpowers-dependency.md) | 去 superpowers:writing-skills 依赖,整合核心写法 | accepted | 2026-08-04 |
 | [0006](0006-skill-testing-methodology.md) | skill 测试方法论(偏离强制 RED,utility test 作方法论型主方法) | accepted | 2026-08-04 |
+| [0007](0007-write-plainly-no-jargon.md) | 写清楚:通俗直白,别用缩写 / 自造黑话(可读性的语言落地) | accepted | 2026-08-06 |
