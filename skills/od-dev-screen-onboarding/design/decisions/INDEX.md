@@ -12,5 +12,6 @@
 | [0008](0008-bundled-webp-tool-inline.md) | 自包含:webp 转换工具内联进 SKILL.md | accepted | 2026-08-04 |
 | [0009](0009-open-prompt-cross-tool-exhaustive.md) | 探索未知画面:open prompt + 三工具交叉 + 穷尽自查(防 视觉大模型 以偏概全) | accepted | 2026-08-04 |
 | [0010](0010-debug-hit-unfamiliar-screen-onboard-not-patch.md) | 调试撞陌生画面 = 建档信号不是快修信号(description 补被动触发 + 建档/快修硬判据) | accepted | 2026-08-05 |
+| [0011](0011-harvest-catalog-reusable-script-position-align.md) | 采图鉴模板库:脚本持久化为可复用工具 + 标签图标按空间位置对齐(非行索引) | accepted | 2026-08-06 |
 
 > 日期为 ADR **形式化日**(按 od-dev-writing-skills 重构 + 迁公共仓时回溯记录);原始决策 / 踩坑发生日见各 ADR 的 Context。
