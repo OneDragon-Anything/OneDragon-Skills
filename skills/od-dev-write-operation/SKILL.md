@@ -50,7 +50,7 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_success` 就交出控制权,若其实没完成(转场 click 没落地),**下个 op 就算有入口验证也只能发现"画面不对",没法替你重做这次转场**(不是它的活、也不知点哪)→ 流程卡错屏。故"验转移 + 没转移就自己 retry 到转移"是 op **不可推卸**的职责。
 
 - **入口(op / 节点开始)**:先识别"在预期屏"再操作。op 被进入时不保证画面就对(上 op 转场没落地 / 意外弹窗 / 错状态调来)→ 起手读屏确认是本 op 该处理的屏(id_mark / 独有关键词),**不在 → round_fail / bail**,别在错屏盲点。例外:首动作用 `round_by_find_and_click_area`(先找 area 再点)= 天然先识别,不重复。
-- **出口(转场点击后)**:确认"状态真转移了"才 `round_success`。转场 click 可能没落地(MCP 异步 / 游戏卡 / 判拖拽)→ click 后用**任一可靠转移信号**验:目标屏 id_mark 命中 / 本屏 id_mark 消失 / **刚点的按钮或元素消失**(overlay 关、面板收起)/ 其他稳定锚变化。**信号没出现 = 没转移 → round_retry / round_wait**(自己 retry 到真转移);出现了 = 真转移 → round_success。子态未必有 id_mark —— 用该次转移能用的任何稳定信号即可(见 od-dev-screen-onboarding §3.5)。
+- **出口(转场点击后)**:确认"状态真转移了"才 `round_success`。转场 click 可能没落地(MCP 异步 / 游戏卡 / 判拖拽)→ click 后用**任一可靠转移信号**验:目标屏 id_mark 命中 / 本屏 id_mark 消失 / **刚点的按钮或元素消失**(覆盖层 关、面板收起)/ 其他稳定锚变化。**信号没出现 = 没转移 → round_retry / round_wait**(自己 retry 到真转移);出现了 = 真转移 → round_success。子态未必有 id_mark —— 用该次转移能用的任何稳定信号即可(见 od-dev-screen-onboarding §3.5)。
 
 **判据:op 进 = 确认在预期屏;op 出 = 确认真转移了。"做了动作" ≠ "达成结果",没达成别 success。**
 
@@ -67,10 +67,10 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 
 **node-per-op 三件套(缺一退化成 flat loop 的卡死)**:
 1. **两条正交问题分开**:外层只回答"我在哪种逻辑单元"(小集合分类,委派);node op 只回答"这单元的哪一步"(单元内多阶段)。塞进同一条优先级阶梯 = 优先级脆弱 / LCS 误匹配噪音的根因。
-2. **committed-but-verifying**:node op **拥有**单元生命周期(刻意驱动已知阶段),但**每步重核"还在本单元?"**,被意外弹出(进下一单元 / 意外 overlay)→ bail 回外层。**不是盲目顺序执行**(丢自愈),是"拥有 + 持续核对"。
+2. **committed-but-verifying**:node op **拥有**单元生命周期(刻意驱动已知阶段),但**每步重核"还在本单元?"**,被意外弹出(进下一单元 / 意外 覆盖层)→ bail 回外层。**不是盲目顺序执行**(丢自愈),是"拥有 + 持续核对"。
 3. **节点作用域预算 + 完成检测**:node op 有**自己的 retry 预算 + 完成检测**;N 次没完成 = 判定卡死 → **bail / 降级**(退而求其次 / 跳过),不是无限 retry 烧全局预算。预算按单元算。
 
-> ⚠️ **反模式(必踩,两层都中)**:「点了就 `round_success` / 让 loop 继续」**不验画面真推进** → 点不中(坐标落候选间隙 / LCS 误匹配 / click 没落地)→ overlay 不关 / 画面没跳 → loop 反复点同一处 → `round_wait` / 外层 loop 重跑**都不计 retry** → 转到 MAX_ITER(可能数小时)才超时。对 **node op**(如多步单元只做了第 1 步却 success)和 **flat loop 的推进型 handler**(关 overlay / 翻页 / 点掉弹窗)都成立。**修法统一(三层完成验证)**:点了之后验画面推进(目标消失 / overlay 关 / 画面跳 / 锚变化);验不到 → `round_retry`(计节点预算)兜底退出,别盲目 `round_wait` 重跑。一句话:**「点了」≠「成了」**(op 边界出口同此理,见上节;flat loop 合理场景内的底线详见 `references/loop-driven-op-structure.md`)。
+> ⚠️ **反模式(必踩,两层都中)**:「点了就 `round_success` / 让 loop 继续」**不验画面真推进** → 点不中(坐标落候选间隙 / LCS 误匹配 / click 没落地)→ 覆盖层 不关 / 画面没跳 → loop 反复点同一处 → `round_wait` / 外层 loop 重跑**都不计 retry** → 转到 MAX_ITER(可能数小时)才超时。对 **node op**(如多步单元只做了第 1 步却 success)和 **flat loop 的推进型 handler**(关 覆盖层 / 翻页 / 点掉弹窗)都成立。**修法统一(三层完成验证)**:点了之后验画面推进(目标消失 / 覆盖层 关 / 画面跳 / 锚变化);验不到 → `round_retry`(计节点预算)兜底退出,别盲目 `round_wait` 重跑。一句话:**「点了」≠「成了」**(op 边界出口同此理,见上节;flat loop 合理场景内的底线详见 `references/loop-driven-op-structure.md`)。
 
 **地基:边界检测先于结构** —— 建 node-per-op 前,**先实地确认"单元开始/结束"有可锁信号**(OCR / 模板);边界不稳先补画面建档(`od-dev-screen-onboarding`)再建结构。完整方法论(flat loop 卡死分析 / committed-but-verifying 伪码 / round 结果映射单元生命周期 / 迁移策略)见 `references/loop-driven-op-structure.md`。
 

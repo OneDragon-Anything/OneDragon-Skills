@@ -26,7 +26,7 @@
 
 ## 约定配合(避免假红)
 
-- **遮挡 id_mark 的子态 → 独立 screen_info**(见 SKILL.md §3.5):有自己 id_mark 的进测试;纯 overlay 无 id_mark 的自动 skip。
+- **遮挡 id_mark 的子态 → 独立 screen_info**(见 SKILL.md §3.5):有自己 id_mark 的进测试;纯覆盖层无 id_mark 的自动 skip。
 - **无 screen_info 的 fixture → skip**:孤儿,该建 screen_info(SKILL.md §3.5 SCREEN 层全建)。
 
 ## 何时跑
