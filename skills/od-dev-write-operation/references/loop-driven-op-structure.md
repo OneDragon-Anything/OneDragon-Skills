@@ -25,6 +25,14 @@ flat loop 把两件事塞进同一条优先级阶梯,是所有优先级脆弱 / 
 
 → 流程有逻辑单元生命周期 + 多阶段时,用 node-per-op 把"卡死"变成**单元作用域可判定的**(N 次没完成 = bail)。
 
+### flat loop 合理适用场景内也要守:推进型 handler 完成验证(底线,[ADR-0009](../design/decisions/0009-flat-loop-handler-completion-check.md))
+
+上面讲的是"**有逻辑单元时** flat loop 扛不住,该迁 node-per-op"。但 flat loop 的**合理适用场景**(纯帧级反应式:点空白加速战斗 / 结算翻页 / 点掉弹窗 / 等待型)里,只要 handler 是**推进型**(点一下让画面往前走),仍有同一坑的**另一面**:**点不中(坐标落候选间隙 / LCS 误匹配 / click 没落地)→ overlay 不关 / 没翻页 → loop 下一轮还在本屏 → 又点 → 又没中 → `round_wait` 不计 retry → 无限到 MAX_ITER**。这是 `round_wait` 不计 retry 这一机制的另一种触发(上节是"有单元 handler 完不成",本节是"无单元 handler 点不中")。
+
+**修法**(与 op 边界出口验证 / node op 完成检测同构,三层完成验证的最后一块):**推进型 handler 点了之后必须验画面推进**(目标按钮消失 / overlay 关 / 画面跳 / 锚变化 —— 任一可靠信号,见 `od-dev-screen-onboarding` §3.5);验不到 → `round_retry`(计当前 flat 节点的 `node_max_retry_times`)兜底退出,**别盲目 `round_wait` 重跑**(不计数 → 点不中时无限)。
+
+一句话:**「点了」≠「成了」**。无论点不中的根因是啥(坐标 / LCS / click 异步,见各节),完成验证 + `round_retry` 都是兜底。flat loop 给不了**单元作用域**预算,但推进型 handler 仍能用**当前节点**的 round_retry 预算兜底(N 次没推进 = 判卡死 FAIL,不无限烧全局 MAX_ITER)。这与"有单元生命周期该迁 node-per-op"(上节)**不矛盾** —— flat loop 合理场景内,handler 也要守这条底线;有单元生命周期 + 多阶段时仍该迁 node-per-op。
+
 ## node-per-op 三件套(缺一退化成 flat loop 的卡死)
 
 ### 1. 两条正交问题分开

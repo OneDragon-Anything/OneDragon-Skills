@@ -70,7 +70,7 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 2. **committed-but-verifying**:node op **拥有**单元生命周期(刻意驱动已知阶段),但**每步重核"还在本单元?"**,被意外弹出(进下一单元 / 意外 overlay)→ bail 回外层。**不是盲目顺序执行**(丢自愈),是"拥有 + 持续核对"。
 3. **节点作用域预算 + 完成检测**:node op 有**自己的 retry 预算 + 完成检测**;N 次没完成 = 判定卡死 → **bail / 降级**(退而求其次 / 跳过),不是无限 retry 烧全局预算。预算按单元算。
 
-> ⚠️ **反模式(必踩)**:node op 某步完成不了(如 2 步单元只做了第 1 步)却 `round_success` 返回 → 外层 `round_wait` **不计 retry** → retry 永 0 → 转到 MAX_ITER(可能数小时)才超时。完成检测不通过用 `round_retry`(计节点预算)→ 超预算 bail。
+> ⚠️ **反模式(必踩,两层都中)**:「点了就 `round_success` / 让 loop 继续」**不验画面真推进** → 点不中(坐标落候选间隙 / LCS 误匹配 / click 没落地)→ overlay 不关 / 画面没跳 → loop 反复点同一处 → `round_wait` / 外层 loop 重跑**都不计 retry** → 转到 MAX_ITER(可能数小时)才超时。对 **node op**(如多步单元只做了第 1 步却 success)和 **flat loop 的推进型 handler**(关 overlay / 翻页 / 点掉弹窗)都成立。**修法统一(三层完成验证)**:点了之后验画面推进(目标消失 / overlay 关 / 画面跳 / 锚变化);验不到 → `round_retry`(计节点预算)兜底退出,别盲目 `round_wait` 重跑。一句话:**「点了」≠「成了」**(op 边界出口同此理,见上节;flat loop 合理场景内的底线详见 `references/loop-driven-op-structure.md`)。
 
 **地基:边界检测先于结构** —— 建 node-per-op 前,**先实地确认"单元开始/结束"有可锁信号**(OCR / 模板);边界不稳先补画面建档(`od-dev-screen-onboarding`)再建结构。完整方法论(flat loop 卡死分析 / committed-but-verifying 伪码 / round 结果映射单元生命周期 / 迁移策略)见 `references/loop-driven-op-structure.md`。
 
@@ -133,4 +133,4 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 - [ ] 用 `round_by_ocr*` 全屏前自查过:**这关键词在别的屏 / 同屏别处也会出现吗(子序列 / 全等)**?是 → 用 area 位置区分(`lcs` 收紧救不了全等 / 高重叠子序列,见上)?
 - [ ] 决策点有日志 + 存图,卡了能复盘(信息密度)?
 - [ ] 单 op `run_operation` 实测通过再接入?
-- [ ] 循环驱动玩法选了正确结构(flat loop / node-per-op)?node op 有完成检测 + 节点预算,不会"完成不了也 `round_success`"假完成?
+- [ ] 循环驱动玩法选了正确结构(flat loop / node-per-op)?node op 有完成检测 + 节点预算,不会"完成不了也 `round_success`"假完成;flat loop 推进型 handler 也点了验推进、没推进 `round_retry` 兜底(三层都守「点了≠成了」)?
