@@ -47,10 +47,10 @@ SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文
 - 不得不具体的,**仅限纯语法/字段名**(如 frontmatter 的 `name`+`description`、命令必填参数),给最小可用形式;「为什么选 A」「项目里遇过 X」这类划到 design/ 的 ADR。
 
 ## 创建/修改流程
-1. **定位**:这个 skill 管什么、不管什么。和已有 skill(`superpowers:*`、所在仓库已有的 skill)重叠的,**引用而非重复**。
+1. **定位 + 复查过往 ADR**:这个 skill 管什么、不管什么。和已有 skill(`superpowers:*`、所在仓库已有的 skill)重叠的,**引用而非重复**。**编辑 / 加 ADR 前,先读本 skill 的 `design/decisions/`(INDEX + 相关 ADR)**:① 下一个 ADR 编号(照 INDEX 接着排,防撞号);② 有无相关决策已覆盖(别重复决策 / 别改出和已有决策矛盾的);③ 有无相关被否备选(别重新提已否方案)。不复查就动手 = 撞号 / 重复 / 矛盾 / 重提已否。
 2. **写 SKILL.md**:frontmatter(name + description,description 只写触发)+ 指令式正文(方法论)。
 3. **写 design/**:`overview.md`(定位 / 边界 / 构成)+ `decisions/` ADR(架构决策,按 `references/design-docs.md` 格式与门槛)。
-4. **自检 4 条硬规范**(逐条对照 —— **新建和编辑都要做**)+ 通读正文确认每条指令可执行。**编辑时额外查:新增的引用是否过规范 3 的门(已提交 + 不引 memory / gitignored + 稳定 / 可校验)**。
+4. **自检 4 条硬规范**(逐条对照 —— **新建和编辑都要做**)+ 通读正文确认每条指令可执行。**编辑时额外查**:① 新增的引用是否过规范 3 的门(已提交 + 不引 memory / gitignored + 稳定 / 可校验);② **改 / 加 ADR 前复查过本 skill 过往 ADR 了吗**(编号没撞 / 没重复已有决策 / 没改出矛盾 / 没重提已否备选)。
 5. **挂载到 AI 工具读 skill 的目录**(如 Claude Code 的 `.claude/skills/`),验证 skill 可被触发。
 6. 提交(见所在仓库提交流程)。
 
