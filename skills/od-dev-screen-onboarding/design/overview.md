@@ -26,6 +26,7 @@
 8. **自包含 webp 工具**:`convert_to_webp.py` 自带在 skill 目录,命令内联 SKILL.md;归档 webp 兼作 mock 测试 fixture。见 [ADR-0008](decisions/0008-bundled-webp-tool-inline.md)。
 9. **探索未知画面:open prompt + 三工具交叉 + 穷尽自查**:画面未知时 VLM 单看会以偏概全(显著性漏看非显眼区域 / 非文本状态 + leading prompt 压制输出);先 open 枚举再 narrow,视觉大模型 / OCR / click 交叉(冲突即信号),穷尽自查后才问用户。补 ADR-0004 的对称面(ADR-0004 讲「OCR 看不见的要 视觉大模型 补」,本条讲「视觉大模型 也会漏看,要 OCR + click 补」)。见 [ADR-0009](decisions/0009-open-prompt-cross-tool-exhaustive.md)。
 10. **何时该建档:主动 + 被动两种触发 + 建档/快修硬判据**:`description` 不只「主动拿来截图建档」一个触发面,「调试 / 排查 op 卡在不完全认识的画面」也是(否则 debug framing 下猜修不触发本 skill)。判据:说不出画面全部可交互元素 + 各自点后跳哪 → 先建档别猜修。补 ADR-0001 的触发面对称面(ADR-0001 锚定主动,本条补被动 + 刹车判据)。见 [ADR-0010](decisions/0010-debug-hit-unfamiliar-screen-onboard-not-patch.md)。
+11. **卡住画面协议:判据触发后的强制可执行探索 + 禁干卡**:ADR-0010 只给触发判据没给执行步骤 —— 状态不清的动态画面(overlay / 不知怎么进来的子屏)要**主动交互把行为 map 出来**,不能干卡。判据触发 → 5 步强制 checklist(回溯怎么进 → 系统找出口 → 穷举可交互元素逐个交互观察 → 交互前后状态读取对比 → 收尾判据)+「禁干卡」禁令(form-to-failure:明知故犯用禁令 + checklist,非软建议)。补 ADR-0010 的执行体 / 可操作化;画面行为探索 single source 在本 skill(`od-dev-write-operation` runtime-craft 加引用对齐)。见 [ADR-0012](decisions/0012-stuck-screen-forced-exploration-protocol.md)。
 
 ## 落点
 - 公共仓 `OneDragon-Skills/skills/od-dev-screen-onboarding/`(`SKILL.md` + `design/` + 自带 `convert_to_webp.py`),OneDragon 系列通用(SR / ZZZ 等)。各消费方仓库按其 setup 约定挂载(如 Claude Code junction 进 `.claude/skills/`)。

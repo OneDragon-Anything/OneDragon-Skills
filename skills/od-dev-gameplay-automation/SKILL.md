@@ -47,6 +47,10 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 
 **调试纪律**:bot 卡死/失败时**先读日志再动手**,别凭猜改或盲点坐标 —— 日志常直接暴露根因(OCR 没读到锚点/节点循环/命中错屏)。op 级调试 / 信息密度(多 log 多截图)/ 预料外画面调研 / 运行时不确定性 / 重复建op 的完整方法论见 `od-dev-write-operation`(探索式主线 + `references/runtime-craft.md`,op 级运行时技术 single source)。
 
+**区分两种"卡住"(路由不同,别混)**:
+- **op 执行失败 / 报错**(技术故障:OCR 没读到 / 节点循环 / 命中错屏)→ 先读日志,见 `od-dev-write-operation` 调试纪律。
+- **卡在状态不清 / 未建档画面,自己不知怎么出去 / 推进**(认知卡住:overlay / 弹窗 / 不知怎么进来的子屏)→ 别干卡或盲点,触发 **`od-dev-screen-onboarding` 的「卡住画面协议」**(回溯怎么进 → 系统找出口 → 穷举交互观察 + 交互前后状态对比,禁干卡)。这是画面认知缺口,读日志解决不了,得建档补。
+
 **框架级踩坑**(click 与鼠标移动无间隔被判拖拽、MCP 异步、ONNX 异步、配置生效、录屏、GBK 日志等)见 `od-dev-write-operation/references/framework-pitfalls.md`(single source)—— 遇 op 点不中/行为怪先查那里。
 
 ## 协作 skill(深度细则 defer,不重复)

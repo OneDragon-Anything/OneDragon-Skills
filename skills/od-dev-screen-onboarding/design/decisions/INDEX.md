@@ -13,5 +13,7 @@
 | [0009](0009-open-prompt-cross-tool-exhaustive.md) | 探索未知画面:open prompt + 三工具交叉 + 穷尽自查(防 视觉大模型 以偏概全) | accepted | 2026-08-04 |
 | [0010](0010-debug-hit-unfamiliar-screen-onboard-not-patch.md) | 调试撞陌生画面 = 建档信号不是快修信号(description 补被动触发 + 建档/快修硬判据) | accepted | 2026-08-05 |
 | [0011](0011-harvest-catalog-reusable-script-position-align.md) | 采图鉴模板库:脚本持久化为可复用工具 + 标签图标按空间位置对齐(非行索引) | accepted | 2026-08-06 |
+| [0012](0012-stuck-screen-forced-exploration-protocol.md) | 卡住画面协议:判据触发后的强制可执行探索 + 禁干卡(补 ADR-0010 执行体) | accepted | 2026-08-06 |
+| [0013](0013-exhaustive-interaction-survey-irreversible-exit-last.md) | 认知层穷尽探查画面所有可交互元素 + 探查顺序(不可逆出口最后) | accepted | 2026-08-07 |
 
 > 日期为 ADR **形式化日**(按 od-dev-writing-skills 重构 + 迁公共仓时回溯记录);原始决策 / 踩坑发生日见各 ADR 的 Context。
