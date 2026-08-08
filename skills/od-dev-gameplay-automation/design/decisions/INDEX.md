@@ -6,3 +6,4 @@
 | [0002](0002-lifecycle-scope-defer-to-siblings.md) | 全生命周期单 skill + 深度 defer 协作 skill(不重复) | accepted | 2026-08-04 |
 | [0003](0003-flow-driven-per-screen-micro-loop.md) | 实现顺序:流程驱动 + 逐画面微循环(非跨画面并行) | accepted | 2026-08-05 |
 | [0004](0004-completion-full-set-modeled.md) | 完成判据补「认全的对象要全部建模」+ 防静默 fallback(假绿) | accepted | 2026-08-06 |
+| [0005](0005-gameplay-recording-six-facets-subsystem-split.md) | 玩法建档深度细则:把玩法当交互系统记 6 面向 + 单文件起步按子系统拆 | accepted | 2026-08-08 |

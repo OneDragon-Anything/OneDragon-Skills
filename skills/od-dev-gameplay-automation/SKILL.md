@@ -14,7 +14,7 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 | 阶段 | 做什么 | 达标判据 | 深度细则 |
 |---|---|---|---|
 | 0 | 先验现实约束 | 确认玩法常驻/限时、能实机、未过期 | — |
-| 1 | 玩法建档(理解玩法)= 一切的起点 | 能口述机制 + 一局流程 + 决策点 | — |
+| 1 | 玩法建档(理解玩法)= 一切的起点 | 能口述机制 + 一局流程 + 决策点 | `references/gameplay-recording.md` |
 | 2 | 找结构同构兄弟 + 读现有代码 | 定下复用/丢弃清单 | `references/build-craft.md` §找兄弟 |
 | 3 | 画面建档(核心环节) | 每画面定识别方式 + screen_info/模板 **+ 自动化所需信息 area(含要读取的数据,不只动作按钮)** | `references/screen-identification.md` |
 | 4 | 设计:范围+前置+op 链+配置 | 定范围/前置 + op 链 + 配置项 | `references/build-craft.md` §设计 |
