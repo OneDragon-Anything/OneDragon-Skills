@@ -1,6 +1,6 @@
 # 运行时迭代深度细则(阶段 8,生命周期视角)
 
-> 本文件是 SKILL.md 阶段 8 的 situational 深度细则(**生命周期视角**)。**op 级运行时技术(信息密度 / 调试纪律 / 预料外画面调研 / 运行时不确定性预留日志 / 重复建op)single source 在 `od-dev-write-operation/references/runtime-craft.md`** —— 本文件只给生命周期层的迭代节奏 + 事件 loop 模式,op 级细节去那里读。
+> 本文件是 SKILL.md 阶段 8 的按需读深度细则(**生命周期视角**)。**op 级运行时技术(信息密度 / 调试纪律 / 预料外画面调研 / 运行时不确定性预留日志 / 重复建op)single source 在 `od-dev-write-operation/references/runtime-craft.md`** —— 本文件只给生命周期层的迭代节奏 + 事件 loop 模式,op 级细节去那里读。
 
 ## 探索式迭代(为什么阶段 8 是循环,不是善后)
 

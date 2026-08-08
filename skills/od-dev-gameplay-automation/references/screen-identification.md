@@ -1,6 +1,6 @@
 # 画面建档深度细则(阶段 3)
 
-> 本文件是 SKILL.md 阶段 3 的 situational 深度细则。画面建档是自动化核心环节时按需读。
+> 本文件是 SKILL.md 阶段 3 的按需读深度细则。画面建档是自动化核心环节时读。
 > 配合协作 skill `od-dev-screen-onboarding`(analyze→视觉大模型→doc→缺口→建模→归档)与 od-dev-ui-region-detect。
 
 ## 识别优先级(判定"当前在哪个画面")

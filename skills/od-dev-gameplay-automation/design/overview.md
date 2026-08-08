@@ -15,7 +15,7 @@
 
 ## 构成
 - `SKILL.md`(always-on,每次触发加载):frontmatter + 总流程阶段表 + 阶段 0/1/3/7 的核心判据 + 跨阶段不变量(证据纪律/知识维护)+ 协作 skill 指针(调试纪律 defer write-operation)。
-- `references/`(situational,按需读):`screen-identification.md`(阶段 3 深度)、`build-craft.md`(阶段 2/4/5/6/9 深度)、`runtime-iteration.md`(阶段 8 探索式迭代,生命周期视角;op 级技术引用 `od-dev-write-operation/runtime-craft.md`)。**框架踩坑** single source 在 `od-dev-write-operation/framework-pitfalls.md`(本 skill 不重复维护)。
+- `references/`(按需读):`screen-identification.md`(阶段 3 深度)、`build-craft.md`(阶段 2/4/5/6/9 深度)、`runtime-iteration.md`(阶段 8 探索式迭代,生命周期视角;op 级技术引用 `od-dev-write-operation/runtime-craft.md`)。**框架踩坑** single source 在 `od-dev-write-operation/framework-pitfalls.md`(本 skill 不重复维护)。
 - `design/`(本文 + ADR,给后续维护者,不进智能体执行上下文)。
 
 ## skill 类型 + 测试
