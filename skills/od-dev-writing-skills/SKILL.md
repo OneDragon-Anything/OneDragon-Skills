@@ -22,8 +22,8 @@ description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、或问 sk
 ### 2. 内容给智能体看(指令式)
 SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文档。
 - 祈使句 + 判据(「先 X 再 Y」「若 Z 则 W」),不要叙述文档腔。
-- frontmatter 的 `description` 只写**何时用**(触发条件),不写「做什么/怎么做」 —— 否则智能体照 description 行事、不读正文。
-- **写法细则**(frontmatter 全规则 / SDO / token 效率 / 正文结构 / form-to-failure / 拆分 / 重构)见 `references/writing-craft.md`。
+- frontmatter 的 `description` 只写**何时用**(触发条件),**不写 workflow / 执行步骤**(范围关键词 —— 碰什么组件 / 接口 / 制品 / 扁平列举的动作 —— 属触发上下文,不禁)—— 否则智能体照 description 行事、不读正文。
+- **写法细则**(frontmatter 全规则 / 触发词覆盖 / token 效率 / 正文结构 / form-to-failure / 拆分 / 重构)见 `references/writing-craft.md`。
 
 ### 3. 自包含:分场景(独立发布 vs 项目内)
 - **硬门(所有引用,不分场景)**:引用的 target 必须**在已提交的仓库里**。gitignored 内容(`.debug/` / `config/` / `.claude/` / `models` 等)、个人 local 文件、**memory**(个人本地、不跨人共享)→ **一律禁止引用** —— 引用闭包外的状态 = 在别人机器 / CI / clean checkout 上不存在(skill 是共享 artifact,不能依赖某人的私有状态)。**范围**:门管 skill **依赖**的内容(facts / helper 脚本 / 引用的 doc,**含 design/ 内**);**不管运行时操作的产物**(日志 / 截图 / 存档 —— skill 执行时生成、本不在仓库,如读 `.debug/` 日志诊断、存截图建档,这类合法)。引用「过时」风险 + 4 档应对谱(吸收 / 校验 / 运行时读 / 抽象)见 `references/design-docs.md` §引用卫生。
@@ -58,7 +58,7 @@ SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文
 skill 在真实开发中会暴露 gap。开发中发现可优化点 → 写条**规范反馈**(观察 + RCA + 方法论级拟改),让迭代方据此优化。**反馈怎么写、写什么**见 `references/skill-feedback.md`;反馈的处理流程(谁改 / 怎么改 / 改哪 / 怎么验)归各消费方 harness(取决于本地有无 skill 源仓 / 挂载方式)。
 
 ## SKILL.md 写法(细则)
-frontmatter(`name` 仅字母数字连字符 / `description` 只写「Use when…」触发、**绝不总结 workflow**)/ SDO(keyword 覆盖、命名)/ token 效率 / 正文结构 / **form-to-failure**(按失败类型选指令形态)/ 拆分(progressive disclosure)/ 编写中重构 / 例子与反模式 / 何时建 —— **细则见 `references/writing-craft.md`**(锚定 Anthropic context engineering + lost-in-the-middle + Diátaxis)。SKILL.md 保持 compact、情境细节进 references/(just-in-time)、定期重构不无脑追加。
+frontmatter(`name` 仅字母数字连字符 / `description` 只写触发条件句(如「当…时用」/「Use when…」)、**绝不总结 workflow**)/ 触发词覆盖(keyword 覆盖、命名)/ token 效率 / 正文结构 / **form-to-failure**(按失败类型选指令形态)/ 拆分(progressive disclosure)/ 编写中重构 / 例子与反模式 / 何时建 —— **细则见 `references/writing-craft.md`**(锚定 Anthropic context engineering + lost-in-the-middle + Diátaxis)。SKILL.md 保持 compact、情境细节进 references/(just-in-time)、定期重构不无脑追加。
 
 ## 两类 skill:RED 必要性不同,GREEN 始终必做
 本 skill **不照搬**「写 skill = 严格 TDD、每个 skill 必须先 RED baseline」(superpowers 的 Iron Law)。按 skill 的**内容依据**分两类:

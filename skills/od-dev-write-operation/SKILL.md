@@ -1,6 +1,6 @@
 ---
 name: od-dev-write-operation
-description: 当要在一条龙(OneDragon)框架上**新建、修改或调试单个 Operation** 时用 —— 写一个 op(用 `@operation_node` 声明节点、用 `round_by_*` 做画面判定与点击、处理一个画面或一类动作、返回 round 结果),或改/修已有 op 的逻辑与 bug。Use when writing, modifying, or debugging a single Operation on the OneDragon framework — declare nodes via `@operation_node`, detect/click screens via `round_by_*`, handle one screen/action, return round results; includes fixing an op's logic/bugs. 不触发:从零做新玩法(od-dev-gameplay-automation)、搭/改 app 骨架与配置(application skill)。
+description: 当要在一条龙(OneDragon)框架上**新建、修改或调试单个 Operation** 时用 —— 写一个 op(用 `@operation_node` 声明节点、用 `round_by_*` 做画面判定与点击、处理一个画面或一类动作、返回 round 结果),或改/修已有 op 的逻辑与 bug。Use when writing, modifying, or debugging a single Operation on the OneDragon framework — declare nodes via `@operation_node`, detect/click screens via `round_by_*`, handle one screen/action, return round results; includes fixing an op's logic/bugs. 不触发:从零做新玩法(od-dev-gameplay-automation)、搭/改 app 骨架与配置(od-dev-write-application)。
 ---
 
 # 写 / 改 / 调试单个 Operation(OneDragon)
@@ -134,3 +134,16 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 - [ ] 决策点有日志 + 存图,卡了能复盘(信息密度)?
 - [ ] 单 op `run_operation` 实测通过再接入?
 - [ ] 循环驱动玩法选了正确结构(flat loop / node-per-op)?node op 有完成检测 + 节点预算,不会"完成不了也 `round_success`"假完成;flat loop 推进型 handler 也点了验推进、没推进 `round_retry` 兜底(三层都守「点了≠成了」)?
+
+## 进度模板(本 skill 任务怎么算完成)
+
+> 配合 `od-dev-gameplay-automation/references/progress-tracking.md`(任务树总纲)。本 skill 负责总纲 §11 的 **op 类叶子**(挂在任务树阶段4 画面节点子任务②③④);下表完成判据 + 防跑偏点。状态用总纲 7 状态词。
+
+| 叶子(→总纲§11) | 已过判据(指本 skill) | 特有防跑偏点 |
+|---|---|---|
+| op 编写② | §写一个op主线:节点图 + round 结果语义 + §op进出状态核对(入口识别预期屏 + 出口验真转移) | op 粒度两头卡(§主线3:太粗 if-elif≥3 画面/动作拆、超~80行拆;太细单跑没法自验证归 op 内函数);"做了动作"≠"达成结果",出口没验真转移别 success |
+| run_op 实测③ | §主线5 + §写完自检:`run_operation '<op_id>'` 单 op 实测通过再接入主流程 | **代码写完 ≠ 过,必须 run_op 单 op 实测**(最易跳过的一步) |
+| 代码测试④ | `references/testing.md`:fixture + unit 覆盖该画面逻辑/分支 | 写 mock 断言前先读 node 返回类型语义(§round结果驱动节点图:`round_success`/`round_fail`/`round_wait`/`round_retry` 路由不同、判法不同),别照搬别的 app |
+
+- **状态记录**:②op / ③run_op / ④测试 各一叶子,用总纲状态词;该子态三者全过 = 子态 op 闭环(**≠ 画面闭环**;画面闭环还需 ①-⑤ + 罕见态 + 假绿,见总纲 §10.4)。
+- **跑偏信号(本 skill)**:op 卡住没先读日志就盲改坐标;预料外画面只加 ESC 没调研建档(§必守3);循环驱动玩法没选结构(flat loop / node-per-op)就写。
