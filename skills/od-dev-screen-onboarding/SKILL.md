@@ -1,6 +1,6 @@
 ---
 name: od-dev-screen-onboarding
-description: 当拿到一张待建档的游戏截图时用,或调试 / 排查 op 卡在你不完全认识的画面 / 子屏 / 交互上时用(先建档搞清画面再继续改,别猜退出 / 套兜底)。画面建档 / screen_info area 维护 / 图标按钮模板建模;用 analyze_screen + upsert_screen_area。英文:onboard a game screen / build screen_info areas; also when debugging an op blocked on an unfamiliar screen — onboard before patching。
+description: 当拿到一张待建档的游戏截图时用,或调试 / 排查 op 卡在你不完全认识的画面 / 子屏 / 交互上时用(先建档搞清画面再继续改,别猜退出 / 套兜底)。画面建档 / screen_info area 维护 / 图标按钮模板建模;用 analyze_screen + upsert_screen_area。**只检测 / 验证一组元素坐标(不建档)见 od-dev-ui-region-detect —— 它是本 skill 建档时定坐标的子工具**。英文:onboard a game screen / build screen_info areas; also when debugging an op blocked on an unfamiliar screen — onboard before patching。
 ---
 
 # 画面建档(analyze → 建档 → 建模)
@@ -155,7 +155,7 @@ description: 当拿到一张待建档的游戏截图时用,或调试 / 排查 op
 状态指示图标(选中 / 未选中)的模板建模见 §5(每态一模板 + 高阈值)。
 
 ## 4. 缺口分析
-对照「匹配 area」与「可交互元素 / 识别特征」。**「可交互元素」清单要穷尽,别只靠 §2 视觉大模型 枚举**(视觉大模型 单看会漏非显眼 / 小元素 / 非文本状态)—— 交叉补全:§1 全量 OCR + 信息源三层(screen_info `area_list` 全集 + 代码 `@operation_node` 链);清单上每个元素还要知**点后跳哪 / 干嘛(行为)**,光认出名字不够。目标 = 建档 / 快修判据「能说出全部可交互元素 + 各自点后跳哪」。**逐个交互验证行为时,守下方卡住协议第 3 步的探查顺序**(不可逆出口最后)。
+对照「匹配 area」与「可交互元素 / 识别特征」。**「可交互元素」清单要穷尽,别只靠 §2 视觉大模型 枚举**(视觉大模型 单看会漏非显眼 / 小元素 / 非文本状态)—— 交叉补全:§1 全量 OCR + 信息源三层(screen_info `area_list` 全集 + 代码 `@operation_node` 链);清单上每个元素还要知**点后跳哪 / 干嘛(行为)**,光认出名字不够。**什么算可交互元素别预设**:除明显按钮 / 输入外,**头像 / 图标(装备等)/ 独特图案 / 一切文本**都可能可点(开详情 / 选中 / 切换 / 拖拽)—— 把每个候选都**试一次交互**确认,才能确保无遗漏(只认明显按钮 → 漏掉头像 / 图标开的子态)。目标 = 建档 / 快修判据「能说出全部可交互元素 + 各自点后跳哪」。**逐个交互验证行为时,守下方卡住协议第 3 步的探查顺序**(不可逆出口最后)。
 - 命中且 conf 高 → 已建模。
 - 模糊误匹配(`is_precise=False` 且命中无关 area)→ 记隐患(screen_info 该收紧 / 加精准特征)。
 - 无匹配(`screens=[]`)→ 先想**兜底画面**(loading / 对话 等通用画面,无固定文字特征但结构固定):截图符合兜底结构(loading 黑屏 + lore tip / 对话下方对话框 + 标题 area)→ 按兜底画面识别 + 建档(不必精准 screen 匹配);否则 screen_info 缺口,画面未收录。

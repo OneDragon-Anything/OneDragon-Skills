@@ -1,6 +1,6 @@
 ---
 name: od-dev-ui-region-detect
-description: 当要从游戏截图检测或验证 UI 区域坐标(槽位网格 / 图标按钮 / 卡牌阵列 / 一排可点击元素)时用 —— 如给 screen_info 补坐标、验证已圈坐标是否漂移、或自动化需运行时定位未建档元素。detect/verify UI region coordinates, find slot grid or icon button positions from a screenshot。
+description: 当要从游戏截图检测或验证 UI 区域坐标(槽位网格 / 图标按钮 / 卡牌阵列 / 一排可点击元素)时用 —— 如给 screen_info 补坐标、验证已圈坐标是否漂移、或自动化需运行时定位未建档元素。本 skill 管坐标检测**方法论**(稀疏独特→视觉大模型 / 密集网格→CV / 文字→OCR,必 ground truth 对拍);**画面建档完整流程(建 screen_info area / 画面档)见 od-dev-screen-onboarding —— 它建档时调用本 skill 定坐标**。英文:detect/verify UI region coordinates, find slot grid or icon button positions from a screenshot。
 ---
 
 # UI 区域坐标检测 / 验证方法论
@@ -115,3 +115,14 @@ OpenCV 经典 squares 法(多阈值扫描 + 几何判矩形)—— **判几何�
 
 - `od-dev-screen-onboarding`:画面**建档**全流程(analyze → 视觉大模型 理解 → 写 doc → 建模入 screen_info),其 §5 含图形按钮的 CV(圆 HoughCircles / 轮廓圆度 / 模板)。
 - 本 skill:聚焦**「检测 / 验证坐标」的方法论选型**(视觉大模型 vs CV vs OCR 的判据 + 密集网格的投影峰值法 + 数值验证纪律),不重复建档流程。建模入 screen_info 仍走 onboarding skill。
+
+## 进度模板(本 skill 任务怎么算完成)
+
+> 配合 `od-dev-gameplay-automation/references/progress-tracking.md`(任务树总纲)。本 skill 负责总纲 §11 的 **UI 区域坐标检测叶子**(为画面建档① 提供 pc_rect 支撑;非 §10.4 显式树节点,是① 的子步骤);下表完成判据 + 防跑偏点。状态用总纲 7 状态词。
+
+| 叶子(→总纲§11) | 已过判据(指本 skill) | 特有防跑偏点 |
+|---|---|---|
+| UI 区域坐标检测 | §验证:检测 bbox 与 ground truth **IoU>0.8**(形状轮廓法,§CV路径二验证)/ **中心距<10px**(投影峰值法,§验证 standalone)+ **多样本**核实稳定性(单屏对上不算过) | 坐标对错用**数值对拍 ground truth**,别用视觉大模型当裁判(计数/对齐/颜色判断不可信);按元素类型选工具(稀疏独特→VLM、密集网格→CV投影、带框图标/卡牌→CV轮廓、文字→OCR) |
+
+- **状态记录**:坐标检测是画面建档① 的子步骤(为 screen_info 补 pc_rect);**检测结果进 screen_info 后,坐标真相源转 screen_info**(不再运行时重检测,§何时根本不需要运行时检测)。
+- **跑偏信号(本 skill)**:凭视觉大模型自由问坐标(必幻觉,要用模型原生 grounding 格式,§视觉大模型路径);单屏对上就当过(没多样本);对已有 screen_info 的元素运行时重检测(多此一举)。
