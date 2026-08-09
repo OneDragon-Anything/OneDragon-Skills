@@ -1,6 +1,6 @@
 ---
 name: od-dev-gameplay-automation
-description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法的自动化(产出可运行的应用)时用。英文触发词 develop/build a new game-mode automation, create application for a new game mode, automate a new roguelike/battle/trailblaze mode from scratch。仅从零开发新玩法时用;小改现有自动化 / 调参 / 改一行不触发。
+description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法的自动化(产出可运行的应用)时用;**也含该玩法的策略设计 / 迭代调优**(客观指标 + A/B 到目标,阶段 7)。英文:develop/build a new game-mode automation, automate a roguelike/battle/trailblaze mode, design/iterate its strategy。不触发:纯代码微调 / 改一行 / 改个配置值(改单个 op 见 od-dev-write-operation;搭 / 改 app 骨架见 od-dev-write-application)。
 ---
 
 # 新玩法自动化开发 playbook(OneDragon 框架)
@@ -23,6 +23,8 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 | 7 | 策略设计(若有决策) | 客观指标 + A/B,迭代到目标 | 见下「策略设计」 |
 | 8 | 探索式迭代:实现→测试→发现→补建档+补分支 | loop 覆盖已知全部事件类型;骨架→稳定 | `references/runtime-iteration.md` |
 | 9 | 测试 + 文档 + 成文 | ruff 干净 + 测试仓 + docs/game | `references/build-craft.md` §测试 |
+
+> **进度记录与防偏离**(复杂玩法:画面多 / 子态 / 长尾分支):按 **od-dev-progress-tracking** skill(任务树状态机 + 防偏离门,全局方法)组织进度;本 skill 的 5 阶段骨架实例化(分纲)见 `references/progress-tracking.md` §10。
 
 **阶段 0**(最易漏):钻机制前先确认外部依赖还在不在 —— 常驻 or 限时(限时可能已结束 → 只能"研究+骨架",没法实机验证);能实机打开(客户端版本/入口还在);有无反作弊/锁光标/全屏独占(影响 controller 能否操作)。
 
