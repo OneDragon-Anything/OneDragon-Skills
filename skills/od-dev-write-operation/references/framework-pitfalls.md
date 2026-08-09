@@ -32,3 +32,14 @@ MCP server 启动时把配置(当前实例 / 账号 / 各 yml)读进内存缓存
 ## 6. server 日志默认 GBK → mojibake 不可读
 
 server 的 Python stdout 用 Windows locale(GBK)写 → 进 UTF-8 文件变乱码(op 名 / OCR 全 mojibake,无法"读日志"诊断)。**MCP server 入口起手** `sys.stdout/stderr.reconfigure(encoding='utf-8')`。日志不可读 = 无法用"读日志"方法论,优先修。验证:MCP server 日志(项目 `.debug/` 下)按 utf-8 能解码 + Read 工具显示正常中文。
+
+## 7. 中文关键词 LCS 误匹配(`round_by_ocr` 默认 lcs_percent=0.5)
+
+框架 `round_by_ocr` 默认 `lcs_percent=0.5`(LCS 最长公共子序列 / 目标长度 ≥ 阈值)。**中文关键词若与别的画面文字共享 2+ 字子串,就会在 0.5 误匹配** —— 不是"子串包含",是"子序列比例"。
+
+- **症状**:loop 卡在某屏 `round_wait` 循环、handler 不触发(日志无子 op 执行)、或派发到错误 handler。
+- **判据**:卡死 + OCR 明明有关键词但 handler 不跑 → 查 `round_by_ocr` 关键词是否与同屏 / 邻屏文字共享 2+ 字。
+- **修(两档)**:
+  1. **快速止血**:该 `round_by_ocr` / `round_by_ocr_and_click` 传 `lcs_percent=0.7~0.9`(真匹配 1.0 不受影响,假匹配 0.5 被杀);或用更长 / 更独有关键词(如全标题)。
+  2. **根因解(推荐)**:**固定位置识别** —— 关键词只在它**固定的画面位置**识别(screen_info 建 area 圈定该位置,不全文扫),从源头避免冲突。全屏 `round_by_ocr`(loose 全文)天生易冲突;固定位置 area 检测才稳(画面建档见 od-dev-screen-onboarding §3.5)。
+- **别只改一个就收工** —— 同 loop 里所有中文关键词都可能踩,逐个审共享子串;长期把派发检测迁到固定位置 screen_info area。
