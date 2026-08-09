@@ -22,7 +22,7 @@ description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、或问 sk
 ### 2. 内容给智能体看(指令式)
 SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文档。
 - 祈使句 + 判据(「先 X 再 Y」「若 Z 则 W」),不要叙述文档腔。
-- frontmatter 的 `description` 只写**何时用**(触发条件),**不写 workflow / 执行步骤**(范围关键词 —— 碰什么组件 / 接口 / 制品 / 扁平列举的动作 —— 属触发上下文,不禁)—— 否则智能体照 description 行事、不读正文。
+- frontmatter 的 `description` 是**调用主触发器**(Anthropic 官方:primary mechanism):**以触发为主 + 可带一句 purpose,不写 workflow / 执行步骤**(范围关键词 —— 碰什么组件 / 接口 / 制品 / 扁平列举的动作 —— 属触发上下文,不禁)—— 否则智能体照 description 行事、不读正文。**要 pushy 防 under-trigger**(显式列场景 +「凡是 X 都用,即使没明说」;Claude 倾向漏触发)。详 `references/writing-craft.md` §1.3。
 - **写法细则**(frontmatter 全规则 / 触发词覆盖 / token 效率 / 正文结构 / form-to-failure / 拆分 / 重构)见 `references/writing-craft.md`。
 
 ### 3. 自包含:分场景(独立发布 vs 项目内)
