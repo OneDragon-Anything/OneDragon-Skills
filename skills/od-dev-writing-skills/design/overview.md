@@ -7,7 +7,7 @@
 
 ## 4 条硬规范(是什么;各条 why 见对应 ADR)
 1. **必须有 design/ 文件夹,design 与 ADR 分开**(迁移自旧「单 design.md」;why 见 [ADR-0001](decisions/0001-design-adr-separation.md))。
-2. **内容给智能体看(指令式)**:正文是祈使句 + 判据;`description` 只写触发条件(SDO 结论:description 写流程 → 智能体照 description 走、不读正文;整合自 superpowers,见 [`../../references/writing-craft.md`](../../references/writing-craft.md) §1.3)—— 非本项目新决策,故不单列 ADR。
+2. **内容给智能体看(指令式)**:正文是祈使句 + 判据;`description` 只写触发条件(SDO 结论:description 写流程 → 智能体照 description 走、不读正文;pushy 见 [ADR-0009](decisions/0009-description-purpose-pushy.md))。**流程类 skill(有固定步骤序的)开头必须带 ordered must-do checklist**(防 must-do 步骤被长散文判据稀释而漏做;form + why 见 [ADR-0010](decisions/0010-procedural-skill-mustdo-checklist.md))。
 3. **自包含(分场景)+ 框架地基级接口名可写进 SKILL.md**(why + CodeRabbit 误报 incident 见 [ADR-0002](decisions/0002-self-contained-framework-interface-names.md))。
 4. **写方法论,不写具体例子**(why 见 [ADR-0003](decisions/0003-methodology-not-examples.md))。
 

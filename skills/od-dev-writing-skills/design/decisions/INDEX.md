@@ -11,3 +11,4 @@
 | [0007](0007-write-plainly-no-jargon.md) | 写清楚:通俗直白,别用缩写 / 自造黑话(可读性的语言落地) | accepted | 2026-08-06 |
 | [0008](0008-review-past-adrs-before-editing.md) | 改 skill 前先复查过往 ADR(防撞号 / 重复 / 矛盾 / 重提已否)+ review list 加项 | accepted | 2026-08-07 |
 | [0009](0009-description-purpose-pushy.md) | description:触发为主 + 可带 purpose + 要 pushy(对齐 Anthropic 官方) | accepted | 2026-08-09 |
+| [0010](0010-procedural-skill-mustdo-checklist.md) | 流程类 skill 开头必须 ordered must-do checklist(规范 2 强化) | accepted | 2026-08-10 |

@@ -20,6 +20,7 @@ SKILL.md 是**注入智能体上下文、让 agent 执行**的指令文档,不�
 
 ### 1.2 指令式 + 判据(规范 2)
 祈使句 + 判据(「先 X 再 Y」「若 Z 则 W」),不叙述文档腔。**标题写成判据本身**(扫标题能读懂骨架),不是模糊主题词。
+**流程类 skill(有固定步骤序的)进一步:开头必须 ordered must-do checklist**(SKILL.md 规范 2 已强制;是本节「指令式」的结构化强化 —— 把 must-do 做成可勾有序序列,而非散在散文里;form-to-failure「漏元素 → 结构式 REQUIRED 槽位」的应用,见 §1.5)。
 
 ### 1.3 frontmatter
 - `name` + `description` 必填(共 max 1024 字符);`name` 仅字母数字连字符(name 本身也是触发信号 —— 用户 / agent 搜 skill 名;description 补 name 表达不了的:中文场景、次场景、负向路由)。
@@ -54,6 +55,8 @@ Overview(是什么 + 核心原则一两句)/ When to Use(症状 + 何时不用)/
 | 行为该随条件变 | **条件式**(挂可观测谓词:"若有 brief,引用它") | 无条件规则 + 例外从句 |
 
 **要点**:**禁令对「塑形」类失败反而更糟**(agent 会和 "don't X" 谈判)。recipe 不留谈判空间:产出要么符形状要么不符。**别加 nuance 从句**("don't X unless it matters" 重开谈判);真例外写成独立条件式。
+
+**应用(本表第 3 行「漏元素 → 结构式 REQUIRED 槽位」的落地)**:**流程类 skill 的 must-do 步骤漏做** —— agent 读长散文流程会跳过散布的必做步骤(实测:画面建档类 skill 的穷举交互验证 / id_mark 测试 / 进度记录被漏,因为埋在散文判据里、顺序靠后)→ 把 must-do 做成开头一条 ordered checklist(SKILL.md 规范 2 已对流程类 skill 强制;非流程类不强制)。
 
 ### 1.6 头尾放不变量(lost-in-the-middle)
 **关键规则 / 不变量放开头**(primacy)+ **结尾放自检 / recap**(recency);别把「必须做」埋正文中间(U 型最弱区)。
