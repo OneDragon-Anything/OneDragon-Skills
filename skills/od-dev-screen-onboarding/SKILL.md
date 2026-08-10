@@ -1,6 +1,6 @@
 ---
 name: od-dev-screen-onboarding
-description: 当拿到一张待建档的游戏截图时用,或调试 / 排查 op 卡在你不完全认识的画面 / 子屏 / 交互上时用(先建档搞清画面再继续改,别猜退出 / 套兜底)。画面建档 / screen_info area 维护 / 图标按钮模板建模;用 analyze_screen + upsert_screen_area。**只检测 / 验证一组元素坐标(不建档)见 od-dev-ui-region-detect —— 它是本 skill 建档时定坐标的子工具**。英文:onboard a game screen / build screen_info areas; also when debugging an op blocked on an unfamiliar screen — onboard before patching。
+description: 当拿到一张待建档的游戏截图时用,或调试 / 排查 op 卡在你不完全认识的画面 / 子屏 / 交互上时用(先建档搞清画面再继续改,别猜退出 / 套兜底),或 bot 运行 / 调试偏离到非目标玩法画面时用(认知完整但非目标玩法 → 导航回目标玩法,别停 —— 见「跨玩法偏离协议」)。画面建档 / screen_info area 维护 / 图标按钮模板建模;用 analyze_screen + upsert_screen_area。**只检测 / 验证一组元素坐标(不建档)见 od-dev-ui-region-detect —— 它是本 skill 建档时定坐标的子工具**。英文:onboard a game screen / build screen_info areas; also when debugging an op blocked on an unfamiliar screen — onboard before patching; also on cross-mode drift — navigate back to target。
 ---
 
 # 画面建档(analyze → 建档 → 建模)
@@ -28,6 +28,8 @@ description: 当拿到一张待建档的游戏截图时用,或调试 / 排查 op
 1. **主动**:拿到待建档的游戏截图(建新画面 / 维护 screen_info)。
 2. **被动(调试中,别漏)**:调试 / 修 / 排查 op 时,op 卡在一个你**不完全认识其交互**的画面 / 子屏 / 交互上(卡死 / 报错画面不符 / 找不到 op 假设该有的按钮)。这时**先建档搞清画面,再继续改 op**。
 
+**先排除跨玩法偏离(bot 偏到非目标玩法画面)**:bot 运行 / 调试目标玩法 A 时,若 `analyze` 命中的画面**属于非目标玩法 B**(你认得 B 但 B 不是当前在做的玩法 A)→ **不是建档问题**,走下方「跨玩法偏离协议」(导航回 A,别停)。确认在目标玩法内,再走下面建档 / 快修判据。
+
 **建档 vs 快修 判据(硬规则)**:你能说出**当前画面全部可交互元素 + 各自点后跳哪**吗?
 
 - **能**(`screen_info` 的 `area_list` 已覆盖 + op 代码流转已读清)→ 画面认知完整,继续 debug / 改 op。
@@ -44,6 +46,21 @@ description: 当拿到一张待建档的游戏截图时用,或调试 / 排查 op
 5. **收尾判据**:循环 1-4 到能说出"全部可交互元素 + 各自点后跳哪"→ 认知完整,回正常建档(§3)/ debug;**仍卡 → 升级问用户**,别无限试。
 
 **禁令(明知故犯的高发失败)**:状态不清画面下**禁止干卡** —— 反复点同一处 / 反复 ESC 同一个 / 盯着画面猜 / 无观察地盲点。干卡不产生新信息,只耗时间 + 误触累积副作用(且没做第 4 步状态对比,副作用你根本察觉不到)。**"卡住" = 触发本协议的信号,不是"再试一次同一个无效操作"的信号。**
+
+### 跨玩法偏离协议(cross-mode drift):认知完整但非目标玩法 → 导航回目标,禁止停
+
+**先判是不是这种情况(与卡住协议区分)**:bot 在目标玩法 A 运行 / 调试,`analyze` 命中**非 A 玩法** B 的画面 —— 你**认得出是 B**(认知完整),但 B **不是目标** A。这**不是「卡住」**(卡住 = 认知不完整 → 探索出口补全认知,见上方协议),也**不是「环境状态可忽略」**(「用户在玩 / 手动偏离」就跳过)—— 是 bot 偏离了目标,**必须导航回 A 继续,禁止停**。
+
+判定(bot 运行 A 却命中 B):`screen_name` 属 B 不属 A / OCR · 视觉特征指向 B / `is_precise` 模糊但落到 B。
+
+处理(禁停,导航回 A):
+1. **回溯偏离源**:读日志 / op 历史 / bot 上一步动作,定位怎么从 A 落到 B(误点跨玩法入口 / 上次 bot 残留未退 / 用户手动切走)。搞清入口常直接揭示恢复路径。
+2. **找 B 出口**:用 B 画面的退出 / 返回手段(查 B 画面档案的状态流转出口)回到通用枢纽画面(大世界 / 主菜单类)。
+3. **导航回 A 路径**:从枢纽画面走 A 的入口导航路径(查 A 的 screen doc / application 代码里的入口节点链)回到 A 的工作画面。
+4. **回 A 继续工作**:回到 A 后继续被打断的任务 —— **偏离不构成停的理由**(导航回目标是 bot 的职责,不是中断 / 等指示的理由)。
+5. **建档防再偏**:偏离路径(A→B 的误触入口)+ 恢复导航步骤(枢纽→A 入口)链入 screen_info(`goto_list` / area)与 screen doc「状态流转」,供 bot 后续遇同偏离自动恢复,而非每次人工导航。
+
+**禁令**:跨玩法偏离**禁止停**(不当「环境状态」忽略跳过 / 不干卡 / 不等用户指示就卡住)—— 偏离是可恢复的运行时状态,导航回目标玩法是 bot 的职责,不是中断理由。
 
 ## 守则(每步都守)
 - **MCP 工具直调 + area 走 CRUD > 手编 yml**:用 `analyze_screen` / `upsert_screen_area` / `delete_screen_area`(项目 MCP 后端暴露的工具,命名空间前缀 per-project),别写 HTTP 客户端脚本;area 改动经 `save_screen` 同步合并缓存,**禁止手编 screen_info yml 或手改模板目录**(手编不重算 `_od_merged.yml`,后端按旧缓存加载 → 找不到模板 / area)。
