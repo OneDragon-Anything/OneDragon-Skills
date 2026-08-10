@@ -16,5 +16,6 @@
 | [0012](0012-stuck-screen-forced-exploration-protocol.md) | 卡住画面协议:判据触发后的强制可执行探索 + 禁干卡(补 ADR-0010 执行体) | accepted | 2026-08-06 |
 | [0013](0013-exhaustive-interaction-survey-irreversible-exit-last.md) | 认知层穷尽探查画面所有可交互元素 + 探查顺序(不可逆出口最后) | accepted | 2026-08-07 |
 | [0014](0014-exhaust-vlm-iterate-open-on-failure.md) | 视觉大模型交互流程:画面不重复 + 让它提需求 + 交互失败迭代 + 穷尽才升级 | accepted | 2026-08-07 |
+| [0015](0015-mustdo-checklist-prefixed-reordering.md) | 开头 must-do checklist 前置 + 顺序重排(穷举交互前置 / 进度节点 chain 进主流程) | accepted | 2026-08-10 |
 
 > 日期为 ADR **形式化日**(按 od-dev-writing-skills 重构 + 迁公共仓时回溯记录);原始决策 / 踩坑发生日见各 ADR 的 Context。
