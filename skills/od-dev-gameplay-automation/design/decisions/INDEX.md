@@ -8,3 +8,4 @@
 | [0004](0004-completion-full-set-modeled.md) | 完成判据补「认全的对象要全部建模」+ 防静默 fallback(假绿) | accepted | 2026-08-06 |
 | [0005](0005-gameplay-recording-six-facets-subsystem-split.md) | 玩法建档深度细则:把玩法当交互系统记 6 面向 + 单文件起步按子系统拆 | accepted | 2026-08-08 |
 | [0006](0006-two-pass-skeleton-exploration-vs-implementation.md) | 骨架重组:按"两套做法"(探索设计/实现循环)组织,非 0-9 按活动类型切;0-9 降认知地图 | proposed | 2026-08-09 |
+| [0007](0007-runtime-cross-mode-drift-recovery.md) | 跨玩法偏离的运行时恢复(loop 调度层):bot 自主运行遇偏离 → 导航回目标,不停 | proposed | 2026-08-11 |

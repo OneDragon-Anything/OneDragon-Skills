@@ -34,6 +34,8 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 
 **流程驱动 + 逐画面微循环**(每画面闭环稳定才进下一个,见 [design/ADR-0003](design/decisions/0003-flow-driven-per-screen-micro-loop.md)):从玩法入口出发,按游戏实际流程顺序,每画面〔①详细画面建档(补全探索期,`od-dev-screen-onboarding` 完整标准)→ ②写 op(`od-dev-write-operation`)→ ③`run_operation` 实测 → ④代码测试 → ⑤分支覆盖(遇预料外补建档+补分支,`references/runtime-iteration.md` + write-operation 预料外调研)〕→ 该画面闭环 → 进下一个。所有画面 op 写完后 **app 编排**(factory/config/GUI/节点图,`od-dev-write-application`),再 `run_standalone_app` 端到端验。
 
+**loop 运行时须能从跨玩法偏离恢复**:bot 无人值守跑(loop / `run_standalone_app`)时 `analyze` 命中**非目标玩法**画面 → loop 的未匹配状态分派须**导航回目标玩法入口**续被打断的工作(**禁** stall / 盲重试 / 走通用 fallback 点空白 ESC 卡错玩法 / 停下等指示)。判据复用 `od-dev-screen-onboarding` 跨玩法偏离协议;loop 调度层落法见 `references/runtime-iteration.md`。**与任务进度防偏离(`references/progress-tracking.md` §2,dev 焦点纪律)不同维度,别混**。
+
 **任务树是活的**:实现期不断发现新画面/子态/分支/事件 → 加任务节点(progress-tracking §5),循环到端到端通 + 事件全覆盖。探索期已建的建档节点,实现期**复用并推进到 `已过`**(不重建);新发现子态新建。
 
 ### 画面建档:一套完整标准,不分档
