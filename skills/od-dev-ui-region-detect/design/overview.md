@@ -26,8 +26,9 @@
 
 ## 构成
 
-- `SKILL.md` —— 智能体指令:核心判据(视觉大模型/CV/OCR 按元素类型选)+ 视觉大模型 原生 grounding
-  格式 + CV 投影峰值法 + CV 形状轮廓法 + 数值验证纪律。
+- `SKILL.md` —— 智能体指令:VLM 定位信任层级(默认信 VLM 坐标,别猜 / 别用未验证参照否定)+
+  核心判据(视觉大模型/CV/OCR 按元素类型选)+ 视觉大模型 原生 grounding 格式 + CV 投影峰值法 +
+  CV 形状轮廓法 + 数值验证纪律。
 - `detect_grid.py` —— 密集规则网格槽位检测的可复用 CV 实现(逐列标准差 + 峰值 NMS),
   `detect_grid_row(img, y1, y2, x1, x2, slot_w) -> list[int]`。
 - `design/` —— 本目录:设计 + 决策存档(给维护者,不进 agent 上下文)。
@@ -47,6 +48,7 @@ screen_info 已有 `pc_rect`(建档时圈好)→ 自动化**直接用坐标**,�
 | 验证用数值对拍 | ground truth 数值差为准,不用 视觉大模型 当裁判 | [0002](decisions/0002-numeric-verification-not-vision-judge.md) |
 | 矩形阵列用 squares | 几何判矩形(免疫颜色变化),非颜色阈值/背景互补 | [0003](decisions/0003-squares-shape-detection.md) |
 | 视觉大模型 颜色不可信精确值 | 定性描述可用,精确阈值/RGB 由 CV 采样定 | [0004](decisions/0004-vision-color-unreliable.md) |
+| VLM 定位信任层级 | 默认信 VLM 坐标(数据);怀疑查问法、冲突做客观验证、别用未验证参照否定 | [0005](decisions/0005-vlm-coordinate-trust-hierarchy.md) |
 
 CV 投影法的**信号 / 参数选择**(标准差 vs 框色、平滑核、阈值)属调参级实现论据,不配 ADR,
 见 [`detection-methods.md`](detection-methods.md)。
