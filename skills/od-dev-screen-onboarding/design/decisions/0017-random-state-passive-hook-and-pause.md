@@ -47,5 +47,5 @@
 
 - SKILL.md「随机/条件态」节(原「边缘状态态」)。
 - memory `onboard-hook-capture-random-states`(SR 钩子法实证,现仅存图;「触发停」待补)。
-- `od-dev-write-operation` runtime-craft(钩子发信号 / 阻塞 op 实现,待引用)。
-- SR CLAUDE.md 调研待办:SR 实现「钩子触发 bot 停留」。
+- `od-dev-write-operation` runtime-craft「钩子触发停 bot 留画面」节(已补通用 op 实现)。
+- SR CLAUDE.md 调研结论:SR 方案 D 实现(stop_run + relaunch,钩子触发停 bot 留画面)。

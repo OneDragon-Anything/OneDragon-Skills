@@ -36,3 +36,27 @@ bot 跑到代码没预期 / 没 handler 的画面(点卡开出详情、误点进
 ## 重复的手动操作 → 尽早建成 op
 
 开发 / 测试中**手动做了 2+ 次的导航序列**(退出对局:Esc→放弃→结算多页→大厅;或进玩法入口),**尽早建成 op**(放 `operations/`,`run_operation` 一键调):① 不用每次手动点 N 按钮;② 可复用(刷开局 / 测试 / 回滚);③ op 有重试 / 超时 / 日志(比手动可靠)。**判据:同一手动操作做 2 次 → 第 3 次前建成 op**。
+
+## 钩子触发停 bot 留画面(随机 / 珍贵态当场建档)
+
+**场景**:bot 自主跑(造数据 / 测流程)时遇到**会话内造不出、珍贵、需当场建档**的随机态(罕见配置 / 罕见 overlay / 特定词缀组合),错过不知何时再遇。光存图离线建会漏(穷举交互验行为 / 实时 analyze / 点后跳转必须当场)→ 钩子检测到 → **触发停 bot 留画面**给 AI 当场建档。**判据(哪些态当场建 vs 离线建)见 `od-dev-screen-onboarding` 随机 / 条件态节**;本节给 op 级实现。
+
+**标准做法(临时钩子,建档后回滚)**:
+1. **钩子位置**:目标 node 方法**最前、click 前**(检测在改变状态前);或画面判定 / 状态读取函数。
+2. **检测到目标态 → 存 sentinel + 调框架停 + return 保画面**:
+   ```python
+   @operation_node
+   def 某node(self):
+       state = self._detect_target_state()
+       if state == TARGET:  # 钩子(临时,建档后删)
+           self.save_screenshot(prefix='target_state')
+           Path('<临时目录>/target_state.flag').write_text(state)  # sentinel:标记本次停是目标态(含态名,区分故障/手停)
+           self.ctx.run_context.stop_running()  # 框架公共停(下一轮 loop 顶见 STOP 退出)
+           return self.round_wait(status=f'目标态:{state}')  # return 不 click,画面原样保持
+       ...原 node 逻辑...
+   ```
+3. **AI 接管建档**:`get_run_status`=STOPPED + sentinel(flag + 截图)在 → **sentinel 必需**(区分「遇目标态停」vs「故障 / 手停」,纯 status 不够)→ `analyze_screen`(sentinel 截图,无需游戏在线)+ 视觉大模型 + 当场跑建档流程 → 完了**删钩子 + 重启 MCP server(代码生效)+ relaunch bot**。
+
+**升级路径(反复暂停恢复才做)**:框架有原生 PAUSE(loop sleep 不跑 node + 超时豁免)但 MCP 未暴露 → 加 pause/resume MCP tool = 保运行态 + 真 resume,语义更干净。`round_wait` 不撞 retry(WAIT 不计 retry,超时 -1)但不推荐做 latch(自建 flag 脆弱);raise 消耗 retry 最终 FAIL 推进,不可用。
+
+**关联**:`od-dev-screen-onboarding` 随机 / 条件态节(判据);项目 CLAUDE.md(项目级实现 + 具体 API 路径)。
