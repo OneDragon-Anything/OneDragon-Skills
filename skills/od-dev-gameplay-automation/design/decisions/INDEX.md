@@ -10,3 +10,4 @@
 | [0006](0006-two-pass-skeleton-exploration-vs-implementation.md) | 骨架重组:按"两套做法"(探索设计/实现循环)组织,非 0-9 按活动类型切;0-9 降认知地图 | proposed | 2026-08-09 |
 | [0007](0007-runtime-cross-mode-drift-recovery.md) | 跨玩法偏离的运行时恢复(loop 调度层):bot 自主运行遇偏离 → 导航回目标,不停 | proposed | 2026-08-11 |
 | [0008](0008-docs-game-gameplay-only-no-automation.md) | docs/game/ 只放游戏玩法(玩家视角事实),自动化实现归 docs/develop/ | accepted | 2026-08-11 |
+| [0009](0009-strategy-requirement-checklist-complex.md) | 复杂玩法策略设计出「策略需求清单」(checklist),防实现/调优漏接口 | accepted | 2026-08-11 |
