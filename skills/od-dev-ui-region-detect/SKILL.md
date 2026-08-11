@@ -138,9 +138,9 @@ OpenCV 经典 squares 法(多阈值扫描 + 几何判矩形)—— **判几何�
 
 ## 进度模板(本 skill 任务怎么算完成)
 
-> 配合 `od-dev-gameplay-automation/references/progress-tracking.md`(任务树总纲)。本 skill 负责总纲 §11 的 **UI 区域坐标检测叶子**(为画面建档① 提供 pc_rect 支撑;非 §10.4 显式树节点,是① 的子步骤);下表完成判据 + 防跑偏点。状态用总纲 7 状态词。
+> 配合 `od-dev-progress-tracking`(任务树状态机 + 状态词)+ `od-dev-screen-onboarding`(画面建档① 的子步骤)。本 skill 负责 **UI 区域坐标检测**(为画面建档① 提供 pc_rect 支撑;是① 的子步骤,非独立树节点);下表完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
 
-| 叶子(→总纲§11) | 已过判据(指本 skill) | 特有防跑偏点 |
+| 叶子(→progress-tracking §11) | 已过判据(指本 skill) | 特有防跑偏点 |
 |---|---|---|
 | UI 区域坐标检测 | §验证:检测 bbox 与 ground truth **IoU>0.8**(形状轮廓法,§CV路径二验证)/ **中心距<10px**(投影峰值法,§验证 standalone)+ **多样本**核实稳定性(单屏对上不算过) | 坐标对错用**数值对拍 ground truth**,别用视觉大模型当裁判(计数/对齐/颜色判断不可信);按元素类型选工具(稀疏独特→VLM、密集网格→CV投影、带框图标/卡牌→CV轮廓、文字→OCR) |
 
