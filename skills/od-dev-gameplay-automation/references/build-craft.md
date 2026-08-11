@@ -74,5 +74,5 @@ Operation 用 `@operation_node` / `@node_from` 编排状态机;画面判定 + �
 - 测试仓加测试(纯逻辑部分:策略评估、OCR 解析、数据类;fixture 截图 → 期望输出)。
 - **测试覆盖具体画面,不只是纯逻辑**:每个 reader/op 测试用**真实截图 fixture**(每状态 1-2 张典型)断言具体输出;改 reader/解析前把所有相关状态 fixture 跑一遍 → 改完重跑 → **无回归才提交**。只测纯逻辑(无截图)防不住"某状态 OCR 读不到/读错"的回归。
 - **TDD:测试前置**(见上):新 reader/op/改 → 先写 fixture 测试再实现;改前跑、改后跑,锁回归。刻画测试(存量 op)+ TDD(新改)搭配 fixture 覆盖。
-- `docs/game/gameplay/<play>.md` 写玩法 + bot 流程 + 踩坑。
+- `docs/game/gameplay/<play>.md` 写**玩法本身**(游戏事实:机制 / 流程 / 数据,见 gameplay-recording);**bot 流程(op 链)+ 踩坑归 `docs/develop/<play>/`**(自动化实现,不进 `docs/game/`)。
 - 改动同步 `docs/develop/`(若涉及框架)。
