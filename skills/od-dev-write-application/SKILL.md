@@ -77,6 +77,10 @@ app 在 op 上加的基础设施:
 - [ ] 外部(GUI / 其他 app)要直接访问 app config/record?→ 才需 Context 接线(factory 通常够,默认不接)
 - [ ] 改完代码重启 MCP server?
 
+## 设计文档组织(复杂 app 才需要)
+
+复杂 app(多 op / 分支 / 循环 / 策略 / 多子系统)该有设计文档,记**设计 why + 架构 overview**(不复述代码)。简单 app 代码自解释不必写。**总分结构**(README 总览 + `decisions/` ADR + 按需拆)+ **decisions 用 ADR 式**(一个决策一个文件 + INDEX,有就写没就不写;踩坑触发选型的进 ADR,纯实现进 commit)。落 `docs/develop/<app>/`(与 `docs/game/<玩法>/` 游戏玩法分开)。详见 `references/app-design-doc.md`。
+
 ## 进度模板(本 skill 任务怎么算完成)
 
 > 配合 `od-dev-progress-tracking`(任务树状态机) + `od-dev-gameplay-automation`(两套做法)。本 skill 负责 **app 编排叶子**(做法二,所有画面 op 写完后);下表完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
