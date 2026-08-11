@@ -19,5 +19,6 @@
 | [0015](0015-mustdo-checklist-prefixed-reordering.md) | 开头 must-do checklist 前置 + 顺序重排(穷举交互前置 / 进度节点 chain 进主流程) | accepted | 2026-08-10 |
 | [0016](0016-cross-mode-drift-navigate-back.md) | 跨玩法偏离协议:认知完整但非目标玩法 → 导航回目标(别停;卡住协议并列分支) | accepted | 2026-08-11 |
 | [0017](0017-random-state-passive-hook-and-pause.md) | 随机/条件态:被动钩子捕获 + 触发停当场建档(非请用户帮切) | accepted | 2026-08-11 |
+| [0018](0018-area-complete-not-interaction-verified.md) | area 齐 ≠ 交互验证完:逐个交互验证从 §4 方法论提升进进度模板硬完成判据 | accepted | 2026-08-11 |
 
 > 日期为 ADR **形式化日**(按 od-dev-writing-skills 重构 + 迁公共仓时回溯记录);原始决策 / 踩坑发生日见各 ADR 的 Context。
