@@ -74,7 +74,7 @@
 
 # §3 叶子任务类型 → skill 模版映射(gameplay 专属)
 
-> 进度方法论**不发明判据,只组织各 skill 的模版成任务树**。**通用叶子类型**(画面建档 / operation / run_op / 代码测试 / 分支覆盖 / UI坐标检测 / app编排 / 端到端 / 罕见态)见 od-dev-progress-tracking §10;下表是 **gameplay 专属**叶子类型(通用表没有的)。
+> 进度方法论**不发明判据,只组织各 skill 的模版成任务树**。**通用叶子类型**(画面建档 / operation / run_op / 代码测试 / 分支覆盖 / UI坐标检测 / app编排 / 端到端 / 罕见态)见 od-dev-progress-tracking §11;下表是 **gameplay 专属**叶子类型(通用表没有的)。
 
 | 叶子任务类型 | skill 模版 | 该 skill 提供的完成判据 |
 |---|---|---|
@@ -84,7 +84,7 @@
 | 设计(op链/配置/策略框架) | od-dev-gameplay-automation + build-craft §找兄弟/§设计 | 复用清单+op链+配置口+客观指标 |
 | 策略迭代 | od-dev-gameplay-automation §7 | 客观指标+A/B到目标 |
 
-> 通用叶子表「画面建档(初步/完整)」已统一为单一「画面建档」(不分档,探索/实现同标准,见 od-dev-progress-tracking §10)。
+> 通用叶子表「画面建档(初步/完整)」已统一为单一「画面建档」(不分档,探索/实现同标准,见 od-dev-progress-tracking §11)。
 
 ---
 
