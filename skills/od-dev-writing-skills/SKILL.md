@@ -1,6 +1,6 @@
 ---
 name: od-dev-writing-skills
-description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、或问 skill 带哪些文件、内容怎么写时用。英文:create/author/edit a skill、write SKILL.md、skill structure。仅创建/修改 skill 时用;使用已有 skill 不触发。
+description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、问 skill 带哪些文件/内容怎么写,或开发中用某 skill 发现 gap 想写规范反馈(交迭代方处理)时用。英文:create/author/edit a skill、write SKILL.md、skill structure、or write structured feedback on a skill gap。仅创建/修改 skill 或写其反馈时用;纯使用已有 skill 不触发。
 ---
 
 # 创建/修改项目 skill

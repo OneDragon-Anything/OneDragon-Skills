@@ -1,6 +1,6 @@
 ---
 name: od-dev-write-application
-description: 当要在一条龙(OneDragon)框架上新建、修改或调试一个 Application(应用)时用 —— 把玩法的 Operation 组合成一个可运行的 app(写 app 类 + factory 注册 + config + GUI + run-record + 编排)。Use when creating/modifying/debugging an Application — compose ops into a runnable app. 不触发:写单个 op(od-dev-write-operation)、从零做新玩法(od-dev-gameplay-automation)。
+description: 当要在一条龙(OneDragon)框架上新建、修改或调试一个 Application(应用)时用 —— 把玩法的 Operation 组合成一个可运行的 app(写 app 类 + factory 注册 + config + GUI + run-record + 编排,复杂 app 含设计文档组织)。Use when creating/modifying/debugging an Application — compose ops into a runnable app, incl. design-doc organization for complex apps. 不触发:写单个 op(od-dev-write-operation)、从零做新玩法(od-dev-gameplay-automation)。
 ---
 
 # 写 / 改 一个 Application(OneDragon)
