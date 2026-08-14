@@ -42,9 +42,10 @@ description: 当要从游戏截图检测或验证 UI 区域坐标(槽位网格 /
 自由问坐标(「描述位置 / 报像素 / 报 0-1 小数」)→ 模型瞎编(全图偏几百 px)。**用模型被训练好的「母语」坐标格式**:
 
 - **先查文档确认模型的 grounding 格式(通用原则)**:各视觉大模型的原生坐标格式 / 范围不同,用错就幻觉(全图偏几百 px)。换模型 / 不确定时**先查其官方文档**,别凭记忆 —— 坐标格式随代际变。例:
-  - **GLM-4.5V**:自然语言要 `[xmin,ymin,xmax,ymax]` 归一化 **0-1000**(提问示例 `"Where is each <目标>? Provide coordinates in [[xmin,ymin,xmax,ymax],...] format normalized 0-1000"`;还原 `pixel = value / 1000 × 宽/高`)。
-  - **Qwen3 系**:JSON `{"bbox_2d":[x1,y1,x2,y2]}` 归一化 **0-999** + `locate every instance of <类别>` 提问。
+  - **GLM-V 系(如 GLM-4.5V)**:自然语言要 `[xmin,ymin,xmax,ymax]` 归一化 **0-1000**(提问示例 `"Where is each <目标>? Provide coordinates in [[xmin,ymin,xmax,ymax],...] format normalized 0-1000"`;不指定格式时默认输出 2D bbox)。
+  - **Qwen3-VL / Qwen3.5-3.8 系(如 qwen3.7-plus)**:JSON `{"bbox_2d":[x1,y1,x2,y2]}` 归一化 **[0, 999]** + `locate every instance of <类别>` 提问。
   - **Qwen2.5-VL**:绝对像素。
+- **归一化体系下,prompt 里别夹绝对像素信息**(图片宽高 / 分辨率 / 已知像素坐标):归一化与绝对像素是**两套坐标系**,同时给 → 模型在两套间摇摆打架,输出坐标漂移、甚至计数错。像素还原**自己算**(拿到归一化值后 `pixel = value / 归一化上界 × 宽/高`),别让模型换算;模型用绝对像素体系时(如 Qwen2.5-VL)输出即像素,同样无需给尺寸。
 - **视觉大模型 的「状态推理 / 计数 / 对齐判断」不可信**(不懂游戏、会基于文字瞎猜;数覆盖层对齐也会数错)—— 只信它**客观描述**(有哪些元素 / 文字 / 大致位置)。坐标对错以**数值对拍 ground truth** 为准,别让 视觉大模型 当裁判。
 - **视觉大模型 的「颜色 / RGB」不可信精确值**:视觉大模型颜色感知是「人类式分类命名」(说「亮蓝」「暗紫」),**非像素级精确**,且会被色彩错觉骗(2025 学术共识:VLMs inherit human color perception、color illusions fool VLMs)。**用法**:让 视觉大模型 **定性**描述(够用来选 CV 信号:亮 vs 暗 / 蓝调 vs 紫调)→ **精确阈值 / RGB 由 CV 采样定**(`np.mean(bbox)` 均值 / k-means 主色),别拿 视觉大模型 报的「V~85%」当阈值。**分工:视觉大模型定位(在哪)+ CV 采样(准值)**。
 

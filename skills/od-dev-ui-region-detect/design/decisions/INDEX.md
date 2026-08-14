@@ -7,3 +7,4 @@
 | [0003](0003-squares-shape-detection.md) | 矩形/卡牌阵列用 squares 几何检测(免疫颜色变化) | accepted | 2026-08-04 |
 | [0004](0004-vision-color-unreliable.md) | 视觉大模型 颜色不可信精确值,定性可用 + CV 采样定准值 | accepted | 2026-08-04 |
 | [0005](0005-vlm-coordinate-trust-hierarchy.md) | VLM 定位信任层级:默认信 VLM 坐标,别用未验证参照否定 | accepted | 2026-08-10 |
+| [0006](0006-normalized-coords-no-absolute-pixels-in-prompt.md) | VLM 归一化坐标系下 prompt 不夹绝对像素信息,像素还原智能体自己做 | accepted | 2026-08-14 |

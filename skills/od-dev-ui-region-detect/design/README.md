@@ -12,5 +12,7 @@
   - [0002 验证用数值对拍 ground truth,不用 视觉大模型 当裁判](decisions/0002-numeric-verification-not-vision-judge.md)
   - [0003 矩形/卡牌阵列用 squares 几何检测(免疫颜色变化)](decisions/0003-squares-shape-detection.md)
   - [0004 视觉大模型 颜色不可信精确值,定性可用 + CV 采样定准值](decisions/0004-vision-color-unreliable.md)
+  - [0005 VLM 定位信任层级:默认信 VLM 坐标,别用未验证参照否定](decisions/0005-vlm-coordinate-trust-hierarchy.md)
+  - [0006 VLM 归一化坐标系下 prompt 不夹绝对像素信息,像素还原智能体自己做](decisions/0006-normalized-coords-no-absolute-pixels-in-prompt.md)
 
 > 迁移自旧版单文件 `design.md`(混合 design+decision);按 `od-dev-writing-skills` 硬规范 1 拆分。
