@@ -83,11 +83,13 @@ app 在 op 上加的基础设施:
 
 ## 进度模板(本 skill 任务怎么算完成)
 
-> 配合 `od-dev-progress-tracking`(任务树状态机) + `od-dev-gameplay-automation`(两套做法)。本 skill 负责 **app 编排叶子**(做法二,所有画面 op 写完后);下表完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
+> 配合 `od-dev-progress-tracking`(任务树状态机) + `od-dev-gameplay-automation`(两套做法)。本 skill 负责 **app 编排任务**(做法二,所有画面 op 写完后)的完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
+>
+> ⚠️ **app 编排 = 非叶子(目录),不是一行叶子**:app 编排有**多步**(§标准步骤步1-5:const / run_record / config / factory / app + hub模式 + 自检),按 progress-tracking §2「≥2 子步骤 → 非叶子 → 目录」→ **建独立目录 + 进度.md**,步1-5 作子任务逐个跟踪、全过才算 app 编排节点过。下表给的是 app 编排**整体的完成判据**(各子步骤的判据在 §标准步骤),不是「整个 app 编排是叶子」。
 
-| 叶子 | 已过判据(指本 skill) | 特有防跑偏点 |
-|---|---|---|
-| app 编排/factory/config/GUI | §标准步骤 最小可跑(步1-5:const/run_record/config/factory/app)+ §hub模式 + §写完自检全过 | **自底向上**:op 先各自 `run_operation` 验证过再串联(§编写顺序);别先搭 app 壳再慢慢填 op(op 没验证就串联,失败时分不清 op 坏还是串联坏) |
+| 任务 | 形态 | 已过判据(指本 skill) | 特有防跑偏点 |
+|---|---|---|---|
+| app 编排/factory/config/GUI | **非叶子·目录**(步1-5子任务) | §标准步骤 最小可跑(步1-5:const/run_record/config/factory/app)+ §hub模式 + §写完自检全过 | **自底向上**:op 先各自 `run_operation` 验证过再串联(§编写顺序);别先搭 app 壳再慢慢填 op(op 没验证就串联,失败时分不清 op 坏还是串联坏) |
 
-- **状态记录**:app 编排是**做法二**的叶子(所有画面 op 写完后);**完整闭环**还要做法二出口 `run_standalone_app` 端到端跑通。
+- **状态记录**:app 编排是**做法二**的非叶子节点(所有画面 op 写完后);**完整闭环**还要做法二出口 `run_standalone_app` 端到端跑通。
 - **跑偏信号(本 skill)**:先搭壳再填 op;首/尾 op 没回 hub(§hub模式必做);改 app 代码没重启 MCP server(框架缓存 app 实例)。

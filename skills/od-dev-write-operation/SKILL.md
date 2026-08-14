@@ -137,13 +137,15 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 
 ## 进度模板(本 skill 任务怎么算完成)
 
-> 配合 `od-dev-progress-tracking`(任务树状态机 + 状态词 + §11 叶子表)+ `od-dev-gameplay-automation/references/progress-tracking.md`(做法二分纲)。本 skill 负责 **op 类叶子**(做法二画面子任务②op / ③run_op / ④代码测试);下表完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
+> 配合 `od-dev-progress-tracking`(任务树状态机 + 状态词 + §11 叶子表)+ `od-dev-gameplay-automation/references/progress-tracking.md`(做法二分纲)。本 skill 负责 **op 类任务**(做法二画面子任务②op / ③run_op / ④代码测试)的完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
+>
+> ⚠️ **一个画面的 op 工作 = 非叶子(目录),不是一行叶子**:一个画面常有**多个 op**(读信息 op / 动作 op / 不同子态 op),按 progress-tracking §2「≥2 子步骤 → 非叶子 → 目录」→ **画面级 op 工作建独立目录 + 进度.md**,每个 op 一个子节点。下表给的是**单个 op 级别**的叶子判据(op 编写② / run_op③ / 测试④ 是单个 op 的三步,全过 = 该 op 闭环);多 op 画面的 op 目录聚合所有 op 子节点状态。单 op 画面可直接用下表三行作子任务。
 
-| 叶子(→progress-tracking §11) | 已过判据(指本 skill) | 特有防跑偏点 |
+| 单 op 叶子(→progress-tracking §11) | 已过判据(指本 skill) | 特有防跑偏点 |
 |---|---|---|
 | op 编写② | §写一个op主线:节点图 + round 结果语义 + §op进出状态核对(入口识别预期屏 + 出口验真转移) | op 粒度两头卡(§主线3:太粗 if-elif≥3 画面/动作拆、超~80行拆;太细单跑没法自验证归 op 内函数);"做了动作"≠"达成结果",出口没验真转移别 success |
 | run_op 实测③ | §主线5 + §写完自检:`run_operation '<op_id>'` 单 op 实测通过再接入主流程 | **代码写完 ≠ 过,必须 run_op 单 op 实测**(最易跳过的一步) |
 | 代码测试④ | `references/testing.md`:fixture + unit 覆盖该画面逻辑/分支 | 写 mock 断言前先读 node 返回类型语义(§round结果驱动节点图:`round_success`/`round_fail`/`round_wait`/`round_retry` 路由不同、判法不同),别照搬别的 app |
 
-- **状态记录**:②op / ③run_op / ④测试 各一叶子,用 progress-tracking 状态词;该子态三者全过 = 子态 op 闭环(**≠ 画面闭环**;画面闭环还需 ①建档 + ②-⑤ 全过 + 罕见态 + 假绿,见做法二分纲 §1.2 画面闭环判据)。
+- **状态记录**:单个 op 的 ②op / ③run_op / ④测试 各一叶子,用 progress-tracking 状态词;该 op 三者全过 = **该 op 闭环**。**多 op 画面**:op 目录聚合所有 op 子节点全过 = 画面级 op 工作(**≠ 画面闭环**;画面闭环还需 ①建档 + ②-⑤ 全过 + 罕见态 + 假绿,见做法二分纲 §1.2 画面闭环判据)。
 - **跑偏信号(本 skill)**:op 卡住没先读日志就盲改坐标;预料外画面只加 ESC 没调研建档(§必守3);循环驱动玩法没选结构(flat loop / node-per-op)就写。
