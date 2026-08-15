@@ -20,7 +20,7 @@ description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、问 skill
 - **细则**:目录结构 / ADR 全套模板 / 写作方法论(何时写、缩放、design vs ADR 内容归属)见 `references/design-docs.md`(锚定 arc42 + ADR/MADR 业界方法论,不自己发明)。
 
 ### 2. 内容给智能体看(指令式)
-SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文档。
+SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文档。给"哪个"智能体:**默认读者 = 无会话历史的干净智能体**(读不到你的会话/项目当下状态,只读得到 skill 文本)—— 每句都要脱离当前会话可理解,细则(禁会话指代/禁依赖当下状态/自检法)见 `references/writing-craft.md` §1.9。
 - 祈使句 + 判据(「先 X 再 Y」「若 Z 则 W」),不要叙述文档腔。
 - **流程类 skill(有固定步骤序:画面建档 / UI 区域检测 / 写 op / 调试等)开头必须带一条 ordered must-do checklist**:编号 + `☐` + 祈使动作 + 一行判据 + 标「必做」,开头再标一句「没做完这 N 步不算完成」(completion gate 前置);每条链回后文详细 §。**判据 / 踩坑 / 方法论留后文,不混进 checklist 主流程**(主流程只放可勾动作 + 一行判据)。理由:长散文里 must-do 被「判据 / 踩坑」稀释,agent 抓不住「必做哪几步、什么序、缺一不可」→ 频繁漏步;结构式 checklist 才防漏(form-to-failure「漏元素 → 结构式 REQUIRED 槽位」,见 `references/writing-craft.md` §1.5;why 见 [ADR-0010](design/decisions/0010-procedural-skill-mustdo-checklist.md))。**非流程类(纯方法论 / 参考、无固定步骤序)不强制**。
 - frontmatter 的 `description` 是**调用主触发器**(Anthropic 官方:primary mechanism):**以触发为主 + 可带一句 purpose,不写 workflow / 执行步骤**(范围关键词 —— 碰什么组件 / 接口 / 制品 / 扁平列举的动作 —— 属触发上下文,不禁)—— 否则智能体照 description 行事、不读正文。**要 pushy 防 under-trigger**(显式列场景 +「凡是 X 都用,即使没明说」;Claude 倾向漏触发)。详 `references/writing-craft.md` §1.3。
