@@ -18,6 +18,7 @@ OneDragon 公共开发类 skill(`od-dev-*`)。每个 skill 一个目录:`SKILL.m
 | `od-dev-debug-automation` | 排查运行中的自动化 bug(用户反馈跑失败的事后法证:分进程找日志 / run_record 判死活 / 节点流转定位 / 识别参数专项) |
 | `od-dev-write-application` | 新建 / 修改 / 调试 Application(把 Operation 组合成可运行 app) |
 | `od-dev-mcp-backend` | 开发 / 修改 MCP backend(tool 能力边界判定 / 设计原则 / 实现规范 / 画面额外识别器) |
+| `od-dev-release-ci` | 发布管线与 CI(构建→签名→发布→分发 / 测试仓联动三层 fallback;ZZZ 领先版提炼 + SR 落后点台账) |
 | `od-dev-write-operation` | 新建 / 修改 / 调试单个 Operation |
 | `od-dev-writing-agent-instructions` | 编写 AGENTS.md / CLAUDE.md 类 always-on 入口文件(分层 / 取舍 / 反模式) |
 | `od-dev-writing-skills` | 创建 / 修改 skill 的写作规范(4 硬规范 / writing-craft / testing;本仓方法论基石) |
