@@ -11,17 +11,38 @@
 
 具体工具的入口文件位置 / 引入语法不同 —— Claude Code 的推荐接线见 [entry-file.md](claude-code/entry-file.md)。
 
-## OneDragon 项目如何消费本仓库的 skill
+## 项目如何消费本仓库的 skill
 
-本仓库 skill 给 OneDragon 项目(StarRail-OneDragon / ZZZ-OneDragon / …)用。消费:把本仓库 clone 到工作区(与项目同级),按需把要用的 skill **目录联接**进项目里 AI 工具读 skill 的目录(如 Claude Code 的 `.claude/skills/`):
+### 标准安装(推荐)
+
+[skills CLI](https://github.com/justjavac/skills)(agent-skills 开放生态,支持 Claude Code / Codex / Cursor / OpenCode 等 70+ agent):
+
+```powershell
+npx skills add OneDragon-Anything/OneDragon-Skills                    # 交互式:选 skill + 选 agent
+npx skills add OneDragon-Anything/OneDragon-Skills -l                 # 只列出本仓可用 skill
+npx skills add OneDragon-Anything/OneDragon-Skills -a claude-code -y  # 非交互指定 agent
+```
+
+- 装进**所选 agent 自己的 skills 目录**(项目级 `./<agent>/skills/`,默认 symlink 便于 `npx skills update`;`-g` 装全局 `~/<agent>/skills/`;`--copy` 改复制)。常见落点:Claude Code `.claude/skills/`、跨工具通用位 `.agents/skills/`(`-a universal`;DSH 等工具也扫它)。
+- 更新 / 卸载:`npx skills update` / `npx skills remove`。
+
+### 手动 junction(本地开发 / 维护本仓时用)
+
+把本仓 clone 到工作区,按需把 skill **目录联接**进项目里 AI 工具读 skill 的目录 —— 直接指向本仓 clone,改一处全工具生效:
 
 ```powershell
 cmd /c mklink /J "<项目>\.claude\skills\od-dev-write-operation" "<workspace>\OneDragon-Skills\skills\od-dev-write-operation"
 ```
 
-- 每个工具只读自己目录下的 skill —— Claude Code 读项目的 `.claude/skills/`,不读项目根 `skills/`。
-- Windows junction(`mklink /J`)免管理员;symlink 需特权 / 开发者模式。
-- 只联接用到的 skill(按需),不必整仓联接。
+- Windows junction(`mklink /J`)免管理员;symlink 需特权 / 开发者模式;只联接用到的 skill,不必整仓联接。
+
+## 目录结构是安装器兼容的硬约束
+
+`skills/<name>/SKILL.md`(flat,一层)是 agent-skills 开放标准的发现结构,`npx skills add` 按此扫描本仓。维护时保持:
+
+- skill 一律放 `skills/<name>/`,**别按类目再嵌一层** —— 标准虽也支持 `skills/<category>/<name>/` 目录布局,本仓统一用 flat,避免两套布局混用。
+- 目录名与 frontmatter `name` 一致;frontmatter 必填 `name` + `description`(格式细则见 `od-dev-writing-skills`)。
+- `design/` / `references/` 等辅助目录随 skill 目录整体安装,不受影响;仓根其他文件(AGENTS.md / docs/)不参与 skill 发现。
 
 ## 在本仓库开发 / 维护 skill
 
@@ -31,10 +52,6 @@ cmd /c mklink /J "<项目>\.claude\skills\od-dev-write-operation" "<workspace>\O
 2. junction `skills/<name>` → 本仓库里 AI 工具读 skill 的目录(如 Claude Code 的 `.claude/skills/<name>`,本地不入库),验证可触发。
 3. GREEN 验证(不可省):clean 工作空间 + 子 agent 干真活 + 观察 gap + 修 + 循环。
 4. 提交 `skills/<name>/`。
-
-## 依赖:superpowers
-
-本仓库 dev skill 叠加在 [superpowers](https://github.com/anthropics/superpowers) 之上(需求探索 / 写计划 / TDD / 调试 / review / 分支收尾全链路方法论),非替代。Claude Code 安装:插件市场搜 `superpowers`,或 `/plugin install superpowers`。
 
 ## AI 辅助提交的署名(推荐)
 

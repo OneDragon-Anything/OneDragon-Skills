@@ -11,8 +11,8 @@ OneDragon 系列项目共用同一套框架(`one_dragon` 公共包:Operation 节
 - 统一用 `od-` 项目前缀(OneDragon 公共命名空间,防和插件 / 个人 skill 撞名)。
   - 开发类 `od-dev-`:指引 AI 在 OneDragon 项目上开发 / 配置 / 构建(例 `od-dev-write-operation`、`od-dev-writing-skills`)。
   - 使用类 `od-`:指引用 OneDragon 项目做游戏自动化。
-- 放根 `skills/<name>/`(跨工具源,提交共享)。
-- 各项目消费:clone 本仓库到工作区,按需把 `skills/<name>` **目录联接**(junction)进项目的 `.claude/skills/<name>`(详 `docs/setup/ai_coding.md`)。
+- 放根 `skills/<name>/`(跨工具源,提交共享)。**保持 flat 一层,目录名 = frontmatter `name`**:`skills/<name>/SKILL.md` 是 agent-skills 开放标准的发现结构(`npx skills add` 按此扫描安装),按类目加嵌套层 / 目录名与 name 不一致会破坏安装器兼容(细则与消费方式见 `docs/setup/ai_coding.md`)。
+- 各项目消费:`npx skills add OneDragon-Anything/OneDragon-Skills`(标准 CLI);本地开发 / 维护本仓时用 junction 直接指本仓 clone(见 `docs/setup/ai_coding.md`)。
 
 ## Skill 结构(硬规范)
 
@@ -25,12 +25,7 @@ skills/<name>/
 └── references/       # 按需:被 SKILL.md 引用的情境细节(helper / API 参考)
 ```
 
-本仓 skill **按 `od-dev-writing-skills` 编写**(4 硬规范 / writing-craft / testing 细则都在它里面);下面是结构 + 4 硬规范摘要。
-
-1. **design/ 与 ADR 分开**:`design/overview.md` 记 what,`design/decisions/NNNN-*.md` 记 why。不写混合 design.md。design/ 不进 agent 执行上下文(SKILL.md 不写「见 design/…」取使用信息)。
-2. **内容给 agent 看(指令式)**:SKILL.md = 祈使句 + 判据;frontmatter `description` 只写「何时用」触发,**不总结 workflow**(否则 agent 照 description 行事、不读正文)。
-3. **自包含**:引用 target 必须在**已提交仓库**里 —— 禁引 gitignored(`.debug/` / `config/` / `.claude/` / `models`)、个人 local、**memory**。框架地基级接口名(`@operation_node` / `round_by_*` / `controller` / `screen_info` …)可写全名(删了 agent 就不会做的指令);具体代码文件 / 实现行 / 易变文档 → 抽象化。
-4. **写方法论,不写具体例子**:SKILL.md + agent 读的辅助文件只写方法 / 原则 / 判据;具体游戏事实(键位 / 坐标 / 流程 / 机制)归项目 doc。design/(含 ADR)可放具体例子作决策论据。
+本仓 skill **按 `od-dev-writing-skills` 编写**。4 硬规范:① design/ 与 ADR 分开;② 内容给 agent 看(指令式);③ 自包含(引用卫生);④ 写方法论,不写具体例子。**完整判据与细则单一源在 `od-dev-writing-skills`**(此处不复制摘要,摘要会漂移);写 / 改 skill 时逐条对照该 skill 自检。
 
 ## 框架通用,游戏专属要泛化
 
@@ -38,16 +33,11 @@ skills/<name>/
 
 ## 创建 / 修改 skill 流程
 
-1. **定位**:这个 skill 管什么、不管什么;和已有 skill(`superpowers:*`、本仓库 `od-dev-*`)重叠的**引用而非重复**。
-2. **写 SKILL.md**(frontmatter name+description 触发 + 指令式正文)+ **design/**(overview + ADR)。
-3. **自检 4 硬规范**(逐条)+ 通读确认每条指令可执行;**编辑时额外查新增引用是否过规范 3 的门**(已提交 + 不引 memory / gitignored + 稳定 / 可校验)。
-4. **junction** `skills/<name>` → 本仓库 `.claude/skills/<name>` 本地验证可触发。
-5. **GREEN 验证不可省**(方法:`od-dev-writing-skills` 的 testing reference;方法论型 = clean 工作空间 utility test + 子 agent 干真活 + 观察 gap + 修 + 循环)。
-6. 提交 `skills/<name>/`。
+写 skill 的完整流程(定位 / 复查过往 ADR / 写 SKILL.md + design / 自检 4 硬规范 / GREEN 验证)单一源在 `od-dev-writing-skills` 的「创建/修改流程」,照它做;此处只列本仓特有步骤:
 
-## 依赖:superpowers
-
-本仓库 dev skill 叠加在 [superpowers](https://github.com/anthropics/superpowers) 之上(需求探索 / 写计划 / TDD / 调试 / review / 分支收尾全链路方法论),非替代。使用者需同时具备 superpowers。
+1. 按 `od-dev-writing-skills` 的创建/修改流程完成 skill 本体(编辑前先复查该 skill 的 `design/decisions/`,防撞号 / 重提已否)。
+2. junction `skills/<name>` → 本仓里所用 AI 工具读 skill 的目录(如 `.claude/skills/<name>`,本地不入库),验证可触发。
+3. 提交 `skills/<name>/`。
 
 ## 提交流程
 
