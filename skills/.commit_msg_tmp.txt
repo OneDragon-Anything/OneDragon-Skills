@@ -1,0 +1,11 @@
+skill(new): od-dev-writing-agent-instructions — AGENTS.md/CLAUDE.md 类 always-on 入口文件编写指导
+
+- 必做 checklist 5 步(判层→判层内归属[共享 vs .local]→写指令→纯度自检→改动流程)
+- §1 格式与变体地图(agents.md 开放标准 + CLAUDE.md 变体 + 跨工具单源姿势)
+- §2 内容取舍:砍为默认(删了会出错自检 + 四档分层 always-on/skill/hook/doc + Anthropic 官方加删节奏)
+- §3 两层区分:共享(AGENTS.md,入库)vs 个人本地(.local,不入库)——判据/误放症状/单源纪律/试验场警告
+- §4 反模式(臃肿/元信息/双源/会话残留/advice当enforcement/永不清理)
+- ADR-0001:与 writing-skills 分开(artifact 不同 token 经济相反;判据互通处引用不复制)
+- 内容来源:agents.md 标准 + Anthropic memory 官方文档 + SR harness context_layering/entry_files 泛化
+- GREEN:10 条混合指令分类全对(含 hook 陷阱/会话叙事改写/过时指令删)+ advisory≠enforcement 答对
+- 已 junction 挂载进 SR 项目 .dsh/skills/(热加载验证过)
