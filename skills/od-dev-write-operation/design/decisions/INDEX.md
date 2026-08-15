@@ -11,3 +11,4 @@
 | 0007 | op 进出状态核对:op 边界契约(入口识别 + 出口验证转移,出口默认开不可推卸) | accepted | 2026-08-05 |
 | 0008 | 多屏共现关键词必用 area —— 揭露 lcs 收紧对全等子序列无效(0004 follow-up) | accepted | 2026-08-06 |
 | 0009 | flat loop 推进型 handler 完成验证(三层完成验证的最后一块) | accepted | 2026-08-06 |
+| 0010 | 通用调试纪律内联,去 superpowers:systematic-debugging 外部指针 | accepted | 2026-08-15 |

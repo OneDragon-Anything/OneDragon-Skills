@@ -110,7 +110,7 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 ## 必守不变量(反复发作的坑 + 探索式开发的技术)
 
 1. **MCP click/key 异步**:立即返回但 ~1s 才落地;操作后 `sleep` 再验,否则截到点击前画面。
-2. **调试先读日志,不够就补日志**:bot 卡住 / op 失败 → 先读 MCP server 日志(项目 `.debug/` 下;实际 OCR / 走到哪个节点 / 决策状态),别盲点坐标。日志解释不了 → 在决策点补日志(OCR 摘要 + 点击坐标 + 分支结果)+ `save_screenshot()` 存图。
+2. **调试先读日志,不够就补日志**:bot 卡住 / op 失败 → 先读 MCP server 日志(项目 `.debug/` 下;实际 OCR / 走到哪个节点 / 决策状态),别盲点坐标。日志解释不了 → 在决策点补日志(OCR 摘要 + 点击坐标 + 分支结果)+ `save_screenshot()` 存图。**改前先形成假设、一次只改一个变量、定位根因才修**(别连续换补丁碰运气;详 `references/runtime-craft.md` 调试纪律)。
 3. **预料外画面别只 ESC**:先调研"上一步代码点了什么 → 落到哪个 UI 元素 → 游戏对该元素的交互",**建档后改 click 避开误触元素**(不只加 ESC handler)—— 这就是探索式循环里"补建档 + 补分支"的一步。
 4. **多样本核实**:验证 OCR / 读取器跨多样本看统计分布,别凭一张图 / 单次推断下结论。
 5. **决策点多 log 多截图(信息密度论)**:探索式开发里每次实跑都在暴露建档缺口,要从一次跑榨取**最多信息**(OCR 到啥 / 评估了啥 / 点了哪 / 结果 / 关键分支截图),而非跑一次只找一个坑。**判据:实跑后看日志能复盘每个决策点发生了什么**;做不到 = 日志不够,补。验证通过后逐步去掉减开销。详 `references/runtime-craft.md`。
@@ -123,7 +123,7 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 - 从零做新玩法全程 → `od-dev-gameplay-automation`
 - app 产品化(factory / config / GUI / run-record / app 编排)→ `od-dev-write-application`
 - 建一张屏的机制 → `od-dev-screen-onboarding`
-- 通用 bug 定位 / 修复流程 → `superpowers:systematic-debugging` / deciding-a-fix skill(项目内)
+- 非 op 领域的通用调试 / 修复决策 → 所在项目的调试类 skill(如有);op 内调试纪律见本文「必守不变量」+ `references/runtime-craft.md`
 
 ## 写完自检
 
