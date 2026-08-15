@@ -1,6 +1,6 @@
 ---
 name: od-dev-write-operation
-description: 当要在一条龙(OneDragon)框架上**新建、修改或调试单个 Operation** 时用 —— 写一个 op(用 `@operation_node` 声明节点、用 `round_by_*` 做画面判定与点击、处理一个画面或一类动作、返回 round 结果),或改/修已有 op 的逻辑与 bug。Use when writing, modifying, or debugging a single Operation on the OneDragon framework — declare nodes via `@operation_node`, detect/click screens via `round_by_*`, handle one screen/action, return round results; includes fixing an op's logic/bugs. 不触发:从零做新玩法(od-dev-gameplay-automation)、搭/改 app 骨架与配置(od-dev-write-application)。
+description: 当要在一条龙(OneDragon)框架上**新建、修改或调试单个 Operation** 时用 —— 写一个 op(用 `@operation_node` 声明节点、用 `round_by_*` 做画面判定与点击、处理一个画面或一类动作、返回 round 结果),或改/修已有 op 的逻辑与 bug。Use when writing, modifying, or debugging a single Operation on the OneDragon framework — declare nodes via `@operation_node`, detect/click screens via `round_by_*`, handle one screen/action, return round results; includes fixing an op's logic/bugs. 不触发:从零做新玩法(od-dev-gameplay-automation)、搭/改 app 骨架与配置(od-dev-write-application)、**用户反馈的运行失败排查(事后法证,你没在写那个 op)→ od-dev-debug-automation**。
 ---
 
 # 写 / 改 / 调试单个 Operation(OneDragon)
@@ -123,7 +123,8 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 - 从零做新玩法全程 → `od-dev-gameplay-automation`
 - app 产品化(factory / config / GUI / run-record / app 编排)→ `od-dev-write-application`
 - 建一张屏的机制 → `od-dev-screen-onboarding`
-- 修复决策(已定位后怎么修:介入点选型 / 根因挖多深 / 临时 vs 永久 / 多方案横评)→ `od-dev-deciding-a-fix`;op 内调试纪律见本文「必守不变量」+ `references/runtime-craft.md`
+- 修复决策(已定位后怎么修:介入点选型 / 根因挖多深 / 临时 vs 永久 / 多方案横评)→ `od-dev-deciding-a-fix`
+- 用户反馈的运行失败排查(你不在场,从零重建现场:找对进程日志 / run_record 判死活 / 数重复记录)→ `od-dev-debug-automation`;op 内调试纪律见本文「必守不变量」+ `references/runtime-craft.md`
 
 ## 写完自检
 

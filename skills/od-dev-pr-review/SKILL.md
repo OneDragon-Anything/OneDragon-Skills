@@ -37,6 +37,8 @@ description: 当要审查/验证一个 open PR 是否可合并时用(L0 分诊 �
 - **`execute()` 重复调用安全**:每次开头全重置(节点图 + 重试计数 + `handle_init`)。retry 包 `execute` 的模式安全。
 - **节点路由 `node_from(status=...)`**:契约从"抛异常"改"返回 None/默认值"时,**逐个消费方确认 None-safe**(否则只是把崩溃换地方)。`ignore_status` + `status` 组合决定路由,有疑义查匹配源码。
 
+> 上述框架语义的**机制详解**单源在 `od-dev-write-operation`(references/node-graph.md / round-by-helpers.md);此处是审查清单形态,语义有疑义以那边源码级展开为准。
+
 ## 3. L2 背景核实
 
 PR 描述 / 关联 issue 提到的游戏行为 / bug 是否属实?对画面模型(screen_info)、玩法 doc、相关代码路径交叉验证。issue 标题/日志往往透露真实复现路径(如"某 app 复用同一 operation"会扩大影响范围)。

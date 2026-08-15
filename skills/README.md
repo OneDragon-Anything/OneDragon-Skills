@@ -25,4 +25,4 @@ OneDragon 公共开发类 skill(`od-dev-*`)。每个 skill 一个目录:`SKILL.m
 
 ## 部分安装说明
 
-skill 间有互引(单一源设计,刻意不复制内容):开发六件套(gameplay-automation / progress-tracking / screen-onboarding / ui-region-detect / write-application / write-operation)存在**文件级**互引(如 framework-pitfalls 只在 write-operation),**建议整套装**;writing-skills / writing-agent-instructions / deciding-a-fix 相对独立,可单装(deciding-a-fix 软引 write-operation / screen-onboarding);PR 对(pr-review / pr-finishing)互相路由,**成对装**(pr-review 软引 screen-onboarding);debug-automation 软引 write-operation / screen-onboarding / deciding-a-fix。
+skill 间有互引(单一源设计,刻意不复制内容):开发六件套(gameplay-automation / progress-tracking / screen-onboarding / ui-region-detect / write-application / write-operation)存在**文件级**互引(如 framework-pitfalls 只在 write-operation),**建议整套装**;writing-skills / writing-agent-instructions / deciding-a-fix 相对独立,可单装(deciding-a-fix 软引 write-operation / screen-onboarding);PR 对(pr-review / pr-finishing)互相路由,**成对装**(pr-review 软引 screen-onboarding);debug-automation 软引 write-operation / screen-onboarding / deciding-a-fix;两个基础设施域 skill(mcp-backend / release-ci)相对独立,可单装(分别软引开发链 / PR 对)。
