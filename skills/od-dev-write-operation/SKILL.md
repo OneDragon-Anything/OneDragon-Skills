@@ -123,7 +123,7 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 - 从零做新玩法全程 → `od-dev-gameplay-automation`
 - app 产品化(factory / config / GUI / run-record / app 编排)→ `od-dev-write-application`
 - 建一张屏的机制 → `od-dev-screen-onboarding`
-- 非 op 领域的通用调试 / 修复决策 → 所在项目的调试类 skill(如有);op 内调试纪律见本文「必守不变量」+ `references/runtime-craft.md`
+- 修复决策(已定位后怎么修:介入点选型 / 根因挖多深 / 临时 vs 永久 / 多方案横评)→ `od-dev-deciding-a-fix`;op 内调试纪律见本文「必守不变量」+ `references/runtime-craft.md`
 
 ## 写完自检
 
