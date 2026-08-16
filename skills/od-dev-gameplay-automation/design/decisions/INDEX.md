@@ -12,3 +12,4 @@
 | [0008](0008-docs-game-gameplay-only-no-automation.md) | docs/game/ 只放游戏玩法(玩家视角事实),自动化实现归 docs/develop/ | accepted | 2026-08-11 |
 | [0009](0009-strategy-requirement-checklist-complex.md) | 复杂玩法策略设计出「策略需求清单」(checklist),防实现/调优漏接口 | accepted | 2026-08-11 |
 | [0010](0010-strategy-craft-weighted-tiers.md) | 策略深度细则按「策略重量」三轴分层(T1/T2/T3),非平铺/非按类型分文件 | accepted | 2026-08-16 |
+| [0011](0011-reader-hook-screen-state-precondition-gate.md) | 随机态钩子前置门:reader 须过画面态锚点门才算数(空读≠信号;判据+实现两处联动) | accepted | 2026-08-16 |

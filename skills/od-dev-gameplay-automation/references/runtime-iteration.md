@@ -1,7 +1,7 @@
 # 运行时迭代深度细则(阶段 8,生命周期视角)
 
 > 本文件是 SKILL.md 阶段 8 的按需读深度细则(**生命周期视角**)。**op 级运行时技术(信息密度 / 调试纪律 / 预料外画面调研 / 运行时不确定性预留日志 / 重复建op / **随机态钩子(采集/停机)** / **过渡帧与瞬态假象**)single source 在 `od-dev-write-operation/references/runtime-craft.md`** —— 本文件只给生命周期层的迭代节奏 + 事件 loop 模式,op 级细节去那里读。
-> **随机态钩子分流判据**:**bot 能继续推进但 reader 不可靠 → 采集钩子**(存样本 bot 继续跑,离线设计 reader;细作法见 `od-dev-screen-onboarding` 随机/条件态节);**bot 卡住无法推进(未建档画面/无分支匹配)→ 停机钩子**(停 bot 保画面当场建档;细作法见 `od-dev-write-operation` runtime-craft「钩子触发停 bot 留画面」节)。**过渡帧/瞬态视觉假象**(动画残影假阳、阈值灰区假 MISS)见 `od-dev-write-operation/references/framework-pitfalls.md` 坑 8/9;截图时机(操作后等动画再截)见 `od-dev-screen-onboarding`。
+> **随机态钩子分流判据**:**bot 能继续推进但 reader 不可靠 → 采集钩子**(存样本 bot 继续跑,离线设计 reader;细作法见 `od-dev-screen-onboarding` 随机/条件态节);**bot 卡住无法推进(未建档画面/无分支匹配)→ 停机钩子**(停 bot 保画面当场建档;细作法见 `od-dev-write-operation` runtime-craft「钩子触发停 bot 留画面」节)。**埋任何一类钩子前必加前置门**:reader 只在**目标画面态锚点命中**时才算数 —— 锚点不命中(面板收起 / 未展开 / 过渡帧)时 reader 的「空读 / 全 miss」是伪信号(画面态非法,非目标态出现),直接跳过(不停机 / 不写 sentinel / 不存样本);**钩子触发 = 画面态合法 且 reader 检出,缺一不可**(实现步见 runtime-craft 同节)。**过渡帧/瞬态视觉假象**(动画残影假阳、阈值灰区假 MISS)见 `od-dev-write-operation/references/framework-pitfalls.md` 坑 8/9;截图时机(操作后等动画再截)见 `od-dev-screen-onboarding`。
 
 ## 探索式迭代(为什么阶段 8 是循环,不是善后)
 

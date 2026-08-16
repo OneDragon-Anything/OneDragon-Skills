@@ -54,19 +54,21 @@ bot 跑到代码没预期 / 没 handler 的画面(点卡开出详情、误点进
 
 **标准做法(临时钩子,建档后回滚)**:
 1. **钩子位置**:目标 node 方法**最前、click 前**(检测在改变状态前);或画面判定 / 状态读取函数。
-2. **检测到目标态 → 存 sentinel + 调框架停 + return 保画面**:
+2. **前置门(先于 reader 检测;采集 / 停机两类钩子通用)**:reader 跑前先验**画面态锚点**(该画面 screen_info 的锚点 area / id_mark 命中);不命中 → 直接走原逻辑 —— 非目标画面态上 reader 的「全 miss」是空读伪信号,不是目标态出现(判据见 `od-dev-gameplay-automation` runtime-iteration「随机态钩子分流判据」)。
+3. **检测到目标态 → 存 sentinel + 调框架停 + return 保画面**:
    ```python
    @operation_node
    def 某node(self):
-       state = self._detect_target_state()
-       if state == TARGET:  # 钩子(临时,建档后删)
-           self.save_screenshot(prefix='target_state')
-           Path('<临时目录>/target_state.flag').write_text(state)  # sentinel:标记本次停是目标态(含态名,区分故障/手停)
-           self.ctx.run_context.stop_running()  # 框架公共停(下一轮 loop 顶见 STOP 退出)
-           return self.round_wait(status=f'目标态:{state}')  # return 不 click,画面原样保持
+       if self._screen_anchor_hit():  # 前置门:画面态锚点命中,reader 的检出才算数(空读≠信号)
+           state = self._detect_target_state()
+           if state == TARGET:  # 钩子(临时,建档后删)
+               self.save_screenshot(prefix='target_state')
+               Path('<临时目录>/target_state.flag').write_text(state)  # sentinel:标记本次停是目标态(含态名,区分故障/手停)
+               self.ctx.run_context.stop_running()  # 框架公共停(下一轮 loop 顶见 STOP 退出)
+               return self.round_wait(status=f'目标态:{state}')  # return 不 click,画面原样保持
        ...原 node 逻辑...
    ```
-3. **AI 接管建档**:`get_run_status`=STOPPED + sentinel(flag + 截图)在 → **sentinel 必需**(区分「遇目标态停」vs「故障 / 手停」,纯 status 不够)→ `analyze_screen`(sentinel 截图,无需游戏在线)+ 视觉大模型 + 当场跑建档流程 → 完了**删钩子 + 重启 MCP server(代码生效)+ relaunch bot**。
+4. **AI 接管建档**:`get_run_status`=STOPPED + sentinel(flag + 截图)在 → **sentinel 必需**(区分「遇目标态停」vs「故障 / 手停」,纯 status 不够)→ `analyze_screen`(sentinel 截图,无需游戏在线)+ 视觉大模型 + 当场跑建档流程(接管时画面可能已被游戏动画 / 结算推进走 → 只剩存证截图时走 `od-dev-screen-onboarding`「随机 / 条件态」节的**停机后画面已流转降级路径**)→ 完了**删钩子 + 重启 MCP server(代码生效)+ relaunch bot**。
 
 **升级路径(反复暂停恢复才做)**:框架有原生 PAUSE(loop sleep 不跑 node + 超时豁免)但 MCP 未暴露 → 加 pause/resume MCP tool = 保运行态 + 真 resume,语义更干净。`round_wait` 不撞 retry(WAIT 不计 retry,超时 -1)但不推荐做 latch(自建 flag 脆弱);raise 消耗 retry 最终 FAIL 推进,不可用。
 
