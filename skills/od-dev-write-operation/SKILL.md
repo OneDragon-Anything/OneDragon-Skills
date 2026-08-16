@@ -1,6 +1,6 @@
 ---
 name: od-dev-write-operation
-description: 当要在一条龙(OneDragon)框架上**新建、修改或调试单个 Operation** 时用 —— 写一个 op(用 `@operation_node` 声明节点、用 `round_by_*` 做画面判定与点击、处理一个画面或一类动作、返回 round 结果),或改/修已有 op 的逻辑与 bug。Use when writing, modifying, or debugging a single Operation on the OneDragon framework — declare nodes via `@operation_node`, detect/click screens via `round_by_*`, handle one screen/action, return round results; includes fixing an op's logic/bugs. 不触发:从零做新玩法(od-dev-gameplay-automation)、搭/改 app 骨架与配置(od-dev-write-application)、**用户反馈的运行失败排查(事后法证,你没在写那个 op)→ od-dev-debug-automation**。
+description: 当要在一条龙(OneDragon)框架上**新建、修改或调试单个 Operation** 时用 —— 写一个 op(用 `@operation_node` 声明节点、用 `round_by_*` 做画面判定与点击、处理一个画面或一类动作、返回 round 结果),或改/修已有 op 的逻辑与 bug。Use when writing, modifying, or debugging a single Operation on the OneDragon framework — declare nodes via `@operation_node`, detect/click screens via `round_by_*`, handle one screen/action, return round results; includes fixing an op's logic/bugs. 不触发:从零做新玩法(od-dev-gameplay-automation)、搭/改 app 骨架与配置(od-dev-write-application)、**用户反馈的运行失败排查(事后从零重建现场,你没在写那个 op)→ od-dev-debug-automation**。
 ---
 
 # 写 / 改 / 调试单个 Operation(OneDragon)
@@ -22,7 +22,7 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
    - ⑤ 进下一个画面(多画面按游戏流程顺序推进 = gameplay 层,见 `od-dev-gameplay-automation`)
 3. 整体循环到玩法全部画面稳定。
 
-> 这与肉鸽无必然关系 —— **大部分玩法都有分支**(肉鸽只是密)。这是自动化开发的**根本工作方式**,贯穿实现-测试全程。下面所有"为什么 op 要这么写"都由它决定:**op 要拆小**(单跑能定位发现的问题)、**决策点多 log 多截图**(一次跑榨取最多信息,因为每次都在暴露建档缺口)、**预料外画面要调研建档**(不是只 ESC)、**调试先读日志**、**重复手动操作建成 op**。
+> 这与肉鸽无必然关系 —— **大部分玩法都有分支**(肉鸽只是密)。这是自动化开发的**根本工作方式**,贯穿实现-测试全程。下面所有"为什么 op 要这么写"都由它决定:**op 拆小但别过细**(单跑能定位问题;两头卡判据见「写一个 op 的主线」3)、**决策点多 log 多截图**(一次跑榨取最多信息,因为每次都在暴露建档缺口)、**预料外画面要调研建档**(不是只 ESC)、**调试先读日志**、**重复手动操作建成 op**。
 
 ## 写一个 op 的主线(按序)
 
@@ -50,7 +50,7 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_success` 就交出控制权,若其实没完成(转场 click 没落地),**下个 op 就算有入口验证也只能发现"画面不对",没法替你重做这次转场**(不是它的活、也不知点哪)→ 流程卡错屏。故"验转移 + 没转移就自己 retry 到转移"是 op **不可推卸**的职责。
 
 - **入口(op / 节点开始)**:先识别"在预期屏"再操作。op 被进入时不保证画面就对(上 op 转场没落地 / 意外弹窗 / 错状态调来)→ 起手读屏确认是本 op 该处理的屏(id_mark / 独有关键词),**不在 → round_fail / bail**,别在错屏盲点。例外:首动作用 `round_by_find_and_click_area`(先找 area 再点)= 天然先识别,不重复。
-- **出口(转场点击后)**:确认"状态真转移了"才 `round_success`。转场 click 可能没落地(MCP 异步 / 游戏卡 / 判拖拽)→ click 后用**任一可靠转移信号**验:目标屏 id_mark 命中 / 本屏 id_mark 消失 / **刚点的按钮或元素消失**(覆盖层 关、面板收起)/ 其他稳定锚变化。**信号没出现 = 没转移 → round_retry / round_wait**(自己 retry 到真转移);出现了 = 真转移 → round_success。子态未必有 id_mark —— 用该次转移能用的任何稳定信号即可(见 od-dev-screen-onboarding §3.5)。
+- **出口(转场点击后)**:确认"状态真转移了"才 `round_success`。转场 click 可能没落地(MCP 异步 / 游戏卡 / 判拖拽)→ click 后用**任一可靠转移信号**验:目标屏 id_mark 命中 / 本屏 id_mark 消失 / **刚点的按钮或元素消失**(覆盖层关、面板收起)/ 其他稳定锚变化。**信号没出现 = 没转移 → round_retry / round_wait**(自己 retry 到真转移);出现了 = 真转移 → round_success。子态未必有 id_mark —— 用该次转移能用的任何稳定信号即可(见 od-dev-screen-onboarding §3.5)。
 
 **判据:op 进 = 确认在预期屏;op 出 = 确认真转移了。"做了动作" ≠ "达成结果",没达成别 success。**
 
@@ -67,17 +67,17 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 
 **node-per-op 三件套(缺一退化成 flat loop 的卡死)**:
 1. **两条正交问题分开**:外层只回答"我在哪种逻辑单元"(小集合分类,委派);node op 只回答"这单元的哪一步"(单元内多阶段)。塞进同一条优先级阶梯 = 优先级脆弱 / LCS 误匹配噪音的根因。
-2. **committed-but-verifying**:node op **拥有**单元生命周期(刻意驱动已知阶段),但**每步重核"还在本单元?"**,被意外弹出(进下一单元 / 意外 覆盖层)→ bail 回外层。**不是盲目顺序执行**(丢自愈),是"拥有 + 持续核对"。
+2. **committed-but-verifying**:node op **拥有**单元生命周期(刻意驱动已知阶段),但**每步重核"还在本单元?"**,被意外弹出(进下一单元 / 意外覆盖层)→ bail 回外层。**不是盲目顺序执行**(丢自愈),是"拥有 + 持续核对"。
 3. **节点作用域预算 + 完成检测**:node op 有**自己的 retry 预算 + 完成检测**;N 次没完成 = 判定卡死 → **bail / 降级**(退而求其次 / 跳过),不是无限 retry 烧全局预算。预算按单元算。
 
-> ⚠️ **反模式(必踩,两层都中)**:「点了就 `round_success` / 让 loop 继续」**不验画面真推进** → 点不中(坐标落候选间隙 / LCS 误匹配 / click 没落地)→ 覆盖层 不关 / 画面没跳 → loop 反复点同一处 → `round_wait` / 外层 loop 重跑**都不计 retry** → 转到 MAX_ITER(可能数小时)才超时。对 **node op**(如多步单元只做了第 1 步却 success)和 **flat loop 的推进型 handler**(关 覆盖层 / 翻页 / 点掉弹窗)都成立。**修法统一(三层完成验证)**:点了之后验画面推进(目标消失 / 覆盖层 关 / 画面跳 / 锚变化);验不到 → `round_retry`(计节点预算)兜底退出,别盲目 `round_wait` 重跑。一句话:**「点了」≠「成了」**(op 边界出口同此理,见上节;flat loop 合理场景内的底线详见 `references/loop-driven-op-structure.md`)。
+> ⚠️ **反模式(必踩,两层都中)**:「点了就 `round_success` / 让 loop 继续」**不验画面真推进** → 点不中(坐标落候选间隙 / LCS 误匹配 / click 没落地)→ 覆盖层不关 / 画面没跳 → loop 反复点同一处 → `round_wait` / 外层 loop 重跑**都不计 retry** → 转到 MAX_ITER(可能数小时)才超时。对 **node op**(如多步单元只做了第 1 步却 success)和 **flat loop 的推进型 handler**(关覆盖层 / 翻页 / 点掉弹窗)都成立。**修法统一(三层完成验证)**:点了之后验画面推进(目标消失 / 覆盖层关 / 画面跳 / 锚变化);验不到 → `round_retry`(计节点预算)兜底退出,别盲目 `round_wait` 重跑。一句话:**「点了」≠「成了」**(op 边界出口同此理,见上节;flat loop 合理场景内的底线详见 `references/loop-driven-op-structure.md`)。
 
 **地基:边界检测先于结构** —— 建 node-per-op 前,**先实地确认"单元开始/结束"有可锁信号**(OCR / 模板);边界不稳先补画面建档(`od-dev-screen-onboarding`)再建结构。完整方法论(flat loop 卡死分析 / committed-but-verifying 伪码 / round 结果映射单元生命周期 / 迁移策略)见 `references/loop-driven-op-structure.md`。
 
 ## 画面判定与点击:`round_by_*` 选型
 
 **首选判据:要检测/点击的元素在画面上有固定位置吗?**
-- **有固定位置**(每次同屏同坐标,如按钮 / 标签 / 卡牌区)→ **建 screen_info area(`pc_rect`),用区域识别**。这是**压倒性默认(几乎总是)** —— 坐标进 area = 单一真相源 + 不全文扫 = 不误匹配;**不是出问题才用的补救**。
+- **有固定位置**(每次同屏同坐标,如按钮 / 标签 / 卡牌区)→ **建 screen_info area(`pc_rect`),用区域识别**(建 area 方法论见 `od-dev-screen-onboarding`)。这是**压倒性默认(几乎总是)** —— 坐标进 area = 单一真相源 + 不全文扫 = 不误匹配;**不是出问题才用的补救**。
 - **全屏 `round_by_ocr` 是 rare last-resort,不是常规 fallback**:仅当元素位置**真运行时漂移且区域定不准**(随机弹出提示、文字位置不固定)才用,**且必带 `lcs_percent=0.7~0.9`** + 画面独有长关键词(误匹配机制见下)。**对固定位置元素用全屏 = 偷懒**(LCS 默认 0.5 会误匹配,见下)—— 用前自问:这元素位置真漂移到圈不准?不然就是偷懒。
 
 | 场景 | 用 |
@@ -90,7 +90,7 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 | 多目标按优先级点一个 | `round_by_ocr_and_click_by_priority` |
 | 导航到某画面 | `round_by_goto_screen`(按 screen_info route) |
 
-> ⚠️ **全屏 OCR(`round_by_ocr*` 不传 `area`)= 偷懒 + 误匹配高发,仅 rare last-resort**。框架默认 `lcs_percent=0.5`(子序列匹配):关键词与同屏/邻屏文字**共享 2+ 字子串即 ≥ 0.5 误匹配**(≤4 字短词天然高危)。**写前自查:这关键词在别的屏 / 同屏别处也会出现吗(子序列 / 全等)?是 → 必用 area 位置区分**(id_mark area)—— `lcs` 收紧**救不了全等 / 高重叠子序列**(别处 4 字全等 = LCS 1.0,提多高都误匹配),只有 area 的位置约束能根治。固定位置元素别用全屏;确需全屏(位置真漂移)必带 `lcs_percent=0.7~0.9` + **确认该词不在别屏全等出现** + 独有长关键词。逐 helper 全参数 + LCS 机制见 `references/round-by-helpers.md`。
+> ⚠️ **全屏 OCR(`round_by_ocr*` 不传 `area`)= 偷懒 + 误匹配高发,仅 rare last-resort**。框架默认 `lcs_percent=0.5`(子序列匹配):关键词与同屏/邻屏文字**共享 2+ 字子串即 ≥ 0.5 误匹配**(≤4 字短词天然高危)。**写前自查:这关键词在别的屏 / 同屏别处也会出现吗(子序列 / 全等)?是 → 必用 area 位置区分**(id_mark area)—— `lcs` 收紧**救不了全等 / 高重叠子序列**(别处 4 字全等 = LCS 1.0,提多高都误匹配),只有 area 的位置约束能根治。固定位置元素别用全屏;确需全屏(位置真漂移)必带 `lcs_percent=0.7~0.9` + **确认该词不在别屏全等出现** + 独有长关键词。逐 helper 语义 + 关键参数 + LCS 机制见 `references/round-by-helpers.md`。
 - **别在 op 代码里硬编码 `Point(x,y)` / `Rect(...)` 做检测/点击**:坐标进 screen_info area(`pc_rect`),与「坐标进 screen_info」规范一致 —— 检测的文字 + 点击目标分离时(检测用 OCR、点的是另一处),点击坐标同样进 area。
 
 ## 选择类画面 op:通常 选择→推进;多选重试才需识别选中态
@@ -100,23 +100,24 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 
 一句话:默认选择→推进,别过度检测;只有多选重试要"取消重选"时,才需识别选中态。
 
-## op 内工具
+## op 与 reader 内工具
 
 - 截图:`self.screenshot()` 截并存 `self.last_screenshot`;`save_screenshot()` 落盘调试。
 - 点击 / 按键:`self.ctx.controller` 的 `click(pos)` / `mouse_move(pos)` / `btn_tap(key)` / `active_window()`。
-- OCR:`self.ctx.ocr.get_ocr_result_list(image, rect=...)`(区域 OCR,与全屏 OCR 行为可能不一致,分开验)。
-- 调子 op:节点里 `sub.execute()` → `self.round_by_op_result(op_result)` 转 round 结果。
+- OCR:`self.ctx.ocr_service.get_ocr_result_list(image, rect=..., crop_first=...)`(区域 OCR;⚠️ 是 `ocr_service` 不是 `ocr` —— `ctx.ocr` 是裸匹配器无此方法。`crop_first=True` 先裁再识别,与全屏行为可能不一致,分开验)。
+- 调子 op:`op = 子Op类(self.ctx)`(构造传 ctx)→ 节点里 `op.execute()` → `self.round_by_op_result(op_result)` 转 round 结果。
+- 非节点上下文判定画面 / area(reader / 纯函数层,无 round 上下文):用 `one_dragon.base.screen.screen_utils` 底层原语(`find_area` / `is_target_screen` / `find_and_click_area` 等,与 `round_by_*` 同源同纪律,别手写裁 rect + 裸 OCR;**文字判定同样优先建 text area 走 `find_area`,裸文本 `find_by_ocr` / 全屏是 last-resort;建 area 见 `od-dev-screen-onboarding`**);两级判定粒度 + 完整对照表见 `references/round-by-helpers.md`「非节点上下文」节。op 节点内仍首选 `round_by_*`(带 round 路由)。
 
 ## 必守不变量(反复发作的坑 + 探索式开发的技术)
 
-1. **MCP click/key 异步**:立即返回但 ~1s 才落地;操作后 `sleep` 再验,否则截到点击前画面。
+1. **MCP click/key 异步**:立即返回但 ~1s 才落地;操作后 `sleep ~1.5s` 再验(数字对齐 framework-pitfalls 坑 2),否则截到点击前画面。
 2. **调试先读日志,不够就补日志**:bot 卡住 / op 失败 → 先读 MCP server 日志(项目 `.debug/` 下;实际 OCR / 走到哪个节点 / 决策状态),别盲点坐标。日志解释不了 → 在决策点补日志(OCR 摘要 + 点击坐标 + 分支结果)+ `save_screenshot()` 存图。**改前先形成假设、一次只改一个变量、定位根因才修**(别连续换补丁碰运气;详 `references/runtime-craft.md` 调试纪律)。
 3. **预料外画面别只 ESC**:先调研"上一步代码点了什么 → 落到哪个 UI 元素 → 游戏对该元素的交互",**建档后改 click 避开误触元素**(不只加 ESC handler)—— 这就是探索式循环里"补建档 + 补分支"的一步。
-4. **多样本核实**:验证 OCR / 读取器跨多样本看统计分布,别凭一张图 / 单次推断下结论。
+4. **多样本核实**:验证 OCR / 读取器跨多样本看统计分布,别凭一张图 / 单次推断下结论(量级参考:每个画面状态 1-2 张典型 fixture,见 `references/testing.md`)。
 5. **决策点多 log 多截图(信息密度论)**:探索式开发里每次实跑都在暴露建档缺口,要从一次跑榨取**最多信息**(OCR 到啥 / 评估了啥 / 点了哪 / 结果 / 关键分支截图),而非跑一次只找一个坑。**判据:实跑后看日志能复盘每个决策点发生了什么**;做不到 = 日志不够,补。验证通过后逐步去掉减开销。详 `references/runtime-craft.md`。
 6. **重复手动操作 → 尽早建成 op**:开发/测试中同一手动操作做了 2+ 次(导航序列 / 退出对局多页 / 进玩法入口)→ 建成 op(`run_operation` 一键调),别每次手动点 N 个按钮。
 
-> 框架级踩坑完整清单(click 与鼠标移动无间隔被判拖拽 / MCP 异步 / ONNX / 配置生效 / 录屏 / GBK 日志)见 `references/framework-pitfalls.md`(single source;od-dev-gameplay-automation 也引用它)。
+> 框架级踩坑完整清单(拖拽误判 / MCP 异步 / ONNX 并发 / 配置生效 / 录屏 / GBK 日志 / LCS 误匹配 / 瞬态残影假阳 / 阈值灰区假 MISS 等)见 `references/framework-pitfalls.md`(single source;od-dev-gameplay-automation 也引用它)。
 
 ## 边界(这些去别的 skill)
 
@@ -139,6 +140,8 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 ## 进度模板(本 skill 任务怎么算完成)
 
 > 配合 `od-dev-progress-tracking`(任务树状态机 + 状态词 + §11 叶子表)+ `od-dev-gameplay-automation/references/progress-tracking.md`(做法二分纲)。本 skill 负责 **op 类任务**(做法二画面子任务②op / ③run_op / ④代码测试)的完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
+>
+> ⚠️ **编号体系声明**:下表的 ②op / ③run_op / ④代码测试 沿用 `od-dev-gameplay-automation` **做法二**的画面子任务编号,与本文上方「逐画面微循环」的 ①-⑤(①建档 ②写op ③测试 ④补分支 ⑤进下一个)**是两套体系,数字含义不同,勿混用**;跨体系对进度时以任务树节点为准,别按数字想当然。
 >
 > ⚠️ **一个画面的 op 工作 = 非叶子(目录),不是一行叶子**:一个画面常有**多个 op**(读信息 op / 动作 op / 不同子态 op),按 progress-tracking §2「≥2 子步骤 → 非叶子 → 目录」→ **画面级 op 工作建独立目录 + 进度.md**,每个 op 一个子节点。下表给的是**单个 op 级别**的叶子判据(op 编写② / run_op③ / 测试④ 是单个 op 的三步,全过 = 该 op 闭环);多 op 画面的 op 目录聚合所有 op 子节点状态。单 op 画面可直接用下表三行作子任务。
 

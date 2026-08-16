@@ -6,7 +6,7 @@
 
 OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法论 skill。三条主线织在一起:
 1. **探索式开发主线**(地基,见 ADR-0002):自动化脚本需求不可完备 → **建档-led 增量**(建档先粗 → 实现 → 测试 → 发现 → 补建档+补分支 → loop)。它决定 op 该怎么写(拆小 / 多log多截图 / 预料外调研建档 / 调试读日志 / 重复建op)。
-2. **mechanics**:节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱)、round 结果语义、`round_by_*` 选型、op 内工具、单 op 测试机制、**循环驱动玩法的 op 结构选型(flat loop vs node-per-op)**。
+2. **mechanics**:节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱)、round 结果语义、`round_by_*` 选型、op 与 reader 内工具(含非节点上下文的无 round 原语)、单 op 测试机制、**循环驱动玩法的 op 结构选型(flat loop vs node-per-op)**。
 3. **op 粒度规范**:看动等验、识别方式选型、建档前置、OCR 关键词独有、click 时序可靠性(项目相关,见 framework-pitfalls)。
 
 给 coding agent 看,框架通用(不绑具体玩法)。
@@ -25,7 +25,7 @@ OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法�
 
 **探索式主线**(SKILL.md 开篇 + `runtime-craft.md`):建档-led 增量;信息密度论(多 log 多截图根因);调试先读日志 + 补日志;预料外画面调研 + 建档;运行时不确定性预留日志;重复手动建op。
 
-**mechanics**:Operation 结构(`__init__` / `handle_init` / `node_max_retry_times` / `need_check_game_win`);节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱 / `previous_node`);round 结果语义;`round_by_*` 选型 + LCS 机制;op 内工具(`screenshot` / `controller` / `ocr` / 子 op);单 op 测试机制(`run_operation` 单跑 / mock 截图 / TDD vs 刻画);**循环驱动玩法的 op 结构选型**(flat loop vs node-per-op,见 ADR-0003)。
+**mechanics**:Operation 结构(`__init__` / `handle_init` / `node_max_retry_times` / `need_check_game_win`);节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱 / `previous_node`);round 结果语义;`round_by_*` 选型 + LCS 机制;op 与 reader 内工具(`screenshot` / `controller` / `ocr` / 子 op / 非节点上下文无 round 原语);单 op 测试机制(`run_operation` 单跑 / mock 截图 / TDD vs 刻画);**循环驱动玩法的 op 结构选型**(flat loop vs node-per-op,见 ADR-0003)。
 
 **op 粒度规范(织入主线)**:看动等验;每屏定识别方式;建档前置(引 `od-dev-screen-onboarding`);OCR 关键词独有(LCS 坑);click 时序可靠性(项目相关,见 framework-pitfalls)。
 
@@ -41,10 +41,10 @@ OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法�
 
 ## 构成(文件结构)
 
-- `SKILL.md`:compact 核心 —— 探索式主线(开篇)+ 写 op 主线 + round 结果心智 + `round_by_*` 选型 + op 内工具 + 必守不变量(含探索式技术)+ 边界 + 自检。框架地基级接口名(`@operation_node` / `@node_from` / `round_by_*` / `controller` / `ocr` ...)。
+- `SKILL.md`:compact 核心 —— 探索式主线(开篇)+ 写 op 主线 + round 结果心智 + `round_by_*` 选型 + op 与 reader 内工具 + 必守不变量(含探索式技术)+ 边界 + 自检。框架地基级接口名(`@operation_node` / `@node_from` / `round_by_*` / `controller` / `ocr` ...)。
 - `references/`(progressive disclosure):
   - `runtime-craft.md`:探索式开发的 op 级技术(信息密度 / 调试纪律 / 预料外调研 / 运行时不确定性 / 重复建op)—— op 级方法论 single source(gameplay 引用)。
-  - `round-by-helpers.md`:`round_by_*` 家族逐个语义 + 何时用哪个 + 关键参数 + LCS 机制。
+  - `round-by-helpers.md`:`round_by_*` 家族逐个语义 + 何时用哪个 + 关键参数 + LCS 机制 + 非节点上下文无 round 底层原语对照。
   - `node-graph.md`:节点图机制 / 路由规则 / 自环陷阱 / `previous_node` / `handle_init`。
   - `loop-driven-op-structure.md`:循环驱动玩法的 op 结构选型(flat loop vs node-per-op)+ committed-but-verifying + 节点作用域预算(single source,见 ADR-0003;gameplay 引用)。
   - `testing.md`:单 op 测试机制 + TDD / fixture 策略。

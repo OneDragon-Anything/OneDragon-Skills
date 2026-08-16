@@ -1,8 +1,8 @@
 # `round_by_*` helper 家族(reference)
 
-> 本 skill(`od-dev-write-operation`)的 situational reference。SKILL.md 给选型表,本文件给逐 helper 语义 + 关键参数。
+> 本 skill(`od-dev-write-operation`)的 situational reference。SKILL.md 给选型表,本文件给逐 helper 语义 + 关键参数,末节给**非节点上下文的无 round 底层原语对照**。
 
-所有 helper 都返回 `OperationRoundResult`(success / wait / retry / fail),直接 `return self.round_by_xxx(...)` 即可。通用参数:`success_wait` / `success_wait_round`(成功后等)、`retry_wait` / `retry_wait_round`(retry 时等)、`pre_delay`(动作前等)、`color_range`(限定文字颜色)、`crop_first`(区域 OCR 先裁再识别)。
+所有 helper 都返回 `OperationRoundResult`(success / wait / retry / fail),直接 `return self.round_by_xxx(...)` 即可。**两个基础参数**: `screen` = 当前截图(图像); `screen_name` / `area_name` = screen_info 的画面名 / 区域名(字符串)。**`screen` 是否必传因 helper 而异**(下文各签名如实呈现;可省 = 不传时自动截新图)。通用参数:`success_wait` / `success_wait_round`(成功后等)、`retry_wait` / `retry_wait_round`(retry 时等)、`pre_delay`(动作前等)、`color_range`(限定文字颜色)、`crop_first`(区域 OCR 先裁再识别)。
 
 ## OCR 类(找文字)
 
@@ -21,14 +21,14 @@ OCR 找 `target_cn` 文字 → 点其中心。找不到 → `round_retry`;点失
 
 ## screen_info area 类(找固定 UI)
 
-### `round_by_find_and_click_area(screen_name, area_name, until_find_all=None, until_not_find_all=None, ...)`
-在 `screen_name` 画面的 `area_name` 区域找(模板 / OCR)→ 点。**带后验**:
-- `until_find_all=[(screen, area), ...]`:点了之后等这些区域都出现才算 success(没出现 → `round_wait` 继续点)。
-- `until_not_find_all=[...]`:点了之后等这些区域都消失才算 success。
+### `round_by_find_and_click_area(screen=None, screen_name, area_name, until_find_all=None, until_not_find_all=None, ...)`
+在 `screen_name` 画面的 `area_name` 区域找(模板 / OCR)→ 点(`screen` 可省,不传自动截新图)。**带后验**:
+- `until_find_all=[(screen_name, area_name), ...]`(字符串对):点了之后等这些区域都出现才算 success(没出现 → `round_wait` 继续点)。
+- `until_not_find_all=[...]`(同类型):点了之后等这些区域都消失才算 success。
 - 适合"点按钮 → 等画面切换"的场景(点完没切换会重试点)。
 
 ### `round_by_find_area(screen, screen_name, area_name, ...)`
-**只判定** area 在不在(不点)。在 → `round_success`;不在 → `round_retry`;区域没配置 → `round_fail`。
+**只判定** area 在不在(不点;`screen` 此处**必传** —— 先 `self.screenshot()` 再调)。在 → `round_success`;不在 → `round_retry`;区域没配置 → `round_fail`。
 
 > ⚠️ `round_by_find_area` **只检测不点击**。要点必须用 `_and_click` 版或自己 `controller.click`。别拿 find 版当点击用。
 
@@ -59,3 +59,25 @@ OCR 找 `target_cn` 文字 → 点其中心。找不到 → `round_retry`;点失
 2. **收紧**:能圈出大致区域就传 `area` 缩范围(哪怕不精确),减少撞同屏文字的概率。
 
 判据:同 loop / 同画面里所有中文关键词都要审**共享子串 + 别屏共现**,不只改一个就收工。
+
+## 非节点上下文:无 round 的底层原语(reader / 纯函数层)
+
+reader / 纯函数 / 画面状态判定层**没有 round 上下文**(无 `self.round_*` 路由,只拿 `ctx` + 截图,返回 bool / enum),`round_by_*` 用不了 —— 用它们在 `one_dragon.base.screen.screen_utils` 里的底层原语。**原语与 `round_by_*` 同源同款「固定位置 → screen_info area」纪律**:原语吃 screen_info 档案(area / id_mark 即档案区),全屏 / 短词的 LCS 误匹配纪律(上节)同样适用 —— **不是「自己裁 rect + 裸 OCR / 裸模板」的许可证**。
+
+| 判什么 | 原语(非节点上下文) | round 对应(op 节点内) |
+|---|---|---|
+| 是不是某画面(id_mark 全中) | `is_target_screen(ctx, screen, screen_name)` → bool | `round_by_goto_screen` 内部链路 |
+| 当前是哪个画面 | `get_match_screen_name(ctx, screen)` → 画面名 | 同上 |
+| 屏内某 area 在不在(子态判定) | `find_area(ctx, screen, screen_name, area_name)` → `FindAreaResultEnum` | `round_by_find_area` |
+| 已持有 ScreenArea 对象(临时区域 / 遍历 `area_list`) | `find_area_in_screen(ctx, screen, area)` | 同上的底层 |
+| 某文字在不在 | ⚠️ **优先:固定位置文字建 text area 走上行 `find_area`**(关键词 / 阈值进档案;建 area 方法见 `od-dev-screen-onboarding`);`find_by_ocr(ctx, screen, target_cn, ...)` 裸文本是 last-resort(同 `round_by_ocr` 全屏纪律:必传 `area` 缩范围 + `lcs_percent=0.7~0.9`) | `round_by_ocr`(同纪律) |
+| 判定 + 点击 | `find_and_click_area(ctx, screen, screen_name, area_name)` → bool(是否点中) | `round_by_find_and_click_area` |
+
+**判定粒度判据(两级,选对级)**:
+- 验「**在不在某画面**」(跨屏区分)→ 画面级 `is_target_screen`:该画面**全部 id_mark 命中**才算,天然抗别屏误匹配。
+- 验「**同屏内的子态**」(面板展开 / 收起这类,两子态共享同一批 id_mark,画面级分不出)→ area 级 `find_area` 锚点(area 选**只在目标子态命中**的)。
+
+**纪律**:
+- **文字判定优先档案区,裸文本原语是 last-resort**:`find_by_ocr`(裸文本关键词)与全屏 `round_by_ocr*` 同款误匹配面 —— 默认 `lcs_percent=0.5` 且无位置约束,同屏 / 邻屏文字共享 2+ 字子串即命中(机制见上节)。固定位置文字**先建 text area 走 `find_area`**(关键词 / 阈值 / 颜色范围进 screen_info,单一真相源;**建 area 的方法论(upsert_screen_area / pc_rect 定位 / 文本 vs 模板)见 `od-dev-screen-onboarding`,别在 reader 里裸手拼**)。`find_by_ocr` 只在位置真漂移 / 区域定不准时用,且必传 `area` 缩范围 + `lcs_percent=0.7~0.9`。
+- op 节点内**别绕开 `round_by_*` 用原语** —— 丢 round 路由 / 重试语义;原语只给非节点上下文。
+- `find_area` 返回 `FindAreaResultEnum` 时,`AREA_NO_CONFIG`(区域没配置,先补 screen_info)与 `FALSE`(没命中)是两回事,别混处理。

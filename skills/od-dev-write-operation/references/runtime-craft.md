@@ -5,7 +5,7 @@
 ## 信息密度论:一次实跑榨取最多信息(多 log 多截图的根因)
 
 探索式开发里,**每次实跑都在暴露建档缺口**(没预期的状态 / 分支 / OCR 误匹配 / 坐标漂移)。故每次跑的"信息密度"必须拉满 —— 别"跑一次只为找一个坑":
-- 每个决策点(买 / 选 / 升 / deploy / 事件分支)记:OCR 到什么、评估了哪些选项、选了哪个、为什么、点了哪、结果如何;关键分支**存 debug 截图**。
+- 每个决策点(购买 / 选择 / 升级 / 部署 / 事件分支等一切"读屏后选动作"处)记:OCR 到什么、评估了哪些选项、选了哪个、为什么、点了哪、结果如何;关键分支**存 debug 截图**。
 - **判据:实跑后看日志就能复盘整局每个决策点发生了什么**(不用重跑猜);做不到 = 日志不够,补。
 - 目的不只是"失败时定位根因",更是**让一次实跑暴露尽量多的问题**,而非每次只测一种情况。
 - 验证通过后逐步去掉临时日志 / 截图(减运行时开销)。
@@ -54,7 +54,7 @@ bot 跑到代码没预期 / 没 handler 的画面(点卡开出详情、误点进
 
 **标准做法(临时钩子,建档后回滚)**:
 1. **钩子位置**:目标 node 方法**最前、click 前**(检测在改变状态前);或画面判定 / 状态读取函数。
-2. **前置门(先于 reader 检测;采集 / 停机两类钩子通用)**:reader 跑前先验**画面态锚点**(该画面 screen_info 的锚点 area / id_mark 命中);不命中 → 直接走原逻辑 —— 非目标画面态上 reader 的「全 miss」是空读伪信号,不是目标态出现(判据见 `od-dev-gameplay-automation` runtime-iteration「随机态钩子分流判据」)。
+2. **前置门(先于 reader 检测;采集 / 停机两类钩子通用)**:reader 跑前先验**画面态锚点**(该画面 screen_info 的锚点 area / id_mark 命中);不命中 → 直接走原逻辑 —— 非目标画面态上 reader 的「全 miss」是空读伪信号,不是目标态出现。两类钩子的定义与分流判据(**采集钩子** = 检测到目标态只存样本图、bot 继续跑;**停机钩子** = 存 sentinel 停 bot 留画面)见 `od-dev-gameplay-automation` runtime-iteration「随机态钩子分流判据」。锚点命中判定的原语(画面级 `is_target_screen` / area 级 `find_area`)见本 skill SKILL.md「op 与 reader 内工具」+ `references/round-by-helpers.md`「非节点上下文」节。
 3. **检测到目标态 → 存 sentinel + 调框架停 + return 保画面**:
    ```python
    @operation_node
@@ -63,13 +63,13 @@ bot 跑到代码没预期 / 没 handler 的画面(点卡开出详情、误点进
            state = self._detect_target_state()
            if state == TARGET:  # 钩子(临时,建档后删)
                self.save_screenshot(prefix='target_state')
-               Path('<临时目录>/target_state.flag').write_text(state)  # sentinel:标记本次停是目标态(含态名,区分故障/手停)
+               Path('<临时目录>/target_state.flag').write_text(state)  # sentinel:标记本次停是目标态(含态名,区分故障/手停);临时目录路径由项目自定,但埋钩子的与接管的 AI 必须用同一路径(写死常量,别两处各猜)
                self.ctx.run_context.stop_running()  # 框架公共停(下一轮 loop 顶见 STOP 退出)
                return self.round_wait(status=f'目标态:{state}')  # return 不 click,画面原样保持
        ...原 node 逻辑...
    ```
 4. **AI 接管建档**:`get_run_status`=STOPPED + sentinel(flag + 截图)在 → **sentinel 必需**(区分「遇目标态停」vs「故障 / 手停」,纯 status 不够)→ `analyze_screen`(sentinel 截图,无需游戏在线)+ 视觉大模型 + 当场跑建档流程(接管时画面可能已被游戏动画 / 结算推进走 → 只剩存证截图时走 `od-dev-screen-onboarding`「随机 / 条件态」节的**停机后画面已流转降级路径**)→ 完了**删钩子 + 重启 MCP server(代码生效)+ relaunch bot**。
 
-**升级路径(反复暂停恢复才做)**:框架有原生 PAUSE(loop sleep 不跑 node + 超时豁免)但 MCP 未暴露 → 加 pause/resume MCP tool = 保运行态 + 真 resume,语义更干净。`round_wait` 不撞 retry(WAIT 不计 retry,超时 -1)但不推荐做 latch(自建 flag 脆弱);raise 消耗 retry 最终 FAIL 推进,不可用。
+**升级路径(反复暂停恢复才做)**:框架有原生 PAUSE(loop sleep 不跑 node + 超时豁免)但 MCP 未暴露 → 加 pause/resume MCP tool = 保运行态 + 真 resume,语义更干净。替代手段为什么不行:`round_wait` 不计 retry(可用 `wait`/超时参数控制节奏,不适合做"停住等接管"的 latch —— 自建 flag 判断"该不该继续"很脆弱);节点内 `raise` 异常会消耗节点 retry、重试耗尽后转 FAIL 让流程**继续往下走**(丢掉想保的画面),也达不到"停住"的目的。
 
-**关联**:`od-dev-screen-onboarding` 随机 / 条件态节(判据);项目 CLAUDE.md(项目级实现 + 具体 API 路径)。
+**关联**:`od-dev-screen-onboarding` 随机 / 条件态节(判据);项目入口文件(AGENTS.md / CLAUDE.md 类,项目级实现 + 具体 API 路径)。

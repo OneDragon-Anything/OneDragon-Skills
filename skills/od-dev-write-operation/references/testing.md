@@ -1,6 +1,6 @@
 # 单个 Operation 的测试(reference)
 
-> 本 skill(`od-dev-write-operation`)的 situational reference。测试**策略**(TDD / fixture 覆盖 / 何时测)见 SKILL.md / `od-dev-gameplay-automation`,本文件给 op 级测试**机制**。
+> 本 skill(`od-dev-write-operation`)的 situational reference。**何时测 / 测什么**(SKILL.md 逐画面微循环 ③)+ **TDD vs 刻画策略**(本文件后半)+ 玩法级测试编排(`od-dev-gameplay-automation`)分层各管一段;本文件主体给 op 级测试**机制**(怎么单跑 / 怎么 mock / 怎么断言)。
 
 ## 实机单跑(最快定位)
 

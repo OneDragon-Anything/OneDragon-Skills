@@ -15,10 +15,10 @@ def wait_screen(self) -> OperationRoundResult:
 关键参数:
 - `name`:节点名(`@node_from(from_name=...)` / 路由日志用它匹配)。**重名会报错**。
 - `is_start_node=True`:标记起始节点。不标则框架按"入度为 0"自动判起始;**多个起始节点报错**。
-- `node_max_retry_times`:本节点 retry 上限(覆盖 op 级 `node_max_retry_times`)。
-- `screenshot_before_round=True`:每轮进节点前自动 `self.screenshot()`。**纯计算节点(不读屏)设 `False`** 省截图。
-- `mute=True`:不输出节点日志(高频轮询节点用它减日志噪声)。
-- `save_status=True`:把本节点的 round 结果存进 `self.node_status[节点名]`,供后续节点查。
+- `node_max_retry_times`(节点级默认 3):本节点 retry 上限(覆盖 op 级 `node_max_retry_times`,op 级默认也是 3)。
+- `screenshot_before_round`(默认 `True`):每轮进节点前自动 `self.screenshot()`。**纯计算节点(不读屏)设 `False`** 省截图。
+- `mute`(默认 `False`):设 `True` 不输出节点日志(高频轮询节点用它减日志噪声)。
+- `save_status`(默认 `False`):设 `True` 把本节点的 round 结果存进 `self.node_status[节点名]`,供后续节点查。
 
 > `need_check_game_win=True`(op `__init__` 默认)会自动在真正起始节点**前面**插「检测游戏窗口」+「打开并进入游戏」节点 —— 所以你声明的起始节点不一定是运行时第一个跑的。
 
