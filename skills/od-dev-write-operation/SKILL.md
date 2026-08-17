@@ -125,7 +125,7 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 - app 产品化(factory / config / GUI / run-record / app 编排)→ `od-dev-write-application`
 - 建一张屏的机制 → `od-dev-screen-onboarding`
 - 修复决策(已定位后怎么修:介入点选型 / 根因挖多深 / 临时 vs 永久 / 多方案横评)→ `od-dev-deciding-a-fix`
-- 用户反馈的运行失败排查(你不在场,从零重建现场:找对进程日志 / run_record 判死活 / 数重复记录)→ `od-dev-debug-automation`;op 内调试纪律见本文「必守不变量」+ `references/runtime-craft.md`
+- 用户反馈的运行失败排查(你不在场,从零重建现场:找对进程日志 / run_record 判死活 / 数重复记录)→ `od-dev-debug-automation`;**「run 被莫名停掉 / 提前停止 / status 显示人工结束 / sentinel flag 删了又生」的死因排查也走它(§1「run 被停→判死因」四层序——即使是开发中自己埋的钩子干的)**;op 内调试纪律见本文「必守不变量」+ `references/runtime-craft.md`
 
 ## 写完自检
 

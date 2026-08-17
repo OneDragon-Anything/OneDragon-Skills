@@ -22,5 +22,7 @@
 | [0018](0018-area-complete-not-interaction-verified.md) | area 齐 ≠ 交互验证完:逐个交互验证从 §4 方法论提升进进度模板硬完成判据 | accepted | 2026-08-11 |
 | [0019](0019-interactive-area-click-verify.md) | 交互类 area 必须 click 实锤(视觉定位再准也不证可点性;展示图与真按钮无差别) | accepted | 2026-08-16 |
 | [0020](0020-post-stop-frame-gone-offline-degraded-path.md) | 停机后画面已流转的离线降级路径(先判画面态合法性;非法→修前置门不建档;原图直喂不裁剪) | accepted | 2026-08-16 |
+| [0021](0021-substate-modeling-ownership-four-questions.md) | 子态建模归属四问判据(独立屏 vs 父屏 area;遮挡三段式含换锚权衡;正交一票否决) | accepted | 2026-08-17 |
+| [0022](0022-template-asset-directory-convention.md) | 模板资产目录规范(模板根/<玩法>/<类型>;禁源码包藏资产/同名双库/先散放后迁;生成器产物标来源) | accepted | 2026-08-17 |
 
 > 日期为 ADR **形式化日**(按 od-dev-writing-skills 重构 + 迁公共仓时回溯记录);原始决策 / 踩坑发生日见各 ADR 的 Context。

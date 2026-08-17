@@ -54,6 +54,7 @@ bot 跑到代码没预期 / 没 handler 的画面(点卡开出详情、误点进
 
 **标准做法(临时钩子,建档后回滚)**:
 1. **钩子位置**:目标 node 方法**最前、click 前**(检测在改变状态前);或画面判定 / 状态读取函数。
+1a. **埋钩子前置评估(先看游戏当前停在哪)**:钩子按「检测到目标态就停」工作,**不看是谁把画面带到触发态的** —— 若埋钩子时游戏**正好停在触发屏**,则每个新 run 一进来就命中钩子 = **必停**(曾因此把每个新 run 都在几秒内停掉,诊断者连误判「外部拦截」多轮)。埋之前确认当前画面不在触发态;在 → 先手动导航离开,或接受首个 run 必停。
 2. **前置门(先于 reader 检测;采集 / 停机两类钩子通用)**:reader 跑前先验**画面态锚点**(该画面 screen_info 的锚点 area / id_mark 命中);不命中 → 直接走原逻辑 —— 非目标画面态上 reader 的「全 miss」是空读伪信号,不是目标态出现。两类钩子的定义与分流判据(**采集钩子** = 检测到目标态只存样本图、bot 继续跑;**停机钩子** = 存 sentinel 停 bot 留画面)见 `od-dev-gameplay-automation` runtime-iteration「随机态钩子分流判据」。锚点命中判定的原语(画面级 `is_target_screen` / area 级 `find_area`)见本 skill SKILL.md「op 与 reader 内工具」+ `references/round-by-helpers.md`「非节点上下文」节。
 3. **检测到目标态 → 存 sentinel + 调框架停 + return 保画面**:
    ```python
@@ -63,12 +64,17 @@ bot 跑到代码没预期 / 没 handler 的画面(点卡开出详情、误点进
            state = self._detect_target_state()
            if state == TARGET:  # 钩子(临时,建档后删)
                self.save_screenshot(prefix='target_state')
-               Path('<临时目录>/target_state.flag').write_text(state)  # sentinel:标记本次停是目标态(含态名,区分故障/手停);临时目录路径由项目自定,但埋钩子的与接管的 AI 必须用同一路径(写死常量,别两处各猜)
+               # sentinel 必须自描述(禁裸态名):接管者/诊断者一眼知是自家钩子停的、钩子在哪、怎么收尾
+               Path('<临时目录>/target_state.flag').write_text(
+                   f'HOOK-STOP: 我的临时停机钩子停的(非故障/非人工/非外部)。'
+                   f'钩子位置: {__file__} 某node; 态={state}; 时间=... 。'
+                   f'处理完: 删钩子代码 + 删本flag。')  # 临时目录路径由项目自定,但埋钩子的与接管的 AI 必须用同一路径(写死常量,别两处各猜)
                self.ctx.run_context.stop_running()  # 框架公共停(下一轮 loop 顶见 STOP 退出)
                return self.round_wait(status=f'目标态:{state}')  # return 不 click,画面原样保持
        ...原 node 逻辑...
    ```
-4. **AI 接管建档**:`get_run_status`=STOPPED + sentinel(flag + 截图)在 → **sentinel 必需**(区分「遇目标态停」vs「故障 / 手停」,纯 status 不够)→ `analyze_screen`(sentinel 截图,无需游戏在线)+ 视觉大模型 + 当场跑建档流程(接管时画面可能已被游戏动画 / 结算推进走 → 只剩存证截图时走 `od-dev-screen-onboarding`「随机 / 条件态」节的**停机后画面已流转降级路径**)→ 完了**删钩子 + 重启 MCP server(代码生效)+ relaunch bot**。
+   ⚠️ **sentinel 内容禁裸态名**(`write_text(state)`):裸态名的 flag 对后来者零信息——不知道是谁写的、还是不是活的;自描述内容(「这是我的钩子停的 + 钩子位置 + 收尾动作」)让任何接管者 / 诊断者不用 grep 就能定位。同理,停机时**写一行带特征的日志**(如钩子名前缀),死亡时刻日志一 grep 就中(排查序见 `od-dev-debug-automation` §1「run 被停→判死因」)。
+4. **AI 接管建档**:`get_run_status`=STOPPED + sentinel(flag + 截图)在 → **sentinel 必需**(区分「遇目标态停」vs「故障 / 手停」,纯 status 不够)→ `analyze_screen`(sentinel 截图,无需游戏在线)+ 视觉大模型 + 当场跑建档流程(接管时画面可能已被游戏动画 / 结算推进走 → 只剩存证截图时走 `od-dev-screen-onboarding`「随机 / 条件态」节的**停机后画面已流转降级路径**)→ 完了**删钩子 + 重启 MCP server(代码生效)+ relaunch bot**。⚠️ **删钩子 ≠ 删 flag**:删钩子代码后 sentinel flag 仍躺在磁盘上,必须一并删——陈旧 flag 会让下一个诊断者误判「还有活钩子 / 目标态又出现」(反复出现的产物 = 活的生产者,他会 grep 写入者、发现钩子已删、再困惑一轮)。收尾清单:**删钩子代码 + 删 sentinel flag + ruff 确认无残留**。
 
 **升级路径(反复暂停恢复才做)**:框架有原生 PAUSE(loop sleep 不跑 node + 超时豁免)但 MCP 未暴露 → 加 pause/resume MCP tool = 保运行态 + 真 resume,语义更干净。替代手段为什么不行:`round_wait` 不计 retry(可用 `wait`/超时参数控制节奏,不适合做"停住等接管"的 latch —— 自建 flag 判断"该不该继续"很脆弱);节点内 `raise` 异常会消耗节点 retry、重试耗尽后转 FAIL 让流程**继续往下走**(丢掉想保的画面),也达不到"停住"的目的。
 
