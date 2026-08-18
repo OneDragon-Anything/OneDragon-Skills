@@ -3,12 +3,12 @@ name: od-dev-deciding-a-fix
 description: Use when a bug or issue is reported and the failure mechanism is known, and you must decide how to fix it—where to intervene, how deep to dig the root cause, temporary workaround vs permanent fix, or choosing among candidate fixes. 当 bug/issue 已报告且故障机制已知，需要决定怎么修（修哪里 / 根因挖多深 / 临时还是永久 / 多方案选哪个）时用。还没定位故障机制时先走系统化定位，本 skill 不触发。
 ---
 
-# Deciding a Fix
+# 修复决策(已定位后怎么修)
 
 ## 不变量:根因是链,介入点即方案选择
 修复的难点不是"找到 bug"，而是"在因果链的哪一环介入"。**根因是一条链，不是点；选在哪一环介入 = 选方案。** 本 skill 把"决定怎么修"拆成 5 步，每步锚定一个业界方法论，产出一份可被 review 的修复决策。
 
-## When to use / 不适用
+## 何时用 / 不适用
 - 用：bug 已定位失败机制，要在多个修法里选
 - 不用：还没定位失败机制 → 先系统化定位（通用调试纪律见 `od-dev-write-operation` 调试纪律；项目专属排查判据见所在项目调试类 skill）；新功能设计 → 需求设计流程（本 skill 只管修复决策）
 
@@ -29,7 +29,7 @@ description: Use when a bug or issue is reported and the failure mechanism is kn
 
 **5. 假设驱动验证** *(Hypothesis-driven Verify)* — 精确化"失败的可观察判据"，确认介入后该判据不再成立。不是"能跑就行"——开发机有系统资源时成功可能是假绿，把判据收紧到具体路径 / 行为。
 
-## Quick Reference
+## 速查表
 | 步 | 方法论 | 核心提问 |
 |---|---|---|
 | 0 | — | 能复述失败机制吗？ |
@@ -39,7 +39,7 @@ description: Use when a bug or issue is reported and the failure mechanism is kn
 | 4 | Trade-off Matrix | 前提验证了吗？上游修了吗？ |
 | 5 | Hypothesis-driven Verify | 失败的判据是什么？还成立吗？ |
 
-## Common Mistakes
+## 常见错误
 - 直接采纳 issue 里用户的方案，不验证前提
 - 根因停在"缺某文件"，不查"上游是否已修" → 误判方案临时 / 永久
 - 验证停在"能跑"，不收紧到失败机制
