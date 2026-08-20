@@ -12,3 +12,4 @@
 | 0008 | 多屏共现关键词必用 area —— 揭露 lcs 收紧对全等子序列无效(0004 follow-up) | accepted | 2026-08-06 |
 | 0009 | flat loop 推进型 handler 完成验证(三层完成验证的最后一块) | accepted | 2026-08-06 |
 | 0010 | 通用调试纪律内联,去 superpowers:systematic-debugging 外部指针 | accepted | 2026-08-15 |
+| [0011](0011-settle-then-dispatch-gate.md) | settle-then-dispatch(画面定型门):等画面定型归 op 代码,不归 agent(agent 可观测性根因;入口/出口门 + 分发稳定门两消费面) | accepted | 2026-08-20 |

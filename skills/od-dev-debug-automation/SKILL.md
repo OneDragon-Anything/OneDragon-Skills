@@ -1,6 +1,6 @@
 ---
 name: od-dev-debug-automation
-description: 排查运行中的自动化 bug(用户反馈某玩法跑失败 / 卡住 / 行为异常)时用 —— **事后法证式排查判据**(分清进程找对日志 / run_record 判死活 / run 被停判死因 / 节点流转定位 / 识别参数专项 / 采集证据 / 陌生画面转建档),叠加在通用调试纪律(od-dev-write-operation)上。定位到根因后决定怎么修见 od-dev-deciding-a-fix。**开发中自己写的 op 卡住 → od-dev-write-operation(开发内循环),本 skill 不触发**(但「开发中 run 被莫名停掉 / 提前停止 / status 显示人工结束 / sentinel flag 反复出现」的死因排查归本 skill §1)。英文:debug a running automation from user-reported failure, troubleshoot a run failure / stuck / odd behavior / run stopped prematurely。
+description: 排查运行中的自动化 bug(用户反馈某玩法跑失败 / 卡住 / 行为异常)时用 —— **事后法证式排查判据**(分清进程找对日志 / run_record 判死活 / run 被停判死因 / 节点流转定位 / 识别参数专项 / 采集证据 / 陌生画面转建档),叠加在通用调试纪律(od-dev-write-operation)上。定位到根因后决定怎么修见 od-dev-deciding-a-fix。**开发中自己写的 op 卡住 → od-dev-write-operation(开发内循环),本 skill 不触发**(但「开发中 run 被莫名停掉 / 提前停止 / status 显示人工结束 / sentinel flag 反复出现」的死因排查归本 skill §1;查明是停机钩子预期停机后的**现场处理** → od-dev-stop-hooks)。英文:debug a running automation from user-reported failure, troubleshoot a run failure / stuck / odd behavior / run stopped prematurely。
 ---
 
 # 排查运行中自动化 bug(事后法证判据)
@@ -20,7 +20,7 @@ description: 排查运行中的自动化 bug(用户反馈某玩法跑失败 / �
 **run 被停(状态 STOPPED / 日志显示提前退出)→ 先判死因,别急着归因外部**。四层排查序(由近及远,前一层排除才进下一层;每层都要有正向证据才下结论):
 1. **死亡时刻日志**:用 `started_at` 锚点定位该 run 结束前的最后几条日志(先按上面分清进程:**用户日常自动跑看调度器日志;开发中经工具 / server 跑的 run 看对应 server 日志**),看有没有自家钩子 / 显式停机的日志行(钩子停机通常每停一次都写一行;连续多个 run 都早停 → 每具「尸体」上找这行,都在 = 同一生产者在杀)。没有 → 下一步。
 2. **grep `stop_running`(框架公共停入口)的全调用点,自家钩子优先**:项目里谁会调停(临时采集 / 停机钩子、定时器、GUI 停按钮 handler)。⚠️ **「调用点已删」≠「已排除」**——进程没重启就还在跑旧代码(删代码后必须重启载入代码的进程才算生效;「删了但还秒停」是此形态的典型症状)。⚠️ **「人工结束」类标签是框架对任何 `stop_running` 的统一措辞,不是死因证据**—— 别拿它当「人工干的」实锤(它对钩子停、手停、外部停打的标签一样)。
-3. **sentinel / flag 文件的写入者**:出现 flag 先 grep 写它的代码(谁 write、什么条件写);**反复出现的产物 = 活的生产者**(见 §4),删了又生 = 有活代码在写,先找写入者别再删。
+3. **sentinel / flag 文件的写入者**:出现 flag 先 grep 写它的代码(谁 write、什么条件写);**反复出现的产物 = 活的生产者**(见 §4),删了又生 = 有活代码在写,先找写入者别再删。查明是**自家停机钩子预期触发**(flag 自描述「HOOK-STOP」类标记)→ 死因已明,移交 `od-dev-stop-hooks` 停机现场处理协议(本节职责到此为止,现场怎么处理别在这即兴)。
 4. **最后才是外部归因(别的会话 / 工具管道 / 网络连接),且需正向证据**:要有「外部进程发过停指令」的直接痕迹(该进程的日志 / 命令历史)才成立。**以下都不构成外部归因证据**:连接数多(工具管道 / 连接池 / 子代理各建连完全可解释)、时序均匀(自家代码也是机器,「机器级精确」推不出「非自家」)、标签写「人工结束」(见 2)。
 
 ## 2. 定位故障环节(节点级)
