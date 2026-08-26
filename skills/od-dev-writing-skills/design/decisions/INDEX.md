@@ -13,3 +13,5 @@
 | [0009](0009-description-purpose-pushy.md) | description:触发为主 + 可带 purpose + 要 pushy(对齐 Anthropic 官方) | accepted | 2026-08-09 |
 | [0010](0010-procedural-skill-mustdo-checklist.md) | 流程类 skill 开头必须 ordered must-do checklist(规范 2 强化) | accepted | 2026-08-10 |
 | [0011](0011-dependency-order-vs-recall.md) | 依赖顺序(§1.4 决策点前置)≠ 召回(§1.6 头尾放不变量),两原则不混 | accepted | 2026-08-11 |
+| [0012](0012-instructional-enumeration-branch-completeness.md) | 指令性枚举分支完备(规范 2 新增条:状态取值/未命中/不过出口;参考性列表豁免) | accepted | 2026-08-27 |
+| [0013](0013-intent-not-implementation.md) | 指令写意图不写实现(规范 2 新增条:删后能否照做=实现示例 vs 指令本体;术语换大白话信息不丢就换) | accepted | 2026-08-27 |

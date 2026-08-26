@@ -1,6 +1,6 @@
 ---
 name: od-dev-writing-skills
-description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、问 skill 带哪些文件/内容怎么写,或开发中用某 skill 发现 gap 想写规范反馈(交迭代方处理)时用。英文:create/author/edit a skill、write SKILL.md、skill structure、or write structured feedback on a skill gap。仅创建/修改 skill 或写其反馈时用;纯使用已有 skill 不触发。
+description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、编写或修改 skill 的 ADR(design/decisions/ 下的决策记录)、问 skill 带哪些文件/内容怎么写,或开发中用某 skill 发现 gap 想写规范反馈(交迭代方处理)时用。英文:create/author/edit a skill、write SKILL.md、write/edit a skill ADR (architecture decision record)、skill structure、or write structured feedback on a skill gap。仅创建/修改 skill 及其 ADR 或写其反馈时用;纯使用已有 skill 不触发。
 ---
 
 # 创建/修改项目 skill
@@ -22,6 +22,9 @@ description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、问 skill
 ### 2. 内容给智能体看(指令式)
 SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文档。给"哪个"智能体:**默认读者 = 无会话历史的干净智能体**(读不到你的会话/项目当下状态,只读得到 skill 文本)—— 每句都要脱离当前会话可理解,细则(禁会话指代/禁依赖当下状态/自检法)见 `references/writing-craft.md` §1.9。
 - 祈使句 + 判据(「先 X 再 Y」「若 Z 则 W」),不要叙述文档腔。
+- **指令写意图,不写实现**:删掉工具名/命令智能体还能照做 → 是实现示例,删(至多括号示例);删了就不会做(细节承载项目约定)→ 是指令本体,留;术语换大白话信息不丢就换(细则见 `references/writing-craft.md` §1.12)。
+- **多项内容(≥3 个并列项/步骤/枚举)用 markdown 列表逐项一行**,别长句塞顿号/嵌套①②③(细则见 `references/writing-craft.md` §1.10)。
+- **指令性枚举(流程步骤/路由分诊表/检查清单)分支完备**:步骤消费的外部状态写全合法取值的处理、路由表带「未命中」去向、检查项带「不过」出口;参考性列表(知识查阅,不匹配无害)不受此条约束(细则见 `references/writing-craft.md` §1.11)。
 - **流程类 skill(有固定步骤序:画面建档 / UI 区域检测 / 写 op / 调试等)开头必须带一条 ordered must-do checklist**:编号 + `☐` + 祈使动作 + 一行判据 + 标「必做」,开头再标一句「没做完这 N 步不算完成」(completion gate 前置);每条链回后文详细 §。**判据 / 踩坑 / 方法论留后文,不混进 checklist 主流程**(主流程只放可勾动作 + 一行判据)。理由:长散文里 must-do 被「判据 / 踩坑」稀释,agent 抓不住「必做哪几步、什么序、缺一不可」→ 频繁漏步;结构式 checklist 才防漏(form-to-failure「漏元素 → 结构式 REQUIRED 槽位」,见 `references/writing-craft.md` §1.5;why 见 [ADR-0010](design/decisions/0010-procedural-skill-mustdo-checklist.md))。**非流程类(纯方法论 / 参考、无固定步骤序)不强制**。
 - frontmatter 的 `description` 是**调用主触发器**(Anthropic 官方:primary mechanism):**以触发为主 + 可带一句 purpose,不写 workflow / 执行步骤**(范围关键词 —— 碰什么组件 / 接口 / 制品 / 扁平列举的动作 —— 属触发上下文,不禁)—— 否则智能体照 description 行事、不读正文。**要 pushy 防 under-trigger**(显式列场景 +「凡是 X 都用,即使没明说」;Claude 倾向漏触发)。详 `references/writing-craft.md` §1.3。
 - **写法细则**(frontmatter 全规则 / 触发词覆盖 / token 效率 / 正文结构 / form-to-failure / 拆分 / 重构)见 `references/writing-craft.md`。
@@ -51,7 +54,7 @@ SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文
 1. **定位 + 复查过往 ADR**:这个 skill 管什么、不管什么。和已有 skill(`superpowers:*`、所在仓库已有的 skill)重叠的,**引用而非重复**。**编辑 / 加 ADR 前,先读本 skill 的 `design/decisions/`(INDEX + 相关 ADR)**:① 下一个 ADR 编号(照 INDEX 接着排,防撞号);② 有无相关决策已覆盖(别重复决策 / 别改出和已有决策矛盾的);③ 有无相关被否备选(别重新提已否方案)。不复查就动手 = 撞号 / 重复 / 矛盾 / 重提已否。
 2. **写 SKILL.md**:frontmatter(name + description,description 只写触发)+ 指令式正文(方法论)。
 3. **写 design/**:`overview.md`(定位 / 边界 / 构成)+ `decisions/` ADR(架构决策,按 `references/design-docs.md` 格式与门槛)。
-4. **自检 4 条硬规范**(逐条对照 —— **新建和编辑都要做**)+ 通读正文确认每条指令可执行。**编辑时额外查**:① 新增的引用是否过规范 3 的门(已提交 + 不引 memory / gitignored + 稳定 / 可校验);② **改 / 加 ADR 前复查过本 skill 过往 ADR 了吗**(编号没撞 / 没重复已有决策 / 没改出矛盾 / 没重提已否备选)。
+4. **自检 4 条硬规范**(**打开本 skill 原文逐条对照,禁凭记忆复述**——记忆会自动跳过你刚违反过的项,带着会话语境检查自己的无语境产物=盲区自洽;新建和编辑都要做)+ 通读正文确认每条指令可执行。自检第 2 条(干净读者)的具体扫描面:①**隐喻/自造复合词**(行业通用术语可用;自造词首次出现必须给定义——判例:「三池/互喂/冒泡/收账」直接进 skill,干净读者全不懂);②**会话语境词**(「今晚/我们/这次讨论定的」);③**未定义缩写**(项目批次号/内部代号在 SKILL.md 正文出现即违规)。**编辑时额外查**:① 新增的引用是否过规范 3 的门(已提交 + 不引 memory / gitignored + 稳定 / 可校验);② **改 / 加 ADR 前复查过本 skill 过往 ADR 了吗**(编号没撞 / 没重复已有决策 / 没改出矛盾 / 没重提已否备选);③ **新增文本的语境污染**——编辑者天然带着会话语境写增量,比新建更容易夹黑话。
 5. **挂载到 AI 工具读 skill 的目录**(如 Claude Code 的 `.claude/skills/`),验证 skill 可被触发。
 6. 提交(见所在仓库提交流程)。
 
