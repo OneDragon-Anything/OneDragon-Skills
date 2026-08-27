@@ -139,7 +139,7 @@ op 是被上层调度的单元。**尤其出口** —— op 一旦 `round_succes
 
 ## 进度模板(本 skill 任务怎么算完成)
 
-> 配合 `od-dev-progress-tracking`(任务树状态机 + 状态词 + §11 叶子表)+ `od-dev-gameplay-automation/references/progress-tracking.md`(做法二分纲)。本 skill 负责 **op 类任务**(做法二画面子任务②op / ③run_op / ④代码测试)的完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
+> 配合 `od-dev-progress-tracking`(任务树状态机 + 状态词 + §11 叶子表 + §2.5 三层结构)+ `od-dev-gameplay-automation/references/progress-tracking.md`(进度组织已改三池模型,op 任务挂流程池的画面目录内)。本 skill 负责 **op 类任务**(画面子任务②op / ③run_op / ④代码测试)的完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
 >
 > ⚠️ **编号体系声明**:下表的 ②op / ③run_op / ④代码测试 沿用 `od-dev-gameplay-automation` **做法二**的画面子任务编号,与本文上方「逐画面微循环」的 ①-⑤(①建档 ②写op ③测试 ④补分支 ⑤进下一个)**是两套体系,数字含义不同,勿混用**;跨体系对进度时以任务树节点为准,别按数字想当然。
 >

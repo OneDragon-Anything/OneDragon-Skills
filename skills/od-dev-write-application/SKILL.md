@@ -83,7 +83,7 @@ app 在 op 上加的基础设施:
 
 ## 进度模板(本 skill 任务怎么算完成)
 
-> 配合 `od-dev-progress-tracking`(任务树状态机) + `od-dev-gameplay-automation`(两套做法)。本 skill 负责 **app 编排任务**(做法二,所有画面 op 写完后)的完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
+> 配合 `od-dev-progress-tracking`(任务树状态机+§2.5 三层结构) + `od-dev-gameplay-automation`(进度组织已改三池模型,其 references/progress-tracking.md)。本 skill 负责 **app 编排任务**(流程池内,所有画面 op 写完后)的完成判据 + 防跑偏点。状态用 progress-tracking 状态词。**位置与前置**:app 编排目录挂流程池下(`流程/` 内);其前置=各画面闭环已过(画面建档判据→`od-dev-screen-onboarding`,op 判据→`od-dev-write-operation`)。
 >
 > ⚠️ **app 编排 = 非叶子(目录),不是一行叶子**:app 编排有**多步**(§标准步骤步1-5:const / run_record / config / factory / app + hub模式 + 自检),按 progress-tracking §2「≥2 子步骤 → 非叶子 → 目录」→ **建独立目录 + 进度.md**,步1-5 作子任务逐个跟踪、全过才算 app 编排节点过。下表给的是 app 编排**整体的完成判据**(各子步骤的判据在 §标准步骤),不是「整个 app 编排是叶子」。
 
