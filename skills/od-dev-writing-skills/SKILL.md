@@ -15,7 +15,7 @@ description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、编写或
 每个 skill 目录下要有 `design/` 文件夹,把**设计(what)**和**决策(why)**分成两类文件:`design/overview.md`(+ 按关注点拆的 `<concern>.md`)记「系统 / 方法论长什么样、目标、边界」;`design/decisions/NNNN-<slug>.md`(**ADR**,一决策一文件)记「为什么这么选」。不写混合的 design.md。
 - **目的**:后续修改者(人或智能体)知道当初为什么这么定,避免盲目改动破坏原意。design 和 decision 读者 / 生命周期不同(前者随系统演进,后者 immutable 只 supersede)→ **分开不混写**。
 - **ADR 格式**:按 arc42 §9(Status / Context / Considered Options / Decision / Consequences;详见 `references/design-docs.md`)。
-- **门槛(治「奢侈」)**:ADR 只记**架构级 / 难逆 / 有实质备选**的决策;调参 / 笔误 / 局部重构 → commit message 即可,不配 ADR。
+- **门槛(治「奢侈」)**:ADR 只记**架构级 / 难逆 / 有实质备选**的决策;调参 / 笔误 / 局部重构 → commit message 即可,不配 ADR。**内容补录("XX 成文")/ 结构整理(拆文件挪章节)/ 规范套用(执行既有写作规范)= 变更日志,同样不配 ADR**(反面清单见 design-docs.md §3.2);自检问句:「半年后有人能从这条学到『为什么不能那样做』吗?」答不上=不立。
 - **边界:`design/` 全是给后续维护者的存档,不进智能体执行上下文** —— SKILL.md **不应写「见 design/...」让智能体去读它获取使用信息**(命令 / 参数 / 接口);使用信息内联 SKILL.md,或放 `references/` 等会被引用的辅助文件。design/ 只记「为什么这么设计」(决策 / 踩坑论据)。
 - **细则**:目录结构 / ADR 全套模板 / 写作方法论(何时写、缩放、design vs ADR 内容归属)见 `references/design-docs.md`(锚定 arc42 + ADR/MADR 业界方法论,不自己发明)。
 
