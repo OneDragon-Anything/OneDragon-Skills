@@ -13,3 +13,4 @@
 | 0009 | flat loop 推进型 handler 完成验证(三层完成验证的最后一块) | accepted | 2026-08-06 |
 | 0010 | 通用调试纪律内联,去 superpowers:systematic-debugging 外部指针 | accepted | 2026-08-15 |
 | [0011](0011-settle-then-dispatch-gate.md) | settle-then-dispatch(画面定型门):等画面定型归 op 代码,不归 agent(agent 可观测性根因;入口/出口门 + 分发稳定门两消费面) | accepted | 2026-08-20 |
+| [0012](0012-no-esc-key-input-click-coordinates-only.md) | 画面操作以点击为主:禁用键盘 ESC,其余按键尽量不用(手机模拟器端前向兼容;ESC 语义随画面漂移) | accepted | 2026-08-27 |
