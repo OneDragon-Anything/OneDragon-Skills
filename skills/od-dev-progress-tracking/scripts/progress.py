@@ -738,17 +738,26 @@ def force_utf8_stdio() -> None:
                 pass
 
 
+REMINDER_LINE = '[提醒] 进度维护必须按 od-dev-progress-tracking 规范运行,未阅读的请重新阅读规范再继续'
+
+
 def main(argv: list[str]) -> int:
     force_utf8_stdio()
     args = build_parser().parse_args(argv)
     if args.cmd == 'journal' and not args.view:
         if not args.iter_dir or not args.kind or args.text is None:
             print('journal 记录模式需 <迭代目录> --kind --text', file=sys.stderr)
+            print(REMINDER_LINE)
             return 2
         if len(args.text) > MAX_JOURNAL_TEXT:
             print(f'text 超长({len(args.text)} > {MAX_JOURNAL_TEXT})', file=sys.stderr)
+            print(REMINDER_LINE)
             return 2
-    return int(args.func(args))
+    code = int(args.func(args))
+    # 每条命令输出末尾都带规范提醒:进度脚本的使用者可能只背了命令没读规范,
+    # 提醒随操作结果出现 = 阅读时机前移到最容易漏的时刻
+    print(REMINDER_LINE)
+    return code
 
 
 if __name__ == '__main__':

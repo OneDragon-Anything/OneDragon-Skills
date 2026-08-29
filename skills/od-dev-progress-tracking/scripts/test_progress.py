@@ -469,3 +469,20 @@ class TestGbkAndMultiViolation:
         assert '①文法' in out
         assert '②一致性' in out
         assert out.index('①文法') < out.index('check 失败')
+
+def test_reminder_line_on_every_command(tmp_path: Path) -> None:
+    """每条命令的输出末尾都带规范提醒行(main 层统一注入)。"""
+    import subprocess
+    import sys as _sys
+    script = Path(__file__).parent / 'progress.py'
+    it = tmp_path / 'iter'
+    r1 = subprocess.run([_sys.executable, str(script), 'init', str(it), '--goal', 'g', '--criteria', 'c'],
+                        capture_output=True, text=True, encoding='utf-8')
+    assert r1.returncode == 0
+    assert r1.stdout.rstrip().endswith('[提醒] 进度维护必须按 od-dev-progress-tracking 规范运行,未阅读的请重新阅读规范再继续')
+    # 打回路径也带提醒
+    r2 = subprocess.run([_sys.executable, str(script), 'write', '--file', str(it / '流程' / '进度.md'),
+                         '--topic', 'X', '--status', '已过', '--note', '无指针'],
+                        capture_output=True, text=True, encoding='utf-8')
+    assert r2.returncode == 2
+    assert '提醒] 进度维护必须按 od-dev-progress-tracking 规范运行' in r2.stdout
