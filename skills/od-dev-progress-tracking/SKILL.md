@@ -100,7 +100,7 @@ progress.py check   <迭代目录>                           # 结构体检:行�
                                                          # (已派|验收(|板面[:：]|判读()/行数阈值(~300行)切档提醒/
                                                          # 流水藏活任务检测/聚合态无子行依据
 progress.py summary <迭代目录> [--app ...]                # 机械聚合,现算现输出
-progress.py journal <迭代目录> --kind ... --text ...      # 流水 append(当日 jsonl,text ≤2K)
+progress.py journal <迭代目录> --kind ... --text ...      # 流水 append(当日 jsonl,text ≤2K);kind 例:局判读/收账/事故/裁决/为何加/账本变更(自动)
 progress.py journal --view <日期> [--kind ...]            # 流水渲染 markdown 供人读
 ```
 
