@@ -83,13 +83,13 @@ app 在 op 上加的基础设施:
 
 ## 进度模板(本 skill 任务怎么算完成)
 
-> 配合 `od-dev-progress-tracking`(任务树状态机+§2.5 三层结构) + `od-dev-gameplay-automation`(进度组织已改三池模型,其 references/progress-tracking.md)。本 skill 负责 **app 编排任务**(流程池内,所有画面 op 写完后)的完成判据 + 防跑偏点。状态用 progress-tracking 状态词。**位置与前置**:app 编排目录挂流程池下(`流程/` 内);其前置=各画面闭环已过(画面建档判据→`od-dev-screen-onboarding`,op 判据→`od-dev-write-operation`)。
+> 配合 `od-dev-progress-tracking`(账本状态机+§2 两级结构) + `od-dev-gameplay-automation`(模块归属语义,其 references/progress-tracking.md)。本 skill 负责 **app 编排任务**(流程模块内,所有画面 op 写完后)的完成判据 + 防跑偏点。状态用 progress-tracking 状态词。**位置与前置**:app 编排=流程账本内任务行;其前置=各画面闭环已过(画面建档判据→`od-dev-screen-onboarding`,op 判据→`od-dev-write-operation`)。
 >
-> ⚠️ **app 编排 = 非叶子(目录),不是一行叶子**:app 编排有**多步**(§标准步骤步1-5:const / run_record / config / factory / app + hub模式 + 自检),按 progress-tracking §2「≥2 子步骤 → 非叶子 → 目录」→ **建独立目录 + 进度.md**,步1-5 作子任务逐个跟踪、全过才算 app 编排节点过。下表给的是 app 编排**整体的完成判据**(各子步骤的判据在 §标准步骤),不是「整个 app 编排是叶子」。
+> ⚠️ **app 编排 = 多步任务(任务行+缩进子行),不是单行叶子**:app 编排有**多步**(§标准步骤步1-5:const / run_record / config / factory / app + hub模式 + 自检),按 progress-tracking §2「≥2 子步骤 → 缩进子任务行」→ **在流程账本建任务行,步1-5 作缩进子行逐个跟踪、全过才算 app 编排过**(行经 progress.py write 写入)。下表给的是 app 编排**整体的完成判据**(各子步骤的判据在 §标准步骤),不是「整个 app 编排是叶子」。
 
 | 任务 | 形态 | 已过判据(指本 skill) | 特有防跑偏点 |
 |---|---|---|---|
 | app 编排/factory/config/GUI | **非叶子·目录**(步1-5子任务) | §标准步骤 最小可跑(步1-5:const/run_record/config/factory/app)+ §hub模式 + §写完自检全过 | **自底向上**:op 先各自 `run_operation` 验证过再串联(§编写顺序);别先搭 app 壳再慢慢填 op(op 没验证就串联,失败时分不清 op 坏还是串联坏) |
 
-- **状态记录**:app 编排是**做法二**的非叶子节点(所有画面 op 写完后);**完整闭环**还要做法二出口 `run_standalone_app` 端到端跑通。
+- **状态记录**:app 编排是**做法二**的非叶子节点(所有画面 op 写完后);**完整闭环**还要做法二出口 `run_standalone_app` 端到端跑通。五步=多步任务,用缩进子任务行(不开子目录,格式见 od-dev-progress-tracking §2/§3,行经 progress.py write 写入)。
 - **跑偏信号(本 skill)**:先搭壳再填 op;首/尾 op 没回 hub(§hub模式必做);改 app 代码没重启 MCP server(框架缓存 app 实例)。

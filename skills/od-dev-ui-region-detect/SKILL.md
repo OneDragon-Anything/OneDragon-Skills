@@ -151,7 +151,7 @@ OpenCV 经典 squares 法(多阈值扫描 + 几何判矩形)—— **判几何�
 
 ## 进度模板(本 skill 任务怎么算完成)
 
-> 配合 `od-dev-progress-tracking`(任务树状态机 + 状态词)+ `od-dev-screen-onboarding`(画面建档① 的子步骤)。本 skill 负责 **UI 区域坐标检测**(为画面建档① 提供 pc_rect 支撑;是① 的子步骤,非独立树节点);下表完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
+> 配合 `od-dev-progress-tracking`(账本状态机 + 状态词)+ `od-dev-screen-onboarding`(画面建档① 的子步骤)。本 skill 负责 **UI 区域坐标检测**(为画面建档① 提供 pc_rect 支撑;是① 的子步骤,非独立任务行);下表完成判据 + 防跑偏点。状态用 progress-tracking 状态词。
 
 | 叶子(→progress-tracking §11) | 已过判据(指本 skill) | 特有防跑偏点 |
 |---|---|---|
