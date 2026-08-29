@@ -24,5 +24,6 @@
 | [0020](0020-post-stop-frame-gone-offline-degraded-path.md) | 停机后画面已流转的离线降级路径(先判画面态合法性;非法→修前置门不建档;原图直喂不裁剪) | accepted | 2026-08-16 |
 | [0021](0021-substate-modeling-ownership-four-questions.md) | 子态建模归属四问判据(独立屏 vs 父屏 area;遮挡三段式含换锚权衡;正交一票否决) | accepted | 2026-08-17 |
 | [0022](0022-template-asset-directory-convention.md) | 模板资产目录规范(模板根/<玩法>/<类型>;禁源码包藏资产/同名双库/先散放后迁;生成器产物标来源) | accepted | 2026-08-17 |
+| [0023](0023-idmark-candidate-vision-prior-runtime-verdict.md) | id_mark 选锚流程:视觉枚举候选 + 跨帧验稳定(内容位一票否决)+ 运行时匹配定谳 | accepted | 2026-08-29 |
 
 > 日期为 ADR **形式化日**(按 od-dev-writing-skills 重构 + 迁公共仓时回溯记录);原始决策 / 踩坑发生日见各 ADR 的 Context。
