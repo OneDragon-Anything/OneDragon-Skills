@@ -59,7 +59,7 @@
 | 画面建档方法论(单一源,一套完整标准,不分档) | od-dev-screen-onboarding |
 | 写 op / 实测 / op 级技术 | od-dev-write-operation |
 | 任务树状态机 / 防偏离 / 两套做法进度组织 | od-dev-progress-tracking |
-| UI 区域坐标检测 | od-dev-ui-region-detect |
+| UI 区域坐标检测 | od-dev-screen-onboarding §4.5 |
 
 **画面建档单一源**:`od-dev-screen-onboarding` 是画面建档"做什么"的**唯一来源**。`screen-identification.md`(gameplay-automation ref)按 concern 拆分归并:
 - **建库项**(识别优先级的建库角度 / 信息 area / 每状态建档 / 别改原内容)→ **screen-onboarding**(它已是完整建档方法论,补这些深度细节);

@@ -60,7 +60,7 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 
 ### 画面建档:一套完整标准,不分档
 
-**画面建档"做什么"单一源在 `od-dev-screen-onboarding`**(analyze→视觉大模型→建档→缺口→建模→归档;UI 区域坐标 → od-dev-ui-region-detect)。**不分"初步档/完整档"** —— 每次都按完整标准做;探索期与实现期的差别只在**认知完整度**(探索期尽力完整但标 `进行中`,实现期有设计/策略认知后补全),不是两套建档标准。本 skill 只管"画面建档在两套做法里的位置"(探索做、实现补全、何时触发),不重复建档方法论。
+**画面建档"做什么"单一源在 `od-dev-screen-onboarding`**(analyze→视觉大模型→建档→缺口→建模→归档;坐标获取 / 模板定位 → 同 skill §4.5)。**不分"初步档/完整档"** —— 每次都按完整标准做;探索期与实现期的差别只在**认知完整度**(探索期尽力完整但标 `进行中`,实现期有设计/策略认知后补全),不是两套建档标准。本 skill 只管"画面建档在两套做法里的位置"(探索做、实现补全、何时触发),不重复建档方法论。
 
 ### 策略:设计在探索、迭代与流程补全并行
 
@@ -90,7 +90,7 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 - **写 / 改 / 调试单个 Operation**(节点图 / round 结果 / `round_by_*`)+ **探索式开发主线 + op 级运行时技术(信息密度 / 调试 / 预料外调研 / 重复建op)+ 框架踩坑** → `od-dev-write-operation`(op 粒度地基,本 skill 引用其 `runtime-craft.md` / `framework-pitfalls.md`)
 - **循环驱动玩法(loop 每轮重新发现状态)的 op 结构选型**(flat loop vs node-per-op / committed-but-verifying / 节点作用域预算防卡死)→ `od-dev-write-operation`(做法二实现结构选型 + 迭代时查,引用其 `references/loop-driven-op-structure.md`)
 - 画面建档 / screen_info area 维护 / 图标按钮模板建模 → `od-dev-screen-onboarding`
-- UI 区域坐标检测(槽位网格/图标按钮阵列/卡牌阵列)→ od-dev-ui-region-detect
+- UI 区域坐标检测(槽位网格/图标按钮阵列/卡牌阵列)→ od-dev-screen-onboarding §4.5
 - bug 已知故障机制、决定怎么修(修哪里/根因多深/临时 vs 永久)→ deciding-a-fix skill(项目内)
 
 ## 0-9 认知地图(全景参考,非执行序)

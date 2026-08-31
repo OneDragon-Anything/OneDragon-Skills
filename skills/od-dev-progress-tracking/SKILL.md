@@ -164,7 +164,7 @@ progress.py journal --view <日期> [--kind ...]            # 流水渲染 markd
 | run_op 实测 | od-dev-write-operation(run_op 微循环) | 单 op `run_operation` 实测过 |
 | 代码测试(fixture/unit) | od-dev-write-operation/references/testing | fixture+unit 测试过 |
 | 分支覆盖 | 对应流程 skill + 罕见态机制 | 主分支覆盖+连续 M 次无新分支 |
-| UI 区域坐标检测 | od-dev-ui-region-detect | 稀疏独特→VLM/密集网格→CV投影 |
+| UI 区域坐标检测 | od-dev-screen-onboarding §4.5 | 视觉直读默认,像素级精准才 OpenCV |
 | app 编排/factory/config/GUI | od-dev-write-application | Application=Operation+factory注册(五步=缩进子行,自底向上) |
 | 端到端验证/测试/成文 | 对应流程 skill | run_standalone_app跑通+ruff+测试仓+docs |
 | 罕见路径验证 | 本方法自身 | 无法主动验证的罕见路径 → `待激活(条件=实机再现该子态,复查=定期盘点)`;声明 fallback 行为 |

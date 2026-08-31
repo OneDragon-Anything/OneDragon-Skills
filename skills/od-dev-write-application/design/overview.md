@@ -30,7 +30,7 @@ OneDragon 框架上「写 / 改 / 调试**一个 Application**」的方法论 sk
 - 单 op 写法(节点图 / `round_by_*` / 画面判定 / 探索式迭代)→ `od-dev-write-operation`(app 复用同一套)。
 - 从零做新玩法全程 → `od-dev-gameplay-automation`(它阶段 6 app 产品化引用本 skill)。
 - 画面建档 / screen_info area → `od-dev-screen-onboarding`。
-- 检测 / 验证 UI 区域坐标 → od-dev-ui-region-detect。
+- 检测 / 验证 UI 区域坐标 → od-dev-screen-onboarding §4.5。
 
 ## 构成(文件结构)
 

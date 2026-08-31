@@ -10,7 +10,7 @@
 
 ## 范围 / 边界
 - **覆盖**:**两套做法**全流程(探索设计:确认能玩 → 玩法建档 → 画面建档 → 找兄弟 → 流程策略设计;实现循环:逐画面建档+op+实测+app 编排;收尾:策略调优+测试);**0-9 作认知地图**(讲涉及哪些事,非执行序);全程跨阶段不变量(证据纪律、知识维护)。**实现循环**(做法二):自动化需求不完备 → 建档-led 增量(实现→测试→发现→补建档+补分支→loop),非肉鸽专属。
-- **不管**(深度细则 defer 给协作 skill,不重复):**写/改/调试单个 op + 探索式 op 级技术(信息密度/调试/预料外调研/重复建op)+ 框架踩坑** → `od-dev-write-operation`(op 粒度地基,本 skill 引用其 `runtime-craft.md` / `framework-pitfalls.md`);画面建档/screen_info area 维护细节 → `od-dev-screen-onboarding`;UI 区域坐标检测 → od-dev-ui-region-detect;bug 决定怎么修 → deciding-a-fix skill(项目内)。
+- **不管**(深度细则 defer 给协作 skill,不重复):**写/改/调试单个 op + 探索式 op 级技术(信息密度/调试/预料外调研/重复建op)+ 框架踩坑** → `od-dev-write-operation`(op 粒度地基,本 skill 引用其 `runtime-craft.md` / `framework-pitfalls.md`);画面建档/screen_info area 维护细节(含坐标获取 §4.5)→ `od-dev-screen-onboarding`;bug 决定怎么修 → deciding-a-fix skill(项目内)。
 - **不绑具体玩法**:方法论抽象成判据("X 条件下选 A,Y 条件下选 B"),不写"某玩法用了 A"。
 
 ## 构成

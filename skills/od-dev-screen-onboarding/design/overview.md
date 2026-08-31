@@ -6,13 +6,12 @@
 建游戏知识库(`docs/game/screens/`)+ 维护 `screen_info` 时,每来一张新画面都要重复「分析 → 建档 → 建模」。把这套流程沉淀成 skill,保证后续画面:流程一致、不漏可交互元素、不踩「工具绕路 / 手编 yml」的坑。做成 skill(而非 docs)是因为 skill 触发时自动注入执行上下文(主动),docs 要记得翻(被动)。
 
 ## 定位与边界
-**管**:拿到截图后的离线分析 + 建档(`docs/game/screens/`)+ 建模可交互元素(模板 + screen_info area)。
+**管**:拿到截图后的离线分析 + 建档(`docs/game/screens/`)+ 建模可交互元素(模板 + screen_info area)+ 坐标获取 / 模板精准定位(§4.5 视觉直读默认,OpenCV 只管像素级精准;2026-08-31 自 od-dev-ui-region-detect 并入,见 ADR-0024)。
 
 **不管**:
 - 运行时识别(框架 screen matching 自己跑);
 - gameplay 跨画面流程文档(归 `docs/game/gameplay/`,本 skill 只管单画面;重 app 的玩法建档触发 gameplay-automation skill);
 - 整 screen 级 CRUD(增删整个画面,本 skill 只 area 级);
-- 检测 / 验证 UI 区域坐标(槽位网格 / 图标按钮阵列 / 卡牌阵列)—— 用 od-dev-ui-region-detect skill。
 - **本游戏特定的操作事实(交互标记约定如「名字旁三角形=可交互」、导航副作用如「传送后朝向继承」)归消费方项目的画面约定 doc,不在本 skill 硬编码**(规范 4:具体游戏事实归 doc 不归 skill)。本 skill 只记「这类约定存在、建档前查它」的方法论;ADR 例子已匿名化,只留通用结论。
 
 ## 方法论构成(what;why 见 decisions/)

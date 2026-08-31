@@ -65,7 +65,7 @@ app 在 op 上加的基础设施:
 - 写 / 改 / 调试**单个 Operation** → `od-dev-write-operation`(app 复用它)。
 - **从零做新玩法全程** → `od-dev-gameplay-automation`(它阶段 6 app 产品化引用本 skill)。
 - 画面建档 / screen_info area → `od-dev-screen-onboarding`。
-- 检测 / 验证 UI 区域坐标 → od-dev-ui-region-detect。
+- 检测 / 验证 UI 区域坐标 → od-dev-screen-onboarding §4.5。
 
 ## 写完自检
 
