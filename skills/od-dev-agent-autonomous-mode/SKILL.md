@@ -41,7 +41,7 @@ description: 用户宣布进入/已在「完全自主推进模式」(agent 长�
 - **遵循skill规范**: 做任何事之前,先问自己应该使用哪个 skill(领域专属规则在领域 skill;公共 od-dev skill=通用规范),是否已加载阅读对应
 - **定时任务提醒消费**: 收到定时任务提醒时,必须按提醒内容严格执行——提醒是待执行的检查指令,不是要回复的消息,逐项做完并产出其要求的结论
 - **编排者铁律**: 主会话=编排者(判读/定规格/派单/按结论行裁决/打回路由/记档),不亲验交付、不亲手干活;实现与审查都派子 agent——worker=实现(码/测试/模拟/文档),reviewer=交付验收(照判据),对抗审=设计与方案攻击;需要独占的部分派一个专属子 agent 独占负责,编排者只控制互斥
-- **派子 agent(任务书按序套模板,缺=不合格派单)**: 按流程顺序套 orchestration.md「派出时」的完整模板(①设计批→②设计对抗批→③落地批×N→正本更新),逐字复制只填实例位禁改写;模板外批照派单三带+通用规则。发起权:一切子 agent 都由编排者发起,子 agent 永不 spawn、永不相互委派。派单前必须先阅读 od-dev-agent-autonomous-mode skill 的 references/orchestration.md「派出时」节
+- **派子 agent(任务书按序套模板,缺=不合格派单)**: 按流程顺序套 orchestration.md「派出时」的完整模板——①设计批(产出 design/landing.md)→②设计对抗批(攻击收敛=定稿)→编排者立阶段任务(照 landing.md 阶段小节逐个 dag.py add)→③落地批×N(landing.md 每阶段一张,固定末阶段=正本更新;取活只走账本 ready),逐字复制只填实例位禁改写;模板外批照派单三带+通用规则。发起权:一切子 agent 都由编排者发起,子 agent 永不 spawn、永不相互委派。派单前必须先阅读 od-dev-agent-autonomous-mode skill 的 references/orchestration.md「派出时」节
 - **子 agent 汇报(交付到达即走完闭环)**: 编排者先对账(报告文件存在/任务 id 对上,不过=打回重交)→派 reviewer 验收(输入=任务书+交付报告,编排者不读交付正文);accept(reviewer 自闭环 done)→空出的槽立刻照 `dag.py ready` 首行取下一个待办再派,不等下一轮想起来;reject(reviewer 自登记 `rejected` 打回泊位)→排到返工再由编排者 `doing --assignee` 派出;同一任务打回≥3轮=停派立「规格重审」;报告未尽事项当场立项或记不立缘由。必须先阅读 od-dev-agent-autonomous-mode skill 的 references/orchestration.md「回答后」节
 ```
 
