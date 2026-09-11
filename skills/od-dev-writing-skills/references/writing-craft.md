@@ -24,7 +24,7 @@ SKILL.md 是**注入智能体上下文、让 agent 执行**的指令文档,不�
 
 ### 1.3 frontmatter
 - `name` + `description` 必填(共 max 1024 字符);`name` 仅字母数字连字符(name 本身也是触发信号 —— 用户 / agent 搜 skill 名;description 补 name 表达不了的:中文场景、次场景、负向路由)。
-- `description` 是 skill 调用的**主触发器**(权威 —— Anthropic 官方:它是 Claude 决定是否调用 skill 的 primary mechanism;`When to Use` 类触发信息全放这,不散落正文)。**以触发为主 + 可带一句 purpose(做什么),绝不总结 workflow**(写了流程,agent 照 description 行事、不读正文,见「陷阱」)。**要 pushy 防 under-trigger**:Claude 倾向**漏触发** skill,description 要显式列触发场景 +「凡是 X/Y/Z 都用,即使没明说要」(Anthropic skill-creator 原话;why + 实测证据见 `design/decisions/0009-description-purpose-pushy.md`)。写法分四块:
+- `description` 是 skill 调用的**主触发器**(权威 —— Anthropic 官方:它是 Claude 决定是否调用 skill 的 primary mechanism;`When to Use` 类触发信息全放这,不散落正文)。**以触发为主 + 可带一句 purpose(做什么),绝不总结 workflow**(写了流程,agent 照 description 行事、不读正文,见「陷阱」)。**要 pushy 防 under-trigger**:Claude 倾向**漏触发** skill,description 要显式列触发场景 +「凡是 X/Y/Z 都用,即使没明说要」(Anthropic skill-creator 原话)。写法分四块:
   - **形式**:
     - 开头:条件触发句("当要…时用" / "Use when…"),**别用第一人称**(I / we);两种开头都可。
     - 语言 + 顺序:**按用户更可能用哪种语言提问排** —— 中文域中文为主、英文短语附后;英文主导域(debug / PR / CI,提问常带英文报错 / API 名 / GitHub 术语)英文可前置。英文给触发**短语列表**,**不必逐句对译**中文;纯中文场景可省英文。
@@ -176,5 +176,3 @@ references 文件名 / 目录结构本身给 agent 信号(`test_utils.py` 在 `t
 本 skill **不依赖** superpowers:writing-skills,已整合其**通用写法核心**(frontmatter / 触发词覆盖 / token 效率 / 结构模板 / form-to-failure / 例子与反模式 / 何时建)到上文。**刻意偏离**一处:
 - superpowers 的 **Iron Law:每个 skill 必须先 RED(baseline 看失败),无例外**。本 skill **弱化**:按「两类 skill」,**方法论覆盖型 RED 可省**(团队工具 / 模型异构 → 单一 baseline 外部效度不足,见 §3.1),GREEN 验证两类都不可省。
 - 本 skill **叠加** superpowers 没有的:design/ + ADR(规范 1)、自包含硬门 + 引用卫生(规范 3)、SKILL.md 写法工程指南(本文件)。
-
-详见 [ADR-0005](../design/decisions/0005-drop-superpowers-dependency.md)(去 superpowers 依赖)。

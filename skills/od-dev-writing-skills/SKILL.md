@@ -1,6 +1,6 @@
 ---
 name: od-dev-writing-skills
-description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、编写或修改 skill 的 ADR(design/decisions/ 下的决策记录)、问 skill 带哪些文件/内容怎么写,或开发中用某 skill 发现 gap 想写规范反馈(交迭代方处理)时用。英文:create/author/edit a skill、write SKILL.md、write/edit a skill ADR (architecture decision record)、skill structure、or write structured feedback on a skill gap。仅创建/修改 skill 及其 ADR 或写其反馈时用;纯使用已有 skill 不触发。
+description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、用户要求编写或修改 skill 的 ADR(design/decisions/ 下的决策记录)、问 skill 带哪些文件/内容怎么写,或开发中用某 skill 发现 gap 想写规范反馈(交迭代方处理)时用。英文:create/author/edit a skill、write SKILL.md、write/edit a skill ADR (architecture decision record) when the user asks、skill structure、or write structured feedback on a skill gap。仅创建/修改 skill、用户命令的 ADR 或写其反馈时用;纯使用已有 skill 不触发。
 ---
 
 # 创建/修改项目 skill
@@ -11,11 +11,12 @@ description: 当要创建 skill、编辑/修改 skill、写 SKILL.md、编写或
 
 > **这 4 条是 skill 的不变量(invariant),不只新建时查**。每次**编辑**(哪怕只改一行)都要保持;**新增的任何引用都要过规范 3 的门**(已提交 + 稳定 / 可校验;不引 memory / gitignored)。新建 = 全套满足;编辑 = 至少不破坏 + 新增项满足。
 
-### 1. 必须有 design/ 文件夹,design 与 ADR 分开
+### 1. 必须有 design/ 文件夹,design 与 ADR 分开;ADR 仅经用户命令创建
 每个 skill 目录下要有 `design/` 文件夹,把**设计(what)**和**决策(why)**分成两类文件:`design/overview.md`(+ 按关注点拆的 `<concern>.md`)记「系统 / 方法论长什么样、目标、边界」;`design/decisions/NNNN-<slug>.md`(**ADR**,一决策一文件)记「为什么这么选」。不写混合的 design.md。
 - **目的**:后续修改者(人或智能体)知道当初为什么这么定,避免盲目改动破坏原意。design 和 decision 读者 / 生命周期不同(前者随系统演进,后者 immutable 只 supersede)→ **分开不混写**。
+- **ADR 仅经用户命令创建(默认不立)**:智能体**不得自行新建 ADR**。日常决策 why 的默认归宿 = `design/overview.md` 动机段 + commit message(考古走 git 历史)。认为某决策够格立 ADR → **向用户提议,用户明确要求才建**;用户命令建 ADR 时按 `references/design-docs.md` 的格式写。`decisions/` 目录有第一条 ADR 才建,不建空架子。
 - **ADR 格式**:按 arc42 §9(Status / Context / Considered Options / Decision / Consequences;详见 `references/design-docs.md`)。
-- **门槛(治「奢侈」)**:ADR 只记**架构级 / 难逆 / 有实质备选**的决策;调参 / 笔误 / 局部重构 → commit message 即可,不配 ADR。**内容补录("XX 成文")/ 结构整理(拆文件挪章节)/ 规范套用(执行既有写作规范)= 变更日志,同样不配 ADR**(反面清单见 design-docs.md §3.2);自检问句:「半年后有人能从这条学到『为什么不能那样做』吗?」答不上=不立。
+- **提议门槛(治「奢侈」)**:只对**架构级 / 难逆 / 有实质备选**的决策提议立 ADR;调参 / 笔误 / 局部重构 → commit message 即可,不必提议。**内容补录("XX 成文")/ 结构整理(拆文件挪章节)/ 规范套用(执行既有写作规范)= 变更日志,连提议都不必**(反面清单见 design-docs.md §3.2);自检问句:「半年后有人能从这条学到『为什么不能那样做』吗?」答不上=不提议。
 - **边界:`design/` 全是给后续维护者的存档,不进智能体执行上下文** —— SKILL.md **不应写「见 design/...」让智能体去读它获取使用信息**(命令 / 参数 / 接口);使用信息内联 SKILL.md,或放 `references/` 等会被引用的辅助文件。design/ 只记「为什么这么设计」(决策 / 踩坑论据)。
 - **细则**:目录结构 / ADR 全套模板 / 写作方法论(何时写、缩放、design vs ADR 内容归属)见 `references/design-docs.md`(锚定 arc42 + ADR/MADR 业界方法论,不自己发明)。
 
@@ -25,7 +26,7 @@ SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文
 - **指令写意图,不写实现**:删掉工具名/命令智能体还能照做 → 是实现示例,删(至多括号示例);删了就不会做(细节承载项目约定)→ 是指令本体,留;术语换大白话信息不丢就换(细则见 `references/writing-craft.md` §1.12)。
 - **多项内容(≥3 个并列项/步骤/枚举)用 markdown 列表逐项一行**,别长句塞顿号/嵌套①②③(细则见 `references/writing-craft.md` §1.10)。
 - **指令性枚举(流程步骤/路由分诊表/检查清单)分支完备**:步骤消费的外部状态写全合法取值的处理、路由表带「未命中」去向、检查项带「不过」出口;参考性列表(知识查阅,不匹配无害)不受此条约束(细则见 `references/writing-craft.md` §1.11)。
-- **流程类 skill(有固定步骤序:画面建档 / UI 区域检测 / 写 op / 调试等)开头必须带一条 ordered must-do checklist**:编号 + `☐` + 祈使动作 + 一行判据 + 标「必做」,开头再标一句「没做完这 N 步不算完成」(completion gate 前置);每条链回后文详细 §。**判据 / 踩坑 / 方法论留后文,不混进 checklist 主流程**(主流程只放可勾动作 + 一行判据)。理由:长散文里 must-do 被「判据 / 踩坑」稀释,agent 抓不住「必做哪几步、什么序、缺一不可」→ 频繁漏步;结构式 checklist 才防漏(form-to-failure「漏元素 → 结构式 REQUIRED 槽位」,见 `references/writing-craft.md` §1.5;why 见 [ADR-0010](design/decisions/0010-procedural-skill-mustdo-checklist.md))。**非流程类(纯方法论 / 参考、无固定步骤序)不强制**。
+- **流程类 skill(有固定步骤序:画面建档 / UI 区域检测 / 写 op / 调试等)开头必须带一条 ordered must-do checklist**:编号 + `☐` + 祈使动作 + 一行判据 + 标「必做」,开头再标一句「没做完这 N 步不算完成」(completion gate 前置);每条链回后文详细 §。**判据 / 踩坑 / 方法论留后文,不混进 checklist 主流程**(主流程只放可勾动作 + 一行判据)。理由:长散文里 must-do 被「判据 / 踩坑」稀释,agent 抓不住「必做哪几步、什么序、缺一不可」→ 频繁漏步;结构式 checklist 才防漏(form-to-failure「漏元素 → 结构式 REQUIRED 槽位」,见 `references/writing-craft.md` §1.5)。**非流程类(纯方法论 / 参考、无固定步骤序)不强制**。
 - frontmatter 的 `description` 是**调用主触发器**(Anthropic 官方:primary mechanism):**以触发为主 + 可带一句 purpose,不写 workflow / 执行步骤**(范围关键词 —— 碰什么组件 / 接口 / 制品 / 扁平列举的动作 —— 属触发上下文,不禁)—— 否则智能体照 description 行事、不读正文。**要 pushy 防 under-trigger**(显式列场景 +「凡是 X 都用,即使没明说」;Claude 倾向漏触发)。详 `references/writing-craft.md` §1.3。
 - **写法细则**(frontmatter 全规则 / 触发词覆盖 / token 效率 / 正文结构 / form-to-failure / 拆分 / 重构)见 `references/writing-craft.md`。
 
@@ -38,8 +39,8 @@ SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文
   - **项目内 dev skill**(放项目 `skills/`,跟项目走、不独立发布)可引:**runtime 资产路径**(skill 要去读/写的**操作对象**:screen_info / application 源码 / docs/game 等,本项目必有、稳定)+ **skill 目录内自带工具 / 辅助文件**(自包含,随 skill 走,如归档脚本 `convert_to_webp.py`)。**不可引**:**具体代码文件 / 实现行 / 易变文档**(如某 devtools 模块 L640、「详见某 README」)—— 抽象化,不点具体位置。
   - 判据(**分场景,非「所有路径都不写」**):**「skill 要读写的稳定操作对象 / 自带工具」可引**;**「只为佐证某约定的具体代码/文档位置(易变)」抽象化**。
   - **有一类具体名可以写:框架地基级、几乎不改名的接口名**。有些 skill(debug / 排查 bug / 迁移)的指令本身就是「在本项目代码里搜某个名 / 调某个接口」,比如要搜 `@operation_node` 装饰器看节点流转、要调 `save_screenshot` 截图、要提醒画面识别工具的结论会骗你 —— 这些名是**指令的一部分**(不是顺带举例),删了智能体就不会做了;且是框架地基级接口(整个节点系统就靠 `@operation_node`,改它等于重写框架,几乎不会发生)。这类名属上面「skill 要读写的稳定操作对象」,**可以写进 SKILL.md**。判一个名能不能写,问两点:
-    1. **删掉它,智能体还能照做吗?** —— 删了照样能做(名只是举例住在哪)→ 挪 design/ 的 ADR;删了就不会做了(名 = 指令本身)→ 看第 2 点。
-    2. **它会不会经常变?** —— 框架地基级、几乎不改名 → 可以写;容易变的(某测试 API、具体行号)→ 挪 design/ 的 ADR。
+    1. **删掉它,智能体还能照做吗?** —— 删了照样能做(名只是举例住在哪)→ 删(理由进 commit message 或 design 动机段);删了就不会做了(名 = 指令本身)→ 看第 2 点。
+    2. **它会不会经常变?** —— 框架地基级、几乎不改名 → 可以写;容易变的(某测试 API、具体行号)→ 删,别写进正文。
   - **能写就写全名,别改成模糊说法**。可写进 SKILL.md 的接口名直接写完整名字(如「本项目用 `@operation_node` 装饰器声明节点流转」)—— 万一以后代码改名,全局一搜这名就发现 SKILL.md 这行也得跟着改,**改没改一目了然**。**别**反过来模糊成「节点声明装饰器」:代码改名后这种说法不报错、却已指错地方,谁都不会发现 —— 看着抽象好像更稳,其实更危险。
 
 ### 4. 写方法论,不写具体例子(限 SKILL.md 与智能体读的辅助文件)
@@ -48,13 +49,13 @@ SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文
 - **design/(含 ADR)不在此列**:它是给后续维护者的设计记录,可以有具体例子/踩坑作为决策论据。
 - 理由:具体例子会以偏概全 —— 智能体把例子的偶然细节当成必然规则,套到不匹配的新场景。
 - 抽象成判据:「在 X 条件下选 A,在 Y 条件下选 B」,而非「项目 P 里我们用了 A」。
-- 不得不具体的,**仅限纯语法/字段名**(如 frontmatter 的 `name`+`description`、命令必填参数),给最小可用形式;「为什么选 A」「项目里遇过 X」这类划到 design/ 的 ADR。
+- 不得不具体的,**仅限纯语法/字段名**(如 frontmatter 的 `name`+`description`、命令必填参数),给最小可用形式;「为什么选 A」「项目里遇过 X」这类划到 design/(overview 动机段;ADR 仅用户命令才有)。
 
 ## 创建/修改流程
-1. **定位 + 复查过往 ADR**:这个 skill 管什么、不管什么。和已有 skill(`superpowers:*`、所在仓库已有的 skill)重叠的,**引用而非重复**。**编辑 / 加 ADR 前,先读本 skill 的 `design/decisions/`(INDEX + 相关 ADR)**:① 下一个 ADR 编号(照 INDEX 接着排,防撞号);② 有无相关决策已覆盖(别重复决策 / 别改出和已有决策矛盾的);③ 有无相关被否备选(别重新提已否方案)。不复查就动手 = 撞号 / 重复 / 矛盾 / 重提已否。
+1. **定位 + 复查过往 design**:这个 skill 管什么、不管什么。和已有 skill(`superpowers:*`、所在仓库已有的 skill)重叠的,**引用而非重复**。**编辑前,先读该 skill 的 `design/overview.md`(及相关 concern 文档)**,防改出与既有设计矛盾的。**仅当用户命令加 / 改 ADR**:先读该 skill `design/decisions/`(有则读 INDEX + 相关 ADR):① 下一个编号照 INDEX 接着排(无 ADR 则从 0001 起,防撞号);② 有无相关决策已覆盖(别重复决策 / 别改出矛盾的);③ 有无相关被否备选(别重提已否方案)。
 2. **写 SKILL.md**:frontmatter(name + description,description 只写触发)+ 指令式正文(方法论)。
-3. **写 design/**:`overview.md`(定位 / 边界 / 构成)+ `decisions/` ADR(架构决策,按 `references/design-docs.md` 格式与门槛)。
-4. **自检 4 条硬规范**(**打开本 skill 原文逐条对照,禁凭记忆复述**——记忆会自动跳过你刚违反过的项,带着会话语境检查自己的无语境产物=盲区自洽;新建和编辑都要做)+ 通读正文确认每条指令可执行。自检第 2 条(干净读者)的具体扫描面:①**隐喻/自造复合词**(行业通用术语可用;自造词首次出现必须给定义——判例:「三池/互喂/冒泡/收账」直接进 skill,干净读者全不懂);②**会话语境词**(「今晚/我们/这次讨论定的」);③**未定义缩写**(项目批次号/内部代号在 SKILL.md 正文出现即违规)。**编辑时额外查**:① 新增的引用是否过规范 3 的门(已提交 + 不引 memory / gitignored + 稳定 / 可校验);② **改 / 加 ADR 前复查过本 skill 过往 ADR 了吗**(编号没撞 / 没重复已有决策 / 没改出矛盾 / 没重提已否备选);③ **新增文本的语境污染**——编辑者天然带着会话语境写增量,比新建更容易夹黑话。
+3. **写 design/**:`overview.md`(定位 / 边界 / 构成;决策 why 默认写进动机段)。`decisions/` ADR **仅用户命令时**才建才写(按 `references/design-docs.md` 格式),默认不动。
+4. **自检 4 条硬规范**(**打开本 skill 原文逐条对照,禁凭记忆复述**——记忆会自动跳过你刚违反过的项,带着会话语境检查自己的无语境产物=盲区自洽;新建和编辑都要做)+ 通读正文确认每条指令可执行。自检第 2 条(干净读者)的具体扫描面:①**隐喻/自造复合词**(行业通用术语可用;自造词首次出现必须给定义——判例:「三池/互喂/冒泡/收账」直接进 skill,干净读者全不懂);②**会话语境词**(「今晚/我们/这次讨论定的」);③**未定义缩写**(项目批次号/内部代号在 SKILL.md 正文出现即违规)。**编辑时额外查**:① 新增的引用是否过规范 3 的门(已提交 + 不引 memory / gitignored + 稳定 / 可校验);② **改 / 加 ADR(用户命令)时,复查过该 skill 过往 ADR 了吗**(编号没撞 / 没重复已有决策 / 没改出矛盾 / 没重提已否备选;没有 ADR 则从 0001 起);③ **新增文本的语境污染**——编辑者天然带着会话语境写增量,比新建更容易夹黑话。
 5. **挂载到 AI 工具读 skill 的目录**(如 Claude Code 的 `.claude/skills/`),验证 skill 可被触发。
 6. 提交(见所在仓库提交流程)。
 
@@ -70,4 +71,4 @@ frontmatter(`name` 仅字母数字连字符 / `description` 只写触发条件�
 - **方法论覆盖型**:整合业界已验证的方法论成系统流程,内容依据是方法论本身 → **RED 可省**(团队工具 / 模型异构,单一 baseline 外部效度不足 —— 你本地看到的失败可能只是你模型的弱点,或别人环境的失败你根本没看到);但写完必须 GREEN 验证(跑 application 场景,确认用了 skill 的智能体决策 / 产出更系统)。
 
 无论哪类,**GREEN 验证不可省**(方法见 `references/skill-testing.md`:方法论型 = utility test 干净工作空间 + 可交互子 agent + 你扮用户只答所问 + 观察 gap + 修 + 循环;纠正型 = pressure test);差异只在 RED 是否必须。
-判断属于哪类:问"这条规范的依据,是'智能体默认会做错所以纠正',还是'业界方法论本来就该这么做'?"。前者纠正型,后者方法论型。`od-dev-deciding-a-fix` 是方法论型(锚定 RCA / Impact Analysis 等)。理由见 [ADR-0005](design/decisions/0005-drop-superpowers-dependency.md) + `references/writing-craft.md` §3.1。
+判断属于哪类:问"这条规范的依据,是'智能体默认会做错所以纠正',还是'业界方法论本来就该这么做'?"。前者纠正型,后者方法论型。`od-dev-deciding-a-fix` 是方法论型(锚定 RCA / Impact Analysis 等)。理由见 `references/writing-craft.md` §3.1。

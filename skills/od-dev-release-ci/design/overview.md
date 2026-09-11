@@ -13,7 +13,7 @@ OneDragon 系列项目的发布 / CI 体系在 ZZZ 侧领先演进(多 job 分�
 
 ## 提炼基准
 
-**ZZZ 为基底**(领先版);SR 落后点见 [ADR-0001](decisions/0001-zzz-baseline-sr-gap.md) 的差距清单 —— SR 跟进时以本 skill 为准绳逐项补,不再反向参照旧实现。
+**ZZZ 为基底**(领先版);SR 跟进时以本 skill 为准绳逐项补齐落后点,不再反向参照旧实现。
 
 ## 落点
 公共仓 `OneDragon-Skills/skills/od-dev-release-ci/`。消费方式见仓 `docs/setup/ai_coding.md`。

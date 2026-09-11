@@ -12,7 +12,7 @@
 
 - **管**:排查**运行中**自动化 bug 的事后法证判据(找对日志 / 定位节点 / 识别类专项 / 采集证据)。
 - **不管**:开发中的调试内循环(→ `od-dev-write-operation` 调试纪律,判据:你在写这个 op 还是拿用户失败反馈排查);定位后**决定怎么修**(→ `od-dev-deciding-a-fix`);游戏功能知识(→ 代码 / screen_info)。
-- **叠加而非重写**:本 skill 是「运行后排查判据」叠加在「通用调试纪律」之上(基座原为 superpowers:systematic-debugging,迁公共仓时改指 write-operation,见 [ADR-0003](decisions/0003-migrate-and-rebase-onto-write-operation.md);叠加 vs 自含的 why 见 [ADR-0001](decisions/0001-layer-on-systematic-debugging.md))。
+- **叠加而非重写**:本 skill 是「运行后排查判据」叠加在「通用调试纪律」之上(基座原为 superpowers:systematic-debugging,迁公共仓时改指 write-operation)。
 
 ## 构成
 

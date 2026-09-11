@@ -18,17 +18,17 @@
 
 ## 构成
 - **`SKILL.md`**:智能体执行指令 —— done criteria + 6 步流程(摸现状 / 清 unresolved / resolve 时机 / push 迭代 / 合并前 / 关联 PR 协同)+ 边界。每次触发都加载。
-- **`design/`**(本目录,给后续维护者,不进智能体上下文):设计概览 + ADR(记「为什么这么定」,尤其 CodeRabbit 平台行为踩坑论据)。
+- **`design/`**(本目录,给后续维护者,不进智能体上下文):设计概览 + ADR(记「为什么这么定」)。
 
-## 范围内的关键选择(why 见对应 ADR)
-- **CodeRabbit 作为 review bot 写死进 skill**(非 review-bot 抽象)→ [ADR-0001](decisions/0001-coderabbit-hardcoded.md)。
-- **resolve 走 GraphQL `resolveReviewThread` + reply 走 REST replies(用 REST `databaseId`)** —— 两操作两条 API、两套 id,不混 → [ADR-0002](decisions/0002-resolve-reply-api.md)。
-- **CodeRabbit 完成态靠 ack issue comment body 判(非 check run/reviews)+ push 不自动触发靠 auto-pause 检测** —— 平台行为驱动的判据 → [ADR-0003](decisions/0003-coderabbit-state-detection.md)。
+## 范围内的关键选择
+- **CodeRabbit 作为 review bot 写死进 skill**(非 review-bot 抽象)。
+- **resolve 走 GraphQL `resolveReviewThread` + reply 走 REST replies(用 REST `databaseId`)** —— 两操作两条 API、两套 id,不混。
+- **CodeRabbit 完成态靠 ack issue comment body 判(非 check run/reviews)+ push 不自动触发靠 auto-pause 检测** —— 平台行为驱动的判据。
 - **每条 thread 最终都 resolve(不设暂缓类)**:done criteria「无 unresolved」严格满足,不在 PR 上留暂缓项(要后续追踪的另开 issue,不在本 skill 范围)。属范围内约定,不单列 ADR。
 - **resolve 时机判据(有 push 等下一轮 review 完成、无 push 等 10 分钟)**:方法论/判据,在 SKILL.md(确保 CodeRabbit「说完话」再 resolve,不抢判断也不干等)。
 
 ## 落点(仓库约定)
-- 公共仓 `OneDragon-Skills/skills/od-dev-pr-finishing/`(自 SR 仓 `sr-od-dev-pr-finishing` 迁入泛化,见 [ADR-0004](decisions/0004-migrate-from-sr-and-drop-superpowers.md)),OneDragon 系列通用。
+- 公共仓 `OneDragon-Skills/skills/od-dev-pr-finishing/`(自 SR 仓 `sr-od-dev-pr-finishing` 迁入泛化),OneDragon 系列通用。
 - 消费方式见仓 `docs/setup/ai_coding.md`(npx skills add 标准安装 / 本地开发 junction)。
 
 ## 当前状态

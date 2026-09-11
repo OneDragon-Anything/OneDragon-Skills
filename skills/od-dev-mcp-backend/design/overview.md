@@ -10,7 +10,7 @@ OneDragon 系列项目(SR / ZZZ / …)各自实现 MCP backend,设计文档在�
 
 ## 构成
 - **SKILL.md**:能力边界两问(核心心智)+ 新增能力判定主线(6 步)+ recognizer 何时加 + 必做 checklist + 自检。
-- **references/design-principles.md**:设计原则 P1-P14 + 能力分配总表 + 受众分层(源码盲例外)——整合版(见 ADR-0001)。
+- **references/design-principles.md**:设计原则 P1-P14 + 能力分配总表 + 受众分层(源码盲例外)——整合版。
 - **references/implementation.md**:实现落地(annotations 分类表 / Field 选参 / 错误兜底 / docstring 三要素 / 命名 / 同步 checklist)。
 - **references/screen-recognizers.md**:per-screen recognizer 机制(契约 / 3 步 / 并发安全纯读 / OCR 缓存 / 错误隔离 / 不稳定字段不硬塞 / 扫描缓存)。
 

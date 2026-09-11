@@ -21,7 +21,7 @@
 - **live 三位一体**:live 不只验 PR,沿途画面未建档顺便补 screen_info(走 `od-dev-screen-onboarding`)——成本最低、价值叠加。
 
 ## 落点
-- 公共仓 `OneDragon-Skills/skills/od-dev-pr-review/`(自 SR 仓 `sr-od-dev-pr-review` 迁入泛化,见 [ADR-0006](decisions/0006-migrate-from-sr-and-generalize.md)),OneDragon 系列通用。
+- 公共仓 `OneDragon-Skills/skills/od-dev-pr-review/`(自 SR 仓 `sr-od-dev-pr-review` 迁入泛化),OneDragon 系列通用。
 - 消费方式见仓 `docs/setup/ai_coding.md`(npx skills add 标准安装 / 本地开发 junction)。
 - 结构:`SKILL.md`(方法论入口)+ `design/`(本文件夹,设计 + ADR)。
 

@@ -1,6 +1,6 @@
 # 画面建档深度细则(两套做法:探索期 + 实现期补全)
 
-> ⚠️ **归并进行中(2026-08-09 [ADR-0006](../decisions/0006-two-pass-skeleton-exploration-vs-implementation.md))**:画面建档"做什么"的**操作方法论单一源是 `od-dev-screen-onboarding`**(analyze→视觉大模型→doc→缺口→建模→归档)。本文件只保留 **gameplay 流程视角的画面建档判据速查**(识别优先级 / 每状态建档 / 信息 area / LCS 误匹配),**操作细节不重复**(见 screen-onboarding)。
+> ⚠️ **归并进行中(2026-08-09)**:画面建档"做什么"的**操作方法论单一源是 `od-dev-screen-onboarding`**(analyze→视觉大模型→doc→缺口→建模→归档)。本文件只保留 **gameplay 流程视角的画面建档判据速查**(识别优先级 / 每状态建档 / 信息 area / LCS 误匹配),**操作细节不重复**(见 screen-onboarding)。
 > **画面建档不分初步/完整档**:每次按完整标准做,探索期标 `进行中` 待实现期补全(详见 SKILL.md 两套做法 + progress-tracking §1)。
 > **LCS 误匹配**(运行时 `round_by_ocr` 分派误火)待迁 `od-dev-write-operation`(运行时分派诊断);其「固定位置识别」根因解见 screen-onboarding §3.5。
 

@@ -1,6 +1,6 @@
 # od-dev-write-application — 设计概览(what)
 
-> 本文件是 **what**(skill 长什么样 / 范围 / 边界 / 构成)。**why** 见 `decisions/`。
+> 本文件是 **what**(skill 长什么样 / 范围 / 边界 / 构成)。
 
 ## 定位(是什么)
 

@@ -1,7 +1,7 @@
 # Skill 测试方法论(sub-agent)
 
 > 本文件是 `od-dev-writing-skills` 的测试方法。**写 / 改 skill 后按此验证**(GREEN 不可省,见 SKILL.md「两类 skill」)。
-> 与 superpowers 的区别:**不强制 RED**(见 [ADR-0006](../design/decisions/0006-skill-testing-methodology.md));按 skill 类型选测试制度。
+> 与 superpowers 的区别:**不强制 RED**;按 skill 类型选测试制度。
 
 ## 0. 为什么测 + 测什么
 skill 是给 agent 用的指令。**你以为写清楚了 ≠ agent 真能照做**。必须实测:让一个**干净上下文**的 agent 用这 skill 干真活,看它能不能干好。这是唯一能发现"你以为清楚、其实没写清"的办法。
@@ -68,7 +68,7 @@ skill 是给 agent 用的指令。**你以为写清楚了 ≠ agent 真能照做
 - [ ] 有 skill 重测看守规矩
 - [ ] 新 rationalization → 堵漏 → 重测
 
-## 5. 与 superpowers 的区别(见 ADR-0006)
+## 5. 与 superpowers 的区别
 - **不强制 RED**(方法论型 RED 可省,外部效度不足 —— 你本地看到的失败可能只是你模型 / env 的弱点)。
 - 主方法是 **utility test**(测实用性 / 完整性),非 superpowers 的 pressure test(测纪律)。
 - 两者互补:纠正型用 pressure,方法论型用 utility。

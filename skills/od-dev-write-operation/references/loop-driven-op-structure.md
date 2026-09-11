@@ -25,7 +25,7 @@ flat loop 把两件事塞进同一条优先级阶梯,是所有优先级脆弱 / 
 
 → 流程有逻辑单元生命周期 + 多阶段时,用 node-per-op 把"卡死"变成**单元作用域可判定的**(N 次没完成 = bail)。
 
-### flat loop 合理适用场景内也要守:推进型 handler 完成验证(底线,[ADR-0009](../design/decisions/0009-flat-loop-handler-completion-check.md))
+### flat loop 合理适用场景内也要守:推进型 handler 完成验证(底线)
 
 上面讲的是"**有逻辑单元时** flat loop 扛不住,该迁 node-per-op"。但 flat loop 的**合理适用场景**(纯帧级反应式:点空白加速战斗 / 结算翻页 / 点掉弹窗 / 等待型)里,只要 handler 是**推进型**(点一下让画面往前走),仍有同一坑的**另一面**:**点不中(坐标落候选间隙 / LCS 误匹配 / click 没落地)→ 覆盖层不关 / 没翻页 → loop 下一轮还在本屏 → 又点 → 又没中 → `round_wait` 不计 retry → 无限到 MAX_ITER**。这是 `round_wait` 不计 retry 这一机制的另一种触发(上节是"有单元 handler 完不成",本节是"无单元 handler 点不中")。
 
