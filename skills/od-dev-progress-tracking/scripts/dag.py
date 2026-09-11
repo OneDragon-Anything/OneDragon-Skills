@@ -4,18 +4,21 @@
 - 节点 Task:id / title / module(封闭枚举:流程|决策|支撑)/ status(七态)/
   deps(图内硬依赖,只存单侧,反向现算)/ cond(图外等待,wait 必带含「复查」)/
   criteria(完成凭据指针,追加式:预注册+实证共存;done 与 pending_review 流转必带)/
+  review(验收档:required=需验收缺省|none=免审;建账定不可变)/
   priority(派单优先级,0..10 大者先派,缺省 0;ready 排序=优先级→关键链→挡下游)/
   assignee+since(doing 必带,挂了检测与恢复锚点;pending_review/rejected 保留交付者)/
   dead_reason / notes / created。
 - 状态机七态:todo|doing|wait|pending_review|rejected|done|dead。流转矩阵见 ALLOWED_TRANSITIONS:
   「被前置挡住」不占状态(todo+图算),wait 只留给图外等待;pending_review=已交付待验收,
-  rejected=打回已裁决、返工未启动(泊位,ADR-0006);doing→pending_review 交付必带
+  rejected=打回已裁决、返工未启动(泊位);doing→pending_review 交付必带
   criteria(交付报告指针),pending_review→done 验收过必带 criteria(验收结论指针),
   pending_review→rejected 打回登记必带 why(结论文件路径),rejected→doing 返工派工必带
   assignee;以上四处均过文件存在门(指针须指向真实存在的文件=子 agent 自登记的机械担保);
+  验收直达门:review=required 的任务 todo/doing/wait→done 写入打回,
+  done 唯一入口=pending_review→done;review=none 全边保留,升级口照样可走 pending_review;
   dead 是终态不可出(依赖满足判定把 dead 当满足,复活会炸图);done→todo 与
   pending_review→doing(打回即返工,跳过泊位)是回边,均必带 why。环在写入时拒绝,不做事后体检。
-- 旧名兼容(ADR-0005):待验收态原名 review,裸 token 读不出「等验收」方向,更名
+- 旧名兼容:待验收态原名 review,裸 token 读不出「等验收」方向,更名
   pending_review。normalize_status 读侧归一旧事件流(append-only 正本不改写);status
   命令仍收旧名(归一后按规范名落盘+更名提醒),check 对残留旧名给信息级警。
 
@@ -49,8 +52,11 @@ from pathlib import Path
 STATUSES: tuple[str, ...] = ('todo', 'doing', 'wait', 'pending_review', 'rejected', 'done', 'dead')
 MODULES: tuple[str, ...] = ('流程', '决策', '支撑')
 INITIAL_STATUSES: tuple[str, ...] = ('todo', 'wait')  # add 的合法初始态
+# 验收档:建账定不可变;缺省 required=需验收(done 唯一入口=pending_review)
+REVIEW_LEVELS: tuple[str, ...] = ('none', 'required')
+DEFAULT_REVIEW: str = 'required'
 
-# 旧状态名→规范名(ADR-0005):review 因裸 token 歧义更名 pending_review;
+# 旧状态名→规范名:review 因裸 token 歧义更名 pending_review;
 # 读侧归一历史事件,写侧 status 命令仍收旧名(归一后落盘),账本历史不改写
 STATUS_ALIASES: dict[str, str] = {'review': 'pending_review'}
 
@@ -59,7 +65,7 @@ def normalize_status(s: str) -> str:
     """旧状态名归一到规范名;未知值原样返回,由校验层打回。"""
     return STATUS_ALIASES.get(s, s)
 
-# 流转矩阵(dead 终态无出边;rejected=打回泊位,ADR-0006)
+# 流转矩阵(dead 终态无出边;rejected=打回泊位)
 ALLOWED_TRANSITIONS: frozenset[tuple[str, str]] = frozenset({
     ('todo', 'doing'), ('todo', 'done'), ('todo', 'dead'),
     ('doing', 'done'), ('doing', 'wait'), ('doing', 'dead'), ('doing', 'pending_review'),
@@ -98,6 +104,7 @@ class Task:
     cond: str | None = None
     priority: int = 0
     criteria: list[str] = field(default_factory=list)
+    review: str = DEFAULT_REVIEW
     assignee: str | None = None
     since: str | None = None
     created: str = ''
@@ -275,6 +282,7 @@ def fold(events: list[dict]) -> tuple[dict[str, Task], list[str]]:
                 cond=spec.get('cond'),
                 priority=spec.get('priority', 0),
                 criteria=list(spec.get('criteria') or []),
+                review=spec.get('review') or DEFAULT_REVIEW,
                 created=ts,
             )
             if t.id in tasks:
@@ -448,11 +456,14 @@ def next_id(tasks: dict[str, Task]) -> str:
 
 
 def validate_add(tasks: dict[str, Task], title: str, module: str, deps: list[str],
-                 cond: str | None, criteria: list[str], priority: int = 0) -> Task:
+                 cond: str | None, criteria: list[str], priority: int = 0,
+                 review: str = DEFAULT_REVIEW) -> Task:
     if not title.strip():
         raise DagError('标题不能为空')
     if module not in MODULES:
         raise DagError(f'module 须为 {"|".join(MODULES)} 之一,得到:{module}')
+    if review not in REVIEW_LEVELS:
+        raise DagError(f'review 须为 {"|".join(REVIEW_LEVELS)} 之一(缺省 required=需验收),得到:{review}')
     if not 0 <= priority <= MAX_PRIORITY:
         raise DagError(f'priority 须在 0..{MAX_PRIORITY}(0=缺省,10=最紧急;降权延后用 wait 态而非负值),得到:{priority}')
     for d in deps:
@@ -465,7 +476,7 @@ def validate_add(tasks: dict[str, Task], title: str, module: str, deps: list[str
         if '复查' not in cond:
             raise DagError('wait 必带复查时机(cond 里含「复查」)')
     task = Task(id=next_id(tasks), title=title.strip(), module=module, status=status,
-                deps=deps, cond=cond, priority=priority, criteria=criteria)
+                deps=deps, cond=cond, priority=priority, criteria=criteria, review=review)
     if status == 'wait':
         pass
     cyc = find_cycle(tasks, (task.id, list(deps)))
@@ -478,7 +489,7 @@ def validate_status(tasks: dict[str, Task], tid: str, to: str, why: str | None,
                     cond: str | None, criteria: list[str], assignee: str | None,
                     ledger_dir: Path) -> dict:
     """构造并校验 status 事件;返回事件体(不含 type/ts/actor)。"""
-    to = normalize_status(to)  # 旧名 review 收下归一(ADR-0005),入盘用规范名
+    to = normalize_status(to)  # 旧名 review 收下归一,入盘用规范名
     t = tasks.get(tid)
     if t is None:
         raise DagError(f'任务不存在:{tid}')
@@ -486,6 +497,10 @@ def validate_status(tasks: dict[str, Task], tid: str, to: str, why: str | None,
         raise DagError(f'未知状态:{to}(合法:{"|".join(STATUSES)};旧名 review 自动归一)')
     if (t.status, to) not in ALLOWED_TRANSITIONS:
         raise DagError(f'非法流转 {t.status} -> {to}(dead 是终态;见 ALLOWED_TRANSITIONS)')
+    # 验收直达门:required 档 done 唯一入口=pending_review;免审须建账时显式声明
+    if to == 'done' and t.review == 'required' and t.status != 'pending_review':
+        raise DagError(f'{tid} 建账时声明需验收(review=required):done 只能经 '
+                       f'pending_review(交付→验收);确属免审小件,dead 后新任务 --review none 承接')
     if to == 'doing' and not assignee:
         raise DagError('doing 必带 --assignee(谁在做:self 或子 agent 标识)')
     if to == 'done' and not criteria and not t.criteria:
@@ -571,7 +586,8 @@ def render_list(tasks: dict[str, Task], show_all: bool) -> str:
         wait = blocked_by(tasks, t)
         dep_s = ','.join(t.deps) if t.deps else '-'
         block_s = f' [挡:{",".join(wait)}]' if wait and t.status == 'todo' else ''
-        lines.append(f'{t.id}  {t.module}  {_status_badge(t)}  {t.title}{block_s}  deps={dep_s}')
+        rev = ' [免审]' if t.review == 'none' else ''
+        lines.append(f'{t.id}  {t.module}{rev}  {_status_badge(t)}  {t.title}{block_s}  deps={dep_s}')
     if not show_all:
         done_n = len(tasks) - len(act)
         lines.append(f'-- 活任务 {len(act)},终态(不显示) {done_n};--all 看全量')
@@ -588,7 +604,8 @@ def render_ready(tasks: dict[str, Task]) -> str:
         ch, bl = criticality_map(tasks)[tid]
         p = f' P{t.priority}' if t.priority else ''
         r = ' [打回]' if t.status == 'rejected' else ''
-        lines.append(f'  {tid}{p}{r}  链{ch} 挡{bl}  {t.module}  {t.title}')
+        nv = ' [免审]' if t.review == 'none' else ''
+        lines.append(f'  {tid}{p}{r}{nv}  链{ch} 挡{bl}  {t.module}  {t.title}')
     lines.append(f'== doing({len(doing)}) ==')
     for t in doing:
         lines.append(f'  {t.id}  @{t.assignee}  since={t.since}  {t.title}')
@@ -640,8 +657,9 @@ def render_card(tasks: dict[str, Task], tid: str) -> str:
     t = tasks.get(tid)
     if t is None:
         raise DagError(f'任务不存在:{tid}')
+    rev = '免审' if t.review == 'none' else '需验收'
     lines = [f'== {t.id} {t.title} ==',
-             f'模块:{t.module}  状态:{_status_badge(t)}  优先级:{t.priority}  创建:{t.created}']
+             f'模块:{t.module}  状态:{_status_badge(t)}  优先级:{t.priority}  创建:{t.created}  验收:{rev}']
     if t.deps:
         lines.append('前置:')
         for d in t.deps:
@@ -722,8 +740,19 @@ def cmd_check(args: argparse.Namespace) -> int:
                 errors.append(f'{t.id}: wait 的 cond 缺复查时机')
             if t.cond and COND_ID_LEAK_RE.search(t.cond):
                 warns.append(f'{t.id}: cond 里出现任务 ID,该建 deps 边而非文字({t.cond})')
+        if t.review not in REVIEW_LEVELS:
+            errors.append(f'{t.id}: review 非法 {t.review}(合法:{"|".join(REVIEW_LEVELS)})')
         if t.status == 'done' and not t.criteria:
             errors.append(f'{t.id}: done 缺 criteria')
+        if t.status == 'done' and t.review == 'required':
+            # 重放侧同规则:required 的 done 必须有 pending_review→done 验收事件背书
+            accepted = any(
+                e.get('type') == 'status' and e.get('id') == t.id
+                and normalize_status(e.get('from', '')) == 'pending_review'
+                and normalize_status(e.get('to', '')) == 'done'
+                for e in events)
+            if not accepted:
+                errors.append(f'{t.id}: review=required 却直达 done(无 pending_review→done 验收事件)')
         if t.status in ('pending_review', 'rejected'):
             if not t.criteria:
                 errors.append(f'{t.id}: {t.status} 缺 criteria(交付报告指针)')
@@ -779,11 +808,12 @@ def cmd_add(args: argparse.Namespace) -> int:
     deps = [d.strip() for d in (args.dep or '').split(',') if d.strip()]
     criteria = [c.strip() for c in (args.criteria or '').split(';') if c.strip()]
     task = validate_add(tasks, args.title, args.module, deps, args.cond, criteria,
-                        args.priority)
+                        args.priority, args.review)
     ev = {'v': 1, 'ts': now_iso(), 'actor': actor_of(args), 'type': 'add',
           'task': {'id': task.id, 'title': task.title, 'module': task.module,
                    'status': task.status, 'deps': task.deps, 'cond': task.cond,
-                   'priority': task.priority, 'criteria': task.criteria}}
+                   'priority': task.priority, 'criteria': task.criteria,
+                   'review': task.review}}
     append_event(path, ev)
     gate = 'wait(外部等待)' if task.status == 'wait' else 'todo'
     gate += '(被前置挡,前置过自动就绪)' if task.status == 'todo' and task.deps else ''
@@ -795,8 +825,8 @@ def cmd_status(args: argparse.Namespace) -> int:
     path = Path(args.file)
     tasks, _ = fold(load_events(path))
     to = normalize_status(args.to)
-    if args.to != to:  # 旧名写入:收下并提醒(ADR-0005),事件落规范名
-        print(f'[提醒] 状态旧名 {args.to} 已更名 {to}(ADR-0005),本次按 {to} 记账',
+    if args.to != to:  # 旧名写入:收下并提醒,事件落规范名
+        print(f'[提醒] 状态旧名 {args.to} 已更名 {to},本次按 {to} 记账',
               file=sys.stderr)
     criteria = [c.strip() for c in (args.criteria or '').split(';') if c.strip()]
     body = validate_status(tasks, args.id, to, args.why, args.cond,
@@ -927,7 +957,7 @@ def cmd_log(args: argparse.Namespace) -> int:
         if typ == 'add':
             if (ev.get('task') or {}).get('id') != t.id:
                 continue
-            desc = 'add:登记'
+            desc = 'add:登记' + ('(免审)' if (ev.get('task') or {}).get('review') == 'none' else '')
         elif ev.get('id') != t.id:
             continue
         elif typ == 'status':
@@ -978,6 +1008,9 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument('--criteria', help='完成凭据预注册,分号分隔')
     sp.add_argument('--priority', type=int, default=0,
                     help='派单优先级(0..10,大者先派;默认 0)')
+    sp.add_argument('--review', default=DEFAULT_REVIEW,
+                    help='验收档:required=需验收(缺省,done 只能经 pending_review)|'
+                         'none=免审(可直达 done;免审资格判据见 SKILL §14)')
     sp.set_defaults(func=cmd_add)
 
     sp = sub.add_parser('status', help='状态流转(按流转矩阵校验)')
@@ -1031,7 +1064,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument('id')
     sp.set_defaults(func=cmd_log)
 
-    sp = sub.add_parser('check', help='体检:重放校验+悬空+环+必带字段')
+    sp = sub.add_parser('check', help='体检:重放校验+悬空+环+必带字段+验收档一致性')
     sp.set_defaults(func=cmd_check)
     return p
 

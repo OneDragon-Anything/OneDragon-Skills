@@ -25,7 +25,8 @@ def f(tmp_path: Path) -> str:
 def seed(tmp_path: Path) -> str:
     """T-1(自由任务)已过;返回文件路径。"""
     path = f(tmp_path)
-    assert run(['--file', path, 'add', '根任务', '--module', '流程']) == 0
+    # 直达 done 只对免审任务开放:seed 走直达,建账即声明 --review none
+    assert run(['--file', path, 'add', '根任务', '--module', '流程', '--review', 'none']) == 0
     assert run(['--file', path, 'status', 'T-1', 'done', '--criteria', 'a.md']) == 0
     return path
 
@@ -68,8 +69,8 @@ class TestAdd:
 class TestTransitions:
     def test_legal_paths(self, tmp_path: Path) -> None:
         path = f(tmp_path)
-        # todo→doing→wait→todo→done 全链
-        assert run(['--file', path, 'add', 'x', '--module', '流程']) == 0
+        # todo→doing→wait→todo→done 全链(直达链只对免审任务开放)
+        assert run(['--file', path, 'add', 'x', '--module', '流程', '--review', 'none']) == 0
         assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'self']) == 0
         assert run(['--file', path, 'status', 'T-1', 'wait',
                     '--cond', '等裁决,复查=明天']) == 0
@@ -90,7 +91,8 @@ class TestTransitions:
 
     def test_required_fields(self, tmp_path: Path) -> None:
         path = f(tmp_path)
-        assert run(['--file', path, 'add', 'x', '--module', '流程']) == 0
+        # 免审任务:done 缺 criteria 的必带校验只对直达边有意义(required 被直达门先拦)
+        assert run(['--file', path, 'add', 'x', '--module', '流程', '--review', 'none']) == 0
         # doing 缺 assignee
         assert run(['--file', path, 'status', 'T-1', 'doing']) == 2
         assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'w1']) == 0
@@ -150,7 +152,7 @@ class TestGraph:
     def test_criteria_append_not_overwrite(self, tmp_path: Path) -> None:
         path = f(tmp_path)
         assert run(['--file', path, 'add', 'x', '--module', '流程',
-                    '--criteria', '预注册判据']) == 0
+                    '--criteria', '预注册判据', '--review', 'none']) == 0
         assert run(['--file', path, 'status', 'T-1', 'done',
                     '--criteria', 'report.md 实测过']) == 0
         tasks, _ = dag.fold(dag.load_events(Path(path)))
@@ -318,7 +320,7 @@ class TestPendingReviewFlow:
 
     def test_pending_review_only_reachable_from_doing(self, tmp_path: Path) -> None:
         path = f(tmp_path)
-        assert run(['--file', path, 'add', 'x', '--module', '流程']) == 0
+        assert run(['--file', path, 'add', 'x', '--module', '流程', '--review', 'none']) == 0
         assert run(['--file', path, 'status', 'T-1', 'pending_review',
                     '--criteria', 'r.md']) == 2  # todo→pending_review 非法(矩阵先拒)
         assert run(['--file', path, 'status', 'T-1', 'done', '--criteria', 'a.md']) == 0
@@ -368,7 +370,115 @@ class TestPendingReviewFlow:
         assert run(['--file', path, 'check']) == 1
 
 
-# ---------- 旧名兼容(ADR-0005:review → pending_review) ----------
+# ---------- review 验收档(建账定档,缺省 required,直达门) ----------
+
+
+class TestReviewGate:
+    def touch(self, tmp_path: Path, rel: str) -> None:
+        p = tmp_path / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text('x', encoding='utf-8')
+
+    def test_default_required_and_opt_out_none(self, tmp_path: Path) -> None:
+        path = f(tmp_path)
+        assert run(['--file', path, 'add', '甲', '--module', '流程']) == 0
+        assert run(['--file', path, 'add', '乙', '--module', '流程', '--review', 'none']) == 0
+        assert run(['--file', path, 'add', '丙', '--module', '流程', '--review', '乱填']) == 2
+        tasks, problems = dag.fold(dag.load_events(Path(path)))
+        assert not problems
+        assert tasks['T-1'].review == 'required'  # 缺省从严
+        assert tasks['T-2'].review == 'none'
+
+    def test_required_blocks_direct_done(self, tmp_path: Path) -> None:
+        path = f(tmp_path)
+        assert run(['--file', path, 'add', 'x', '--module', '流程']) == 0  # 缺省 required
+        # todo→done 打回
+        assert run(['--file', path, 'status', 'T-1', 'done', '--criteria', 'a.md']) == 2
+        # doing→done 打回
+        assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'w1']) == 0
+        assert run(['--file', path, 'status', 'T-1', 'done', '--criteria', 'a.md']) == 2
+        # wait→done 打回
+        assert run(['--file', path, 'add', 'y', '--module', '流程',
+                    '--cond', '等语料,复查=明天']) == 0
+        assert run(['--file', path, 'status', 'T-2', 'done', '--criteria', 'a.md']) == 2
+
+    def test_required_done_via_pending_review_still_works(self, tmp_path: Path) -> None:
+        path = f(tmp_path)
+        assert run(['--file', path, 'add', 'x', '--module', '流程']) == 0
+        assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'w1']) == 0
+        self.touch(tmp_path, 'reports/T-1-r1.md')
+        assert run(['--file', path, 'status', 'T-1', 'pending_review',
+                    '--criteria', 'reports/T-1-r1.md']) == 0
+        self.touch(tmp_path, 'reviews/T-1-r1.md')
+        assert run(['--file', path, 'status', 'T-1', 'done',
+                    '--criteria', 'reviews/T-1-r1.md']) == 0
+
+    def test_none_allows_direct_done_and_keeps_escalation(self, tmp_path: Path) -> None:
+        path = f(tmp_path)
+        # 直达:doing→done 凭据可以是 commit 等非文件指针(直达边不受文件存在门约束)
+        assert run(['--file', path, 'add', 'x', '--module', '流程', '--review', 'none']) == 0
+        assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'self']) == 0
+        assert run(['--file', path, 'status', 'T-1', 'done',
+                    '--criteria', 'commit abc123 自测过']) == 0
+        # 补记:todo→done
+        assert run(['--file', path, 'add', 'y', '--module', '流程', '--review', 'none']) == 0
+        assert run(['--file', path, 'status', 'T-2', 'done', '--criteria', 'a.md']) == 0
+        # 升级口:免审任务照样可走全协议(交付时发现改动变大/判据说不清)
+        assert run(['--file', path, 'add', 'z', '--module', '流程', '--review', 'none']) == 0
+        assert run(['--file', path, 'status', 'T-3', 'doing', '--assignee', 'w1']) == 0
+        self.touch(tmp_path, 'reports/T-3-r1.md')
+        assert run(['--file', path, 'status', 'T-3', 'pending_review',
+                    '--criteria', 'reports/T-3-r1.md']) == 0
+        self.touch(tmp_path, 'reviews/T-3-r1.md')
+        assert run(['--file', path, 'status', 'T-3', 'done',
+                    '--criteria', 'reviews/T-3-r1.md']) == 0
+
+    def test_views_show_review_level(self, tmp_path: Path) -> None:
+        import contextlib
+        import io
+        path = f(tmp_path)
+        assert run(['--file', path, 'add', '甲', '--module', '流程', '--review', 'none']) == 0
+        assert run(['--file', path, 'add', '乙', '--module', '流程']) == 0
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            assert run(['--file', path, 'card', 'T-1']) == 0
+            assert run(['--file', path, 'card', 'T-2']) == 0
+            assert run(['--file', path, 'list', '--all']) == 0
+            assert run(['--file', path, 'ready']) == 0
+            assert run(['--file', path, 'log', 'T-1']) == 0
+        out = buf.getvalue()
+        assert '验收:免审' in out and '验收:需验收' in out
+        assert '[免审]' in out and 'add:登记(免审)' in out
+
+    def test_check_catches_required_done_without_accept(self, tmp_path: Path) -> None:
+        """绕过写入门的坏档(required 直达 done)在 check 重放侧被抓;none 同历史不报。"""
+        path = f(tmp_path)
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:00:00', 'actor': 't',
+                                      'type': 'add', 'task': {
+                                          'id': 'T-1', 'title': 'x', 'module': '流程',
+                                          'status': 'todo', 'deps': [], 'cond': None,
+                                          'priority': 0, 'criteria': [],
+                                          'review': 'required'}})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:01:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'todo',
+                                      'to': 'done', 'why': None, 'cond': None,
+                                      'criteria': ['a.md'], 'assignee': None})
+        assert run(['--file', path, 'check']) == 1
+        path2 = f(tmp_path / 'n2')
+        dag.append_event(Path(path2), {'v': 1, 'ts': '2026-09-11T00:00:00', 'actor': 't',
+                                       'type': 'add', 'task': {
+                                           'id': 'T-1', 'title': 'x', 'module': '流程',
+                                           'status': 'todo', 'deps': [], 'cond': None,
+                                           'priority': 0, 'criteria': [],
+                                           'review': 'none'}})
+        dag.append_event(Path(path2), {'v': 1, 'ts': '2026-09-11T00:01:00', 'actor': 't',
+                                       'type': 'status', 'id': 'T-1', 'from': 'todo',
+                                       'to': 'done', 'why': None, 'cond': None,
+                                       'criteria': ['a.md'], 'assignee': None})
+        assert run(['--file', path2, 'check']) == 0
+
+
+# ---------- 旧名兼容(review → pending_review) ----------
 
 
 class TestLegacyAlias:
@@ -559,7 +669,7 @@ class TestPriority:
         assert 'P2' in out and '链1' in out and '挡1' in out
 
 
-# ---------- rejected 打回泊位态(ADR-0006:打回与返工解耦) ----------
+# ---------- rejected 打回泊位态(打回与返工解耦) ----------
 
 
 class TestRejectedState:
