@@ -127,7 +127,7 @@ dag.py [--file dag.jsonl] [--actor 标识]
   check                        # 体检:重放校验/悬空边/环/必带字段/cond 泄漏 id 告警
 ```
 
-- 记账分工(dag.py 已带账本级写锁,多方并发写安全):谁把任务置成某状态,谁记那条账——→doing 编排者(填 assignee)/→pending_review worker/→rejected 编排者(打回登记)/→done reviewer(reviewer=交付验收子 agent);流转合法性与必带字段由脚本写入时校验,写错直接打回。
+- 记账分工(dag.py 已带账本级写锁,多方并发写安全):谁把任务置成某状态,谁记那条账——→doing 编排者(填 assignee)/→pending_review worker/→rejected reviewer(打回登记=裁决记录)/→done reviewer;流转合法性与必带字段由脚本写入时校验,写错直接打回。
 - 直改 dag.jsonl 后必须补跑 check;check 不过的任务不得当依据派单。
 - note 是账本注记(≤500 字):挂账/新证据指针/一行补充;**长内容放产物文档,note 存指针——叙事不进账本**。
 

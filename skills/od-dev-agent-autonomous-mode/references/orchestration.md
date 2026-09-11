@@ -21,8 +21,9 @@
   - **派出一批(编排者)** → `dag.py status <任务id> doing --assignee <谁在做>`;
   - **worker 交付(worker)** → `dag.py status <任务id> pending_review --criteria <报告路径>`;
   - **验收过(reviewer)** → `dag.py status <任务id> done --criteria <结论路径>`;
-  - **打回(编排者)** → `dag.py status <任务id> doing --assignee <返工者名>
-    --why '<一句话>,详见 <结论路径>'`。
+  - **打回登记(reviewer,结论=reject)** → `dag.py status <任务id> rejected
+    --why '<一句话>,详见 <结论路径>'`;
+  - **返工派工(编排者,排到返工时)** → `dag.py status <任务id> doing --assignee <返工者名>`。
   assignee 只在 →doing 出现、永远由编排者填(软标签可读名;子 agent 不填——不知自身 id,
   也无权做路由决策)。账本和实际进度一致,恢复会话、派单才可信。
 
@@ -112,7 +113,8 @@
   4. 同步:代码/文档/测试三处一致;bug 修复查同类(同类还有吗)
   【产出】<结论路径>:逐条核验+结论(accept/reject)+打回要点(逐条可执行)+新问题立项建议
   【记账】accept → dag.py --file <账本路径> status <任务id> done --criteria <结论路径>;
-    reject → 不改账本,只交结论文件(打回路由归编排者)
+    reject → dag.py --file <账本路径> status <任务id> rejected --why <结论路径>
+    (登记打回泊位;返工派工归编排者)
   【回信】≤10 行=结论行(accept/reject+一句话理由+偏差与新问题条数)+结论文件路径
   结论只看证据,不看论证说服力。
   ```
@@ -139,12 +141,12 @@
 - **交付到达的处置序列**(编排者,全程不读交付正文):
   1. **对账(机械)**:报告文件存在?任务 id 对上?——任一不过=交付格式不合格,打回重交;
   2. **派 reviewer**(交付验收子 agent;标准任务书=验收批模板,只填实例位:阶段名/landing.md 路径/交付报告路径/结论路径/账本路径/任务 id);
-  3. **按结论行处置**:accept(reviewer 已自闭环 done)→空槽立刻取下一件;reject(reviewer 只出结论文件,不动账本)→编排者登记打回:`status <任务id> rejected --why '<一句话>,详见 <结论路径>'`——阶段进「打回待返工」泊位;返工排到时 `rejected→doing --assignee <返工者名>` 派出——原 worker 还活着→send_message 三指针续派(任务书/交付报告/验收结论),没了→spawn 新工,同样三指针;
+  3. **按结论行处置**:accept(reviewer 已自闭环 done)→空槽立刻取下一件;reject(reviewer 已自闭环 rejected,阶段进打回泊位)→排到返工时编排者 `rejected→doing --assignee <返工者名>` 派出——原 worker 还活着→send_message 三指针续派(任务书/交付报告/验收结论),没了→spawn 新工,同样三指针;
   4. **消化未尽事项**:按结论行里的新问题计数,当场 `dag.py add` 立项或写明不立缘由(账本外不许藏活任务)。
 - **发起权铁律**:一切子 agent(worker/reviewer/对抗审/参谋等,返工=worker 的再指派)都由编排者发起;worker 与 reviewer 只对自己的工作+记账负责,永不 spawn、永不相互委派(独立性/会话树归属/审查时机/槽位预算——违反任何一条都会绕开编排者的路由与限流)。
 - **每批交付由 reviewer 验收**(交付验收子 agent,干净上下文、独立于本批实现者;验收清单=验收批任务书模板的【验收】四条——判据对照/亲跑/边界/同步,唯一源在模板,此处不复述):
 
-- **reviewer 产出**:结论文件 `<迭代目录>/reviews/T-<N>-r<K>.md`(逐条核验+结论+打回要点+新问题立项建议)+ ≤10 行结论行(accept/reject+理由+偏差与新问题条数);记账:accept → `status <任务id> done --criteria <结论路径>`(自闭环);reject → **不动账本**(→doing 必带 assignee=路由决策,归编排者)。
+- **reviewer 产出**:结论文件 `<迭代目录>/reviews/T-<N>-r<K>.md`(逐条核验+结论+打回要点+新问题立项建议)+ ≤10 行结论行(accept/reject+理由+偏差与新问题条数);记账:accept → `status <任务id> done --criteria <结论路径>`(自闭环);reject → 自登记 `status <任务id> rejected --why <结论路径>`(打回泊位;返工派工 doing 归编排者,ADR-0006)。
 - **审查节奏(何时派 reviewer)**:有依赖的批立即审(解锁下游)/无依赖并行批可攒批合审/事故现场永远立即;待验积压>2 或下游被卡=停派新工先清(rubber-stamp 比不审更糟)。
 - **commit 后回头审**:跨模块/大批量的改动 commit 后,默认再回头审一轮这批 commit(改动间联动是否正确/有无引入回归/配套文档与测试锁是否跟上——它是后续所有批的新地基,刚落地时审最便宜)。
 - **重要结论采信前对抗,按「采信错了的代价」分三档**(在「准备采信」那一刻做;总判据:**对抗强度与采信错了的代价成正比**——产物越重大、越难回退,对抗越多路、越早开始、越贯穿全程;攻击者一律用干净上下文,每条攻击落到可查证据;**裁决只看证据与实测效果,不看论证说服力、不看支持票数**):

@@ -18,3 +18,7 @@ pending_review→doing 一跳把「打回裁决」与「返工开工」焊死:re
 
 - 正:打回积压成为账本一等可见队列;兜底对账可机械区分「没审」(pending_review 无结论文件)vs「审了没派」(rejected);返工派工时机与 reject 裁决解耦,编排者限流权完整。
 - 负:一次打回多一笔账(rejected 登记 + doing 派工);rejected 长期积压 = 返工饥饿的显式信号(需要编排者裁决优先级,不是静默丢失——这是特性不是缺陷)。
+
+## 修订(2026-09-11,用户裁定)
+
+- pending_review→rejected 改由 **reviewer 自登记**——原文「两次流转都是编排者动作」作废。泊位态只带 why=结论文件、无路由字段,打回登记=裁决记录,与 accept 自闭环对称(accept→done / reject→rejected,两个 verdict 都是 reviewer 记);rejected→doing(返工派工)仍归编排者。
