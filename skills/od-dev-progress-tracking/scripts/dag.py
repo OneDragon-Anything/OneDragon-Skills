@@ -1,18 +1,20 @@
 """dag.py — DAG 任务图管理 CLI(新正本,独立于 progress.py 的行文法账本)。
 
 数据模型(与用户逐字段确认的设计,2026-09-05):
-- 节点 Task:id / title / module(封闭枚举:流程|决策|支撑)/ status(六态)/
+- 节点 Task:id / title / module(封闭枚举:流程|决策|支撑)/ status(七态)/
   deps(图内硬依赖,只存单侧,反向现算)/ cond(图外等待,wait 必带含「复查」)/
   criteria(完成凭据指针,追加式:预注册+实证共存;done 与 pending_review 流转必带)/
   priority(派单优先级,0..10 大者先派,缺省 0;ready 排序=优先级→关键链→挡下游)/
-  assignee+since(doing 必带,挂了检测与恢复锚点)/ dead_reason / notes / created。
-- 状态机六态:todo|doing|wait|pending_review|done|dead。流转矩阵见 ALLOWED_TRANSITIONS:
+  assignee+since(doing 必带,挂了检测与恢复锚点;pending_review/rejected 保留交付者)/
+  dead_reason / notes / created。
+- 状态机七态:todo|doing|wait|pending_review|rejected|done|dead。流转矩阵见 ALLOWED_TRANSITIONS:
   「被前置挡住」不占状态(todo+图算),wait 只留给图外等待;pending_review=已交付待验收,
-  doing→pending_review 交付必带 criteria(交付报告指针),pending_review→done 验收过必带
-  criteria(验收结论指针),pending_review→doing 打回必带 why(原因+验收报告路径),三处均
-  过文件存在门(指针须指向真实存在的文件=子 agent 自登记的机械担保);dead 是终态
-  不可出(依赖满足判定把 dead 当满足,复活会炸图);done→todo 与 pending_review→doing
-  是回边,均必带 why。环在写入时拒绝,不做事后体检。
+  rejected=打回已裁决、返工未启动(泊位,ADR-0006);doing→pending_review 交付必带
+  criteria(交付报告指针),pending_review→done 验收过必带 criteria(验收结论指针),
+  pending_review→rejected 打回登记必带 why(结论文件路径),rejected→doing 返工派工必带
+  assignee;以上四处均过文件存在门(指针须指向真实存在的文件=子 agent 自登记的机械担保);
+  dead 是终态不可出(依赖满足判定把 dead 当满足,复活会炸图);done→todo 与
+  pending_review→doing(打回即返工,跳过泊位)是回边,均必带 why。环在写入时拒绝,不做事后体检。
 - 旧名兼容(ADR-0005):待验收态原名 review,裸 token 读不出「等验收」方向,更名
   pending_review。normalize_status 读侧归一旧事件流(append-only 正本不改写);status
   命令仍收旧名(归一后按规范名落盘+更名提醒),check 对残留旧名给信息级警。
@@ -44,7 +46,7 @@ from pathlib import Path
 
 # ---------- 常量与类型 ----------
 
-STATUSES: tuple[str, ...] = ('todo', 'doing', 'wait', 'pending_review', 'done', 'dead')
+STATUSES: tuple[str, ...] = ('todo', 'doing', 'wait', 'pending_review', 'rejected', 'done', 'dead')
 MODULES: tuple[str, ...] = ('流程', '决策', '支撑')
 INITIAL_STATUSES: tuple[str, ...] = ('todo', 'wait')  # add 的合法初始态
 
@@ -57,12 +59,14 @@ def normalize_status(s: str) -> str:
     """旧状态名归一到规范名;未知值原样返回,由校验层打回。"""
     return STATUS_ALIASES.get(s, s)
 
-# 流转矩阵(dead 终态无出边;done→todo 与 pending_review→doing 是仅有的两条回边)
+# 流转矩阵(dead 终态无出边;rejected=打回泊位,ADR-0006)
 ALLOWED_TRANSITIONS: frozenset[tuple[str, str]] = frozenset({
     ('todo', 'doing'), ('todo', 'done'), ('todo', 'dead'),
     ('doing', 'done'), ('doing', 'wait'), ('doing', 'dead'), ('doing', 'pending_review'),
     ('wait', 'todo'), ('wait', 'done'), ('wait', 'dead'),
     ('pending_review', 'done'), ('pending_review', 'doing'), ('pending_review', 'dead'),
+    ('pending_review', 'rejected'),
+    ('rejected', 'doing'), ('rejected', 'dead'),
     ('done', 'todo'),
 })
 
@@ -364,10 +368,11 @@ def criticality_map(tasks: dict[str, Task]) -> dict[str, tuple[int, int]]:
 
 def ready_set(tasks: dict[str, Task]) -> list[str]:
     """可派集,派单优先序:priority 降 → 关键链降 → 挡下游数降 → id 数字升。
+    rejected(打回待返工)计入可派——返工派工也是派单。
     排序即建议——派单方取第一行即「下一个任务」,无需现场判断。"""
     crit = criticality_map(tasks)
     return sorted(
-        (t.id for t in tasks.values() if is_ready(tasks, t)),
+        (t.id for t in tasks.values() if is_ready(tasks, t) or t.status == 'rejected'),
         key=lambda tid: (-tasks[tid].priority, -crit[tid][0], -crit[tid][1],
                          int(tid.split('-')[1])),
     )
@@ -498,9 +503,11 @@ def validate_status(tasks: dict[str, Task], tid: str, to: str, why: str | None,
         raise DagError('pending_review→done 验收过必带 --criteria(验收结论指针,与交付报告分开)')
     if t.status == 'pending_review' and to == 'doing' and not why:
         raise DagError('pending_review→doing 打回必带 --why(原因+验收报告路径)')
+    if t.status == 'pending_review' and to == 'rejected' and not why:
+        raise DagError('pending_review→rejected 打回登记必带 --why(结论文件路径;返工派工在 rejected→doing)')
     if t.status == 'done' and to == 'todo' and not why:
         raise DagError('done→todo 回退必带 --why(判错/返工原因)')
-    # 文件存在门(三道,只卡子 agent 自登记的流转):指针说了不算,文件真实存在才放行
+    # 文件存在门(四道,只卡子 agent 自登记的流转):指针说了不算,文件真实存在才放行
     if t.status == 'doing' and to == 'pending_review':
         refs, missing = check_file_refs(criteria, ledger_dir)
         if not refs or missing:
@@ -515,6 +522,10 @@ def validate_status(tasks: dict[str, Task], tid: str, to: str, why: str | None,
         _, missing = check_file_refs([why], ledger_dir)
         if missing:
             raise DagError(f'打回 why 引用的文件不存在:{",".join(missing)};先写结论文件到 reviews/ 再打回')
+    if t.status == 'pending_review' and to == 'rejected' and why:
+        _, missing = check_file_refs([why], ledger_dir)
+        if missing:
+            raise DagError(f'打回登记 why 引用的文件不存在:{",".join(missing)};先写结论文件到 reviews/ 再登记')
     return {'id': tid, 'from': t.status, 'to': to, 'why': why,
             'cond': cond, 'criteria': criteria, 'assignee': assignee}
 
@@ -545,8 +556,8 @@ def validate_dep(tasks: dict[str, Task], tid: str, op: str, dep: str) -> None:
 
 def _status_badge(t: Task) -> str:
     extra = ''
-    if t.status in ('doing', 'pending_review') and t.assignee:
-        extra = f'@{t.assignee}'  # doing=执行者;pending_review=交付者,打回时派返工的线索
+    if t.status in ('doing', 'pending_review', 'rejected') and t.assignee:
+        extra = f'@{t.assignee}'  # doing=执行者;pending_review/rejected=交付者,打回时派返工的线索
     if t.status == 'dead' and t.dead_reason:
         extra = f'({t.dead_reason})'
     return f'{t.status}{extra}'
@@ -576,7 +587,8 @@ def render_ready(tasks: dict[str, Task]) -> str:
         t = tasks[tid]
         ch, bl = criticality_map(tasks)[tid]
         p = f' P{t.priority}' if t.priority else ''
-        lines.append(f'  {tid}{p}  链{ch} 挡{bl}  {t.module}  {t.title}')
+        r = ' [打回]' if t.status == 'rejected' else ''
+        lines.append(f'  {tid}{p}{r}  链{ch} 挡{bl}  {t.module}  {t.title}')
     lines.append(f'== doing({len(doing)}) ==')
     for t in doing:
         lines.append(f'  {t.id}  @{t.assignee}  since={t.since}  {t.title}')
@@ -607,6 +619,7 @@ def render_graph(tasks: dict[str, Task], mermaid: bool) -> str:
         lines.append('  classDef dead fill:#eee,stroke:#999,color:#999;')
         lines.append('  classDef doing fill:#def,stroke:#369;')
         lines.append('  classDef pending_review fill:#fdf,stroke:#939;')
+        lines.append('  classDef rejected fill:#fcc,stroke:#933;')
         lines.append('  classDef wait fill:#fec,stroke:#c93;')
         lines.append('  classDef todo fill:#fff,stroke:#666;')
         return '\n'.join(lines)
@@ -711,13 +724,13 @@ def cmd_check(args: argparse.Namespace) -> int:
                 warns.append(f'{t.id}: cond 里出现任务 ID,该建 deps 边而非文字({t.cond})')
         if t.status == 'done' and not t.criteria:
             errors.append(f'{t.id}: done 缺 criteria')
-        if t.status == 'pending_review':
+        if t.status in ('pending_review', 'rejected'):
             if not t.criteria:
-                errors.append(f'{t.id}: pending_review 缺 criteria(交付报告指针)')
+                errors.append(f'{t.id}: {t.status} 缺 criteria(交付报告指针)')
             else:
                 _, missing = check_file_refs(t.criteria, path.parent)
                 if missing:
-                    errors.append(f'{t.id}: pending_review 交付报告文件不存在:{",".join(missing)}')
+                    errors.append(f'{t.id}: {t.status} 交付报告文件不存在:{",".join(missing)}')
         if t.status == 'doing':
             if not t.assignee:
                 errors.append(f'{t.id}: doing 缺 assignee')
@@ -921,7 +934,7 @@ def cmd_log(args: argparse.Namespace) -> int:
             frm, to = normalize_status(ev.get('from', '')), normalize_status(ev.get('to', ''))
             if to == 'pending_review':
                 delivered += 1
-            if frm == 'pending_review' and to == 'doing':
+            if frm == 'pending_review' and to in ('doing', 'rejected'):
                 rejected += 1
             bits = []
             if ev.get('assignee'):
@@ -969,7 +982,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser('status', help='状态流转(按流转矩阵校验)')
     sp.add_argument('id')
-    sp.add_argument('to', help='todo|doing|wait|pending_review|done|dead(旧名 review 仍收,自动归一)')
+    sp.add_argument('to', help='todo|doing|wait|pending_review|rejected|done|dead(旧名 review 仍收,自动归一)')
     sp.add_argument('--assignee', help='doing 必带:谁在做')
     sp.add_argument('--criteria',
                     help='done 必带(验收过=结论指针);doing→pending_review 必带(交付报告指针);'

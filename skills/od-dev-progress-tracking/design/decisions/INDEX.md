@@ -7,5 +7,6 @@
 | [0003](0003-dag-event-ledger.md) | DAG 事件流账本替代行文法:dag.jsonl 纯追加事件流为正本、状态折叠现算;任务=图节点(deps 单侧存边+cond 图外等待分判);五态状态机+流转矩阵写入校验(被挡不占态/dead 终态/回退传播);图运算现算(ready/graph/card/who/环写入拒绝);幽灵前置禁令+里程碑显式化;脚本 dag.py | accepted | 2026-09-06 |
 | [0004](0004-delivery-review-ledger-protocol.md) | 交付-验收记账协议:六态状态机(新增 review=已交付待验);多方自记账替换单写者纪律(谁置状态谁记+账本级锁文件);assignee 收紧(编排者专属,→doing 时填);文件存在门(三条自登记流转指针须指向真实存在文件);reports//reviews/ 双目录;log 命令+打回≥3 次熔断 | accepted | 2026-09-09 |
 | [0005](0005-rename-review-to-pending-review.md) | 待验收态更名 review→pending_review(读侧归一+写侧别名,旧账本零迁移);六态语义与流转不变;命名判据=态名须编码「谁的动作、进行到哪一步」 | accepted | 2026-09-11 |
+| [0006](0006-rejected-rework-parking-state.md) | 打回泊位态 rejected:pending_review→rejected(打回登记,why=结论文件)→doing(返工派工,assignee);rejected 计入 ready;打回裁决与返工派工解耦,打回积压账本一等可见 | accepted | 2026-09-11 |
 
 > 历史:2026-08-27 重整前旧 ADR(原 0001-0011,含大重整当日三连改 0009/0010/0011)整体废弃删除——同日入口形态多次演化互相覆盖,且重整吸收其仍有效结论(演化顺序与依据见新 0001 全景节);待激活/锁定状态词、目录 vs 行判据、可观测性原则等仍在 SKILL.md 正文生效。

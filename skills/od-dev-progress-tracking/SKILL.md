@@ -5,7 +5,7 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 
 # 进度记录与防偏离(DAG 任务账本 + 脚本校验)
 
-**全局方法**(不绑具体项目/玩法/框架)。适用于任何复杂多步骤开发。各工件 skill 在各自 SKILL.md 末尾有「进度模板」小节提供叶子完成判据;本 skill 组织成**任务依赖图(DAG,有向无环图:任务间「先完成才解锁」的依赖网)+ 六态状态机(含 pending_review=已交付待验态) + 防偏离**,不发明判据。结构决策 why 见 `design/decisions/`(0004 交付-验收记账协议(待验收态,更名史见 0005)+多方自记账+文件存在门;0003 DAG 事件流账本;0002 两级平铺账本——行文法部分已被 0003 取代,其分解/依赖分离原则延续;0001 入口定位层)。
+**全局方法**(不绑具体项目/玩法/框架)。适用于任何复杂多步骤开发。各工件 skill 在各自 SKILL.md 末尾有「进度模板」小节提供叶子完成判据;本 skill 组织成**任务依赖图(DAG,有向无环图:任务间「先完成才解锁」的依赖网)+ 七态状态机(含 pending_review=已交付待验、rejected=打回待返工) + 防偏离**,不发明判据。结构决策 why 见 `design/decisions/`(0004 交付-验收记账协议(待验收态,更名史见 0005)+多方自记账+文件存在门;0003 DAG 事件流账本;0002 两级平铺账本——行文法部分已被 0003 取代,其分解/依赖分离原则延续;0001 入口定位层)。
 
 ---
 
@@ -52,7 +52,7 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 | `id` | 全局唯一 `T-N`,写入自动分配 | 恒有 |
 | `title` | 一句话主题(含功能词,供检索) | add |
 | `module` | 流程/决策/支撑(封闭枚举) | add |
-| `status` | 六态,见 §4 | 恒有 |
+| `status` | 七态,见 §4 | 恒有 |
 | `deps` | 依赖的前置任务 id 列表;**只存这一侧**,反向查询现算 | 依赖即列 |
 | `cond` | 图外等待条件 + **复查时机** | wait |
 | `criteria` | 完成凭据指针(路径/commit/测试名/关键数字);**追加式**(预注册+实证共存,不覆盖) | done(验收结论) / pending_review(交付报告) |
@@ -63,7 +63,7 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 
 禁填:`criteria` 禁叙事(「验收过了」无凭据=过期作废);`cond` 禁出现任务 id(该建 deps 边——check 告警);`note` ≤500 字且只放注记(挂账/新证据指针),不是叙事。
 
-## 4. 状态机(六态 + 流转矩阵)
+## 4. 状态机(七态 + 流转矩阵)
 
 | 态 | 语义 | 进入必带 |
 |---|---|---|
@@ -71,10 +71,11 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 | `doing` | 已动手在跑 | assignee |
 | `wait` | 等图外条件(非任务依赖) | cond(含复查时机) |
 | `pending_review` | 已交付待验收 | criteria(交付报告指针) |
+| `rejected` | 打回已裁决,返工未启动(泊位,ADR-0006) | why(结论文件指针) |
 | `done` | 判据过 | criteria |
 | `dead` | 不做/被取代 | 原因 |
 
-合法流转:add→todo|wait;todo→doing|done|dead;doing→done|wait|dead|pending_review;wait→todo|done|dead;pending_review→done|doing|dead;done→todo;**dead 无出边**。
+合法流转:add→todo|wait;todo→doing|done|dead;doing→done|wait|dead|pending_review;wait→todo|done|dead;pending_review→done|doing|rejected|dead;rejected→doing|dead;done→todo;**dead 无出边**。
 
 > 旧账本事件流里的 `review` 即本态:dag.py 读侧自动归一,`status` 命令仍收旧名(按规范名落盘+更名提醒),历史账本零迁移(ADR-0005)。
 
@@ -84,7 +85,7 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 2. **`dead` 是终态不可出**——依赖满足判定把 dead 视为已满足,下游可能已开工,复活会炸图;要重做=新建任务+note 注明承接。
 3. **`done→todo` 回退必带 why**——下游自动回到被挡(deps 不再满足),返工影响自动传播。
 4. **允许跳步**(todo→done 补记)——doing 只是「已动手」标记;防假完成靠 criteria 必带,不靠禁跳步。
-5. **pending_review 三条流转的必带项**——doing→pending_review 交付必带 criteria(报告指针,worker 登记);pending_review→done 必带新 criteria(验收结论指针,交付报告不算数,reviewer 登记);pending_review→doing 打回必带 why(原因+结论路径)且由编排者执行(→doing 须填 assignee=路由决策)。三处指针均过**文件存在门**(须指向真实存在的文件,相对账本目录解析)——子 agent 自登记的机械担保,假登记在写入时即被打回。
+5. **pending_review 与 rejected 的必带项**——doing→pending_review 交付必带 criteria(报告指针,worker 登记);pending_review→done 必带新 criteria(验收结论指针,交付报告不算数,reviewer 登记);pending_review→rejected 打回登记必带 why(结论文件指针,编排者执行)——rejected 是**打回待返工泊位**(reject 之后未必立刻返工,ADR-0006),计入 ready 队列;rejected→doing 返工派工必带 assignee(路由决策归编排者)。以上指针均过**文件存在门**(须指向真实存在的文件,相对账本目录解析)——子 agent 自登记的机械担保,假登记在写入时即被打回。
 
 ## 5. 依赖与等待(deps / cond 分判)
 
@@ -116,7 +117,7 @@ dag.py [--file dag.jsonl] [--actor 标识]
   status <id> <to> [--assignee ..] [--criteria ..] [--cond ..] [--why ..]
   note <id> <文本>            # 注记,不改状态
   dep <id> --add T-N | --del T-N
-  ready                        # 可派(按 优先级→关键链→挡下游 排序,首行=下一个任务)+doing+pending_review+wait+被挡(派单入口)
+  ready                        # 可派(按 优先级→关键链→挡下游 排序,首行=下一个任务;rejected 打回待返工计入)+doing+pending_review+wait+被挡(派单入口)
   list [--all]                 # 活任务(终态隐藏)
   graph [--mermaid]            # 拓扑视图(现算,stdout,不落盘)
   card <id>                    # 任务卡:前置状态+凭据+被依赖(派单任务书直接引用)
@@ -126,14 +127,14 @@ dag.py [--file dag.jsonl] [--actor 标识]
   check                        # 体检:重放校验/悬空边/环/必带字段/cond 泄漏 id 告警
 ```
 
-- 记账分工(dag.py 已带账本级写锁,多方并发写安全):谁把任务置成某状态,谁记那条账——→doing 编排者(填 assignee)/→pending_review worker/→done reviewer(reviewer=交付验收子 agent);流转合法性与必带字段由脚本写入时校验,写错直接打回。
+- 记账分工(dag.py 已带账本级写锁,多方并发写安全):谁把任务置成某状态,谁记那条账——→doing 编排者(填 assignee)/→pending_review worker/→rejected 编排者(打回登记)/→done reviewer(reviewer=交付验收子 agent);流转合法性与必带字段由脚本写入时校验,写错直接打回。
 - 直改 dag.jsonl 后必须补跑 check;check 不过的任务不得当依据派单。
 - note 是账本注记(≤500 字):挂账/新证据指针/一行补充;**长内容放产物文档,note 存指针——叙事不进账本**。
 
 ## 8. 继续之前任务(跨会话/loop 续)
 
-1. `dag.py list` 拿未完成全集(todo/doing/wait/pending_review;done/dead 终态不入),`ready` 拿可派集;
-2. `doing` 行=恢复锚点:看 assignee(谁在做)与 since(何时开始);跨会话后 assignee 失效的,人工确认后回 todo 或重派;`pending_review` 行=交付待验收:结论文件已在 reviews/ 的按其结论处置(reject→打回路由),没有的补派 reviewer;
+1. `dag.py list` 拿未完成全集(todo/doing/wait/pending_review/rejected;done/dead 终态不入),`ready` 拿可派集;
+2. `doing` 行=恢复锚点:看 assignee(谁在做)与 since(何时开始);跨会话后 assignee 失效的,人工确认后回 todo 或重派;`pending_review` 行=交付待验收:结论文件已在 reviews/ 的按其结论处置(reject→打回路由),没有的补派 reviewer;`rejected` 行=打回待返工:排到返工时 `doing --assignee` 派出;
 3. `wait` 行逐行核对 cond 复查时机:条件真实吗?到期没?——「没有它这个批真的跑不了吗」答不出=偏好时序,回 todo;
 4. 被挡任务用 `who` 看在等谁;活任务多时标当前焦点(最早 doing 且未阻塞);
 5. 检索定位不上当前工作 → 偏离信号,回最近未闭环任务。

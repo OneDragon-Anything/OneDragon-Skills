@@ -557,3 +557,67 @@ class TestPriority:
             assert run(['--file', path, 'ready']) == 0
         out = buf.getvalue()
         assert 'P2' in out and '链1' in out and '挡1' in out
+
+
+# ---------- rejected 打回泊位态(ADR-0006:打回与返工解耦) ----------
+
+
+class TestRejectedState:
+    def seed_review(self, tmp_path: Path) -> str:
+        """建到 pending_review 的任务;返回账本路径。"""
+        path = f(tmp_path)
+        assert run(['--file', path, 'add', 'x', '--module', '流程']) == 0
+        assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'w1']) == 0
+        r = tmp_path / 'reports' / 'T-1-r1.md'
+        r.parent.mkdir(parents=True, exist_ok=True)
+        r.write_text('报告', encoding='utf-8')
+        assert run(['--file', path, 'status', 'T-1', 'pending_review',
+                    '--criteria', 'reports/T-1-r1.md']) == 0
+        return path
+
+    def seed_rejected(self, tmp_path: Path) -> str:
+        path = self.seed_review(tmp_path)
+        v = tmp_path / 'reviews' / 'T-1-r1.md'
+        v.parent.mkdir(parents=True, exist_ok=True)
+        v.write_text('reject', encoding='utf-8')
+        assert run(['--file', path, 'status', 'T-1', 'rejected',
+                    '--why', 'reviews/T-1-r1.md']) == 0
+        return path
+
+    def test_reject_park_requires_why_and_real_file(self, tmp_path: Path) -> None:
+        path = self.seed_review(tmp_path)
+        assert run(['--file', path, 'status', 'T-1', 'rejected']) == 2  # 必带 why
+        assert run(['--file', path, 'status', 'T-1', 'rejected',
+                    '--why', 'reviews/T-1-r1.md']) == 2  # 结论文件不存在(文件存在门)
+        v = tmp_path / 'reviews' / 'T-1-r1.md'
+        v.parent.mkdir(parents=True, exist_ok=True)
+        v.write_text('reject', encoding='utf-8')
+        assert run(['--file', path, 'status', 'T-1', 'rejected',
+                    '--why', 'reviews/T-1-r1.md']) == 0
+        tasks, problems = dag.fold(dag.load_events(Path(path)))
+        assert not problems and tasks['T-1'].status == 'rejected'
+        assert tasks['T-1'].assignee == 'w1'  # 交付者保留,返工派工的线索
+
+    def test_rework_dispatch_from_rejected(self, tmp_path: Path) -> None:
+        path = self.seed_rejected(tmp_path)
+        assert run(['--file', path, 'status', 'T-1', 'doing']) == 2  # 返工派工必带 assignee
+        assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'w2']) == 0
+        tasks, problems = dag.fold(dag.load_events(Path(path)))
+        assert not problems and tasks['T-1'].status == 'doing'
+        assert tasks['T-1'].assignee == 'w2'
+
+    def test_rejected_in_ready_and_dead(self, tmp_path: Path) -> None:
+        path = self.seed_rejected(tmp_path)
+        tasks, _ = dag.fold(dag.load_events(Path(path)))
+        assert 'T-1' in dag.ready_set(tasks)  # 打回待返工计入可派(返工派工也是派单)
+        assert run(['--file', path, 'status', 'T-1', 'dead', '--why', '需求取消']) == 0
+
+    def test_log_counts_parked_reject(self, tmp_path: Path) -> None:
+        import contextlib
+        import io
+        path = self.seed_rejected(tmp_path)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            assert run(['--file', path, 'log', 'T-1']) == 0
+        out = buf.getvalue()
+        assert '交付 1 次,打回 1 次' in out
