@@ -118,7 +118,7 @@
   没跑第 3 步=任务没有交付,账本不认。
   实现中发现阶段内容与代码现实矛盾:停手,经编排者回该阶段「设计依据」提请修订,禁自行改设计意图。
   ```
-- **验收批任务书**(完整模板;③每张落地批交付后派 reviewer 时使用):
+- **验收批任务书**(完整模板;③每张落地批交付后派 reviewer 时使用;每次验收=全新 reviewer agent,禁复用之前的 reviewer):
 
   ```markdown
   # 任务书:<迭代名> 落地·<阶段名> 验收
@@ -199,6 +199,6 @@
   3. **按结论行处置**:accept(worktree 任务已进 `pending_merge` 泊位 → 派合并者批;无 worktree 任务 reviewer 已自闭环 done → 空槽立刻取下一件);reject(reviewer 已自闭环 rejected,阶段进打回泊位)→排到返工时编排者 `rejected→doing --assignee <返工者名>` 派出——原 worker 还活着→send_message 三指针续派(任务书/交付报告/验收结论),没了→spawn 新工,同样三指针;
   4. **消化未尽事项**:按结论行里的新问题计数,当场 `dag.py add` 立项或写明不立缘由(账本外不许藏活任务)。
 - **发起权铁律**:一切子 agent(worker/reviewer/对抗审/参谋等,返工=worker 的再指派)都由编排者发起;worker 与 reviewer 只对自己的工作+记账负责,永不 spawn、永不相互委派(独立性/会话树归属/审查时机/槽位预算——违反任何一条都会绕开编排者的路由与限流)。
-- **每批交付由 reviewer 验收**(交付验收子 agent,干净上下文、独立于本批实现者;验收清单=验收批任务书模板的【验收】四条——判据对照/亲跑/边界/同步,唯一源在模板,此处不复述。能审就审:交付到达即派,无节奏选择)。
+- **每批交付由 reviewer 验收**(交付验收子 agent,干净上下文、独立于本批实现者;验收清单=验收批任务书模板的【验收】四条——判据对照/亲跑/边界/同步,唯一源在模板,此处不复述。能审就审:交付到达即派,无节奏选择)。**每次验收都必须是全新的 reviewer agent**——禁续用/续聊之前的 reviewer(含 send_message 续派与同 agent 再审):重新验收=重新 spawn,独立判断不继承前轮结论;返工后的复审同理,照样新派。
 
 - **reviewer 产出**:结论文件 `.debug/change-reviews/<迭代名>/T-<N>-r<K>.md`(逐条核验+结论+打回要点+新问题立项建议)+ ≤10 行结论行(accept/reject+理由+偏差与新问题条数);记账:accept → worktree 任务自登记 `pending_merge`(进合并泊位,由合并者以合并报告收敛 done)、无 worktree 任务 `done --criteria <结论路径>`(自闭环);reject → 自登记 `status <任务id> rejected --why <结论路径>`(打回泊位;返工派工 doing 归编排者)。
