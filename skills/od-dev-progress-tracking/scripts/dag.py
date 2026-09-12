@@ -1,23 +1,31 @@
 """dag.py — DAG 任务图管理 CLI(新正本,独立于 progress.py 的行文法账本)。
 
 数据模型(与用户逐字段确认的设计,2026-09-05):
-- 节点 Task:id / title / module(封闭枚举:流程|决策|支撑)/ status(七态)/
+- 节点 Task:id / title / module(封闭枚举:流程|决策|支撑)/ status(八态)/
   deps(图内硬依赖,只存单侧,反向现算)/ cond(图外等待,wait 必带含「复查」)/
   criteria(完成凭据指针,追加式:预注册+实证共存;done 与 pending_review 流转必带)/
   review(验收档:required=需验收缺省|none=免审;建账定不可变)/
+  worktree(git worktree 分支名,如 wt/T-160,只存名不做路径推导;建账可选。
+  带此字段=按批隔离开发:「验收过」与「已合并」分开,done 唯一出口=pending_merge,由合并者收敛)/
   priority(派单优先级,0..10 大者先派,缺省 0;ready 排序=优先级→关键链→挡下游)/
-  assignee+since(doing 必带,挂了检测与恢复锚点;pending_review/rejected 保留交付者)/
+  assignee+since(doing 必带,挂了检测与恢复锚点;pending_review/rejected/pending_merge 保留交付者)/
   dead_reason / notes / created。
-- 状态机七态:todo|doing|wait|pending_review|rejected|done|dead。流转矩阵见 ALLOWED_TRANSITIONS:
+- 状态机八态:todo|doing|wait|pending_review|pending_merge|rejected|done|dead。流转矩阵见 ALLOWED_TRANSITIONS:
   「被前置挡住」不占状态(todo+图算),wait 只留给图外等待;pending_review=已交付待验收,
   rejected=打回已裁决、返工未启动(泊位);doing→pending_review 交付必带
   criteria(交付报告指针),pending_review→done 验收过必带 criteria(验收结论指针),
   pending_review→rejected 打回登记必带 why(结论文件路径),rejected→doing 返工派工必带
   assignee;以上四处均过文件存在门(指针须指向真实存在的文件=子 agent 自登记的机械担保);
-  验收直达门:review=required 的任务 todo/doing/wait→done 写入打回,
-  done 唯一入口=pending_review→done;review=none 全边保留,升级口照样可走 pending_review;
-  dead 是终态不可出(依赖满足判定把 dead 当满足,复活会炸图);done→todo 与
+  pending_merge=worktree 任务专用合并泊位:pending_review/doing→pending_merge 仅当任务带
+  worktree 字段(否则打回);pending_merge→done 必带 criteria(合并报告路径,过文件存在门,
+  由合并者登记),pending_merge→rejected 必带 why(合并失败打回泊位,返工路由不变);
+  带 worktree 字段的任务从 pending_review/doing 直达 done 写入打回(worktree 任务验收后置
+  pending_merge,由合并者收敛);验收直达门:review=required 的任务 todo/doing/wait→done
+  写入打回,done 唯一入口=pending_review→done;review=none 全边保留,升级口照样可走
+  pending_review;dead 是终态不可出(依赖满足判定把 dead 当满足,复活会炸图);done→todo 与
   pending_review→doing(打回即返工,跳过泊位)是回边,均必带 why。环在写入时拒绝,不做事后体检。
+- 旧数据兼容:无 worktree 字段的任务=老流转(读侧 .get 缺省 None);add 事件不带 worktree
+  键即无此字段,事件流重放完全兼容,零迁移。
 - 旧名兼容:待验收态原名 review,裸 token 读不出「等验收」方向,更名
   pending_review。normalize_status 读侧归一旧事件流(append-only 正本不改写);status
   命令仍收旧名(归一后按规范名落盘+更名提醒),check 对残留旧名给信息级警。
@@ -49,7 +57,7 @@ from pathlib import Path
 
 # ---------- 常量与类型 ----------
 
-STATUSES: tuple[str, ...] = ('todo', 'doing', 'wait', 'pending_review', 'rejected', 'done', 'dead')
+STATUSES: tuple[str, ...] = ('todo', 'doing', 'wait', 'pending_review', 'pending_merge', 'rejected', 'done', 'dead')
 MODULES: tuple[str, ...] = ('流程', '决策', '支撑')
 INITIAL_STATUSES: tuple[str, ...] = ('todo', 'wait')  # add 的合法初始态
 # 验收档:建账定不可变;缺省 required=需验收(done 唯一入口=pending_review)
@@ -65,13 +73,15 @@ def normalize_status(s: str) -> str:
     """旧状态名归一到规范名;未知值原样返回,由校验层打回。"""
     return STATUS_ALIASES.get(s, s)
 
-# 流转矩阵(dead 终态无出边;rejected=打回泊位)
+# 流转矩阵(dead 终态无出边;rejected=打回泊位;pending_merge=worktree 任务合并泊位)
 ALLOWED_TRANSITIONS: frozenset[tuple[str, str]] = frozenset({
     ('todo', 'doing'), ('todo', 'done'), ('todo', 'dead'),
     ('doing', 'done'), ('doing', 'wait'), ('doing', 'dead'), ('doing', 'pending_review'),
+    ('doing', 'pending_merge'),
     ('wait', 'todo'), ('wait', 'done'), ('wait', 'dead'),
     ('pending_review', 'done'), ('pending_review', 'doing'), ('pending_review', 'dead'),
-    ('pending_review', 'rejected'),
+    ('pending_review', 'rejected'), ('pending_review', 'pending_merge'),
+    ('pending_merge', 'done'), ('pending_merge', 'rejected'), ('pending_merge', 'dead'),
     ('rejected', 'doing'), ('rejected', 'dead'),
     ('done', 'todo'),
 })
@@ -105,6 +115,7 @@ class Task:
     priority: int = 0
     criteria: list[str] = field(default_factory=list)
     review: str = DEFAULT_REVIEW
+    worktree: str | None = None
     assignee: str | None = None
     since: str | None = None
     created: str = ''
@@ -283,6 +294,7 @@ def fold(events: list[dict]) -> tuple[dict[str, Task], list[str]]:
                 priority=spec.get('priority', 0),
                 criteria=list(spec.get('criteria') or []),
                 review=spec.get('review') or DEFAULT_REVIEW,
+                worktree=spec.get('worktree'),
                 created=ts,
             )
             if t.id in tasks:
@@ -457,13 +469,15 @@ def next_id(tasks: dict[str, Task]) -> str:
 
 def validate_add(tasks: dict[str, Task], title: str, module: str, deps: list[str],
                  cond: str | None, criteria: list[str], priority: int = 0,
-                 review: str = DEFAULT_REVIEW) -> Task:
+                 review: str = DEFAULT_REVIEW, worktree: str | None = None) -> Task:
     if not title.strip():
         raise DagError('标题不能为空')
     if module not in MODULES:
         raise DagError(f'module 须为 {"|".join(MODULES)} 之一,得到:{module}')
     if review not in REVIEW_LEVELS:
         raise DagError(f'review 须为 {"|".join(REVIEW_LEVELS)} 之一(缺省 required=需验收),得到:{review}')
+    if worktree is not None and not worktree.strip():
+        raise DagError('--worktree 值不能为空(存分支名,如 wt/T-160;不做路径推导)')
     if not 0 <= priority <= MAX_PRIORITY:
         raise DagError(f'priority 须在 0..{MAX_PRIORITY}(0=缺省,10=最紧急;降权延后用 wait 态而非负值),得到:{priority}')
     for d in deps:
@@ -476,7 +490,8 @@ def validate_add(tasks: dict[str, Task], title: str, module: str, deps: list[str
         if '复查' not in cond:
             raise DagError('wait 必带复查时机(cond 里含「复查」)')
     task = Task(id=next_id(tasks), title=title.strip(), module=module, status=status,
-                deps=deps, cond=cond, priority=priority, criteria=criteria, review=review)
+                deps=deps, cond=cond, priority=priority, criteria=criteria, review=review,
+                worktree=worktree.strip() if worktree else None)
     if status == 'wait':
         pass
     cyc = find_cycle(tasks, (task.id, list(deps)))
@@ -497,10 +512,19 @@ def validate_status(tasks: dict[str, Task], tid: str, to: str, why: str | None,
         raise DagError(f'未知状态:{to}(合法:{"|".join(STATUSES)};旧名 review 自动归一)')
     if (t.status, to) not in ALLOWED_TRANSITIONS:
         raise DagError(f'非法流转 {t.status} -> {to}(dead 是终态;见 ALLOWED_TRANSITIONS)')
-    # 验收直达门:required 档 done 唯一入口=pending_review;免审须建账时显式声明
-    if to == 'done' and t.review == 'required' and t.status != 'pending_review':
+    # worktree 合并门(先于验收直达门:worktree 任务直达 done 一律给合并路由提示):
+    # 「验收过」与「已合并」分开——worktree 任务的 done 由合并者收敛
+    if to == 'done' and t.worktree and t.status in ('pending_review', 'doing'):
+        raise DagError(f'{tid} 带 worktree({t.worktree}):worktree 任务验收后置 pending_merge,由合并者收敛')
+    # 验收直达门:required 档 done 入口=pending_review 或 pending_merge(合并泊位仅 worktree
+    # 任务可达,合并者收敛 done 即验收记录的合并侧);免审须建账时显式声明
+    if to == 'done' and t.review == 'required' and t.status not in ('pending_review', 'pending_merge'):
         raise DagError(f'{tid} 建账时声明需验收(review=required):done 只能经 '
-                       f'pending_review(交付→验收);确属免审小件,dead 后新任务 --review none 承接')
+                       f'pending_review(交付→验收)或 pending_merge(worktree 合并收敛);'
+                       f'确属免审小件,dead 后新任务 --review none 承接')
+    if to == 'pending_merge' and not t.worktree:
+        raise DagError(f'{tid} 未带 worktree 字段:pending_merge 泊位仅限 worktree 任务'
+                       f'(建任务时 --worktree <分支名>);无 worktree 的任务走 pending_review→done')
     if to == 'doing' and not assignee:
         raise DagError('doing 必带 --assignee(谁在做:self 或子 agent 标识)')
     if to == 'done' and not criteria and not t.criteria:
@@ -520,9 +544,13 @@ def validate_status(tasks: dict[str, Task], tid: str, to: str, why: str | None,
         raise DagError('pending_review→doing 打回必带 --why(原因+验收报告路径)')
     if t.status == 'pending_review' and to == 'rejected' and not why:
         raise DagError('pending_review→rejected 打回登记必带 --why(结论文件路径;返工派工在 rejected→doing)')
+    if t.status == 'pending_merge' and to == 'done' and not criteria:
+        raise DagError('pending_merge→done 必带 --criteria(合并报告路径,由合并者登记)')
+    if t.status == 'pending_merge' and to == 'rejected' and not why:
+        raise DagError('pending_merge→rejected 必带 --why(合并失败原因+指针;返工派工在 rejected→doing)')
     if t.status == 'done' and to == 'todo' and not why:
         raise DagError('done→todo 回退必带 --why(判错/返工原因)')
-    # 文件存在门(四道,只卡子 agent 自登记的流转):指针说了不算,文件真实存在才放行
+    # 文件存在门(六道,只卡子 agent 自登记的流转):指针说了不算,文件真实存在才放行
     if t.status == 'doing' and to == 'pending_review':
         refs, missing = check_file_refs(criteria, ledger_dir)
         if not refs or missing:
@@ -533,6 +561,11 @@ def validate_status(tasks: dict[str, Task], tid: str, to: str, why: str | None,
         if not refs or missing:
             detail = 'criteria 未指向任何文件' if not refs else '文件不存在:' + ','.join(missing)
             raise DagError(f'验收登记无效({detail});先写结论文件到 reviews/ 再登记')
+    if t.status == 'pending_merge' and to == 'done':
+        refs, missing = check_file_refs(criteria, ledger_dir)
+        if not refs or missing:
+            detail = 'criteria 未指向任何文件' if not refs else '文件不存在:' + ','.join(missing)
+            raise DagError(f'合并登记无效({detail});先写合并报告再登记 done')
     if t.status == 'pending_review' and to == 'doing' and why:
         _, missing = check_file_refs([why], ledger_dir)
         if missing:
@@ -541,6 +574,10 @@ def validate_status(tasks: dict[str, Task], tid: str, to: str, why: str | None,
         _, missing = check_file_refs([why], ledger_dir)
         if missing:
             raise DagError(f'打回登记 why 引用的文件不存在:{",".join(missing)};先写结论文件到 reviews/ 再登记')
+    if t.status == 'pending_merge' and to == 'rejected' and why:
+        _, missing = check_file_refs([why], ledger_dir)
+        if missing:
+            raise DagError(f'合并打回 why 引用的文件不存在:{",".join(missing)};先写结论文件再登记')
     return {'id': tid, 'from': t.status, 'to': to, 'why': why,
             'cond': cond, 'criteria': criteria, 'assignee': assignee}
 
@@ -571,11 +608,17 @@ def validate_dep(tasks: dict[str, Task], tid: str, op: str, dep: str) -> None:
 
 def _status_badge(t: Task) -> str:
     extra = ''
-    if t.status in ('doing', 'pending_review', 'rejected') and t.assignee:
-        extra = f'@{t.assignee}'  # doing=执行者;pending_review/rejected=交付者,打回时派返工的线索
+    if t.status in ('doing', 'pending_review', 'pending_merge', 'rejected') and t.assignee:
+        # doing=执行者;pending_review/pending_merge/rejected=交付者,打回/派返工时的线索
+        extra = f'@{t.assignee}'
     if t.status == 'dead' and t.dead_reason:
         extra = f'({t.dead_reason})'
     return f'{t.status}{extra}'
+
+
+def _wt_tag(t: Task) -> str:
+    """worktree 展示片段;老任务无此字段输出空串(输出零回归)。"""
+    return f' [wt:{t.worktree}]' if t.worktree else ''
 
 
 def render_list(tasks: dict[str, Task], show_all: bool) -> str:
@@ -587,7 +630,11 @@ def render_list(tasks: dict[str, Task], show_all: bool) -> str:
         dep_s = ','.join(t.deps) if t.deps else '-'
         block_s = f' [挡:{",".join(wait)}]' if wait and t.status == 'todo' else ''
         rev = ' [免审]' if t.review == 'none' else ''
-        lines.append(f'{t.id}  {t.module}{rev}  {_status_badge(t)}  {t.title}{block_s}  deps={dep_s}')
+        lines.append(f'{t.id}  {t.module}{rev}{_wt_tag(t)}  {_status_badge(t)}  {t.title}{block_s}  deps={dep_s}')
+    if merging := [t for t in tasks.values() if t.status == 'pending_merge']:
+        lines.append(f'== pending_merge 待合并({len(merging)}) ==')
+        for t in merging:
+            lines.append(f'  {t.id}  交付者@{t.assignee or "-"}{_wt_tag(t)}  {t.title}')
     if not show_all:
         done_n = len(tasks) - len(act)
         lines.append(f'-- 活任务 {len(act)},终态(不显示) {done_n};--all 看全量')
@@ -613,6 +660,10 @@ def render_ready(tasks: dict[str, Task]) -> str:
     lines.append(f'== pending_review 待验收({len(reviewing)}) ==')
     for t in reviewing:
         lines.append(f'  {t.id}  交付者@{t.assignee or "-"}  {t.title}')
+    merging = [t for t in tasks.values() if t.status == 'pending_merge']
+    lines.append(f'== pending_merge 待合并({len(merging)}) ==')
+    for t in merging:
+        lines.append(f'  {t.id}  交付者@{t.assignee or "-"}{_wt_tag(t)}  {t.title}')
     lines.append(f'== wait 外部等待({len(waiting)}) ==')
     for t in waiting:
         lines.append(f'  {t.id}  {t.title}  cond={t.cond}')
@@ -627,7 +678,7 @@ def render_graph(tasks: dict[str, Task], mermaid: bool) -> str:
     if mermaid:
         lines = ['graph TD']
         for t in tasks.values():
-            label = f'{t.id} {t.title}'
+            label = f'{t.id} {t.title}' + (f' (wt:{t.worktree})' if t.worktree else '')
             lines.append(f'  {t.id}["{label}"]:::{t.status}')
         for t in tasks.values():
             for d in t.deps:
@@ -644,7 +695,7 @@ def render_graph(tasks: dict[str, Task], mermaid: bool) -> str:
     for tid in topo_order(tasks):
         t = tasks[tid]
         deps = ' '.join(f'←{d}' for d in t.deps) or '-'
-        lines.append(f'{t.id}  {t.module}  {_status_badge(t):<14} {t.title}  {deps}')
+        lines.append(f'{t.id}  {t.module}  {_status_badge(t):<14} {t.title}{_wt_tag(t)}  {deps}')
     rs = ready_set(tasks)
     lines.append(f'\nready({len(rs)}): {" ".join(rs) if rs else "-"}')
     cyc = find_cycle(tasks)
@@ -660,6 +711,8 @@ def render_card(tasks: dict[str, Task], tid: str) -> str:
     rev = '免审' if t.review == 'none' else '需验收'
     lines = [f'== {t.id} {t.title} ==',
              f'模块:{t.module}  状态:{_status_badge(t)}  优先级:{t.priority}  创建:{t.created}  验收:{rev}']
+    if t.worktree:
+        lines.append(f'工作树:{t.worktree}(worktree 任务:验收后置 pending_merge,由合并者收敛 done)')
     if t.deps:
         lines.append('前置:')
         for d in t.deps:
@@ -693,6 +746,8 @@ def render_who(tasks: dict[str, Task], tid: str) -> str:
     if t is None:
         raise DagError(f'任务不存在:{tid}')
     lines = [f'== {tid} {t.title} [{t.status}] ==']
+    if t.worktree:
+        lines.append(f'工作树:{t.worktree}(worktree 任务:验收后置 pending_merge,由合并者收敛 done)')
     waiting_on = blocked_by(tasks, t)
     if waiting_on:
         lines.append(f'它在等({len(waiting_on)}):')
@@ -744,8 +799,9 @@ def cmd_check(args: argparse.Namespace) -> int:
             errors.append(f'{t.id}: review 非法 {t.review}(合法:{"|".join(REVIEW_LEVELS)})')
         if t.status == 'done' and not t.criteria:
             errors.append(f'{t.id}: done 缺 criteria')
-        if t.status == 'done' and t.review == 'required':
+        if t.status == 'done' and t.review == 'required' and not t.worktree:
             # 重放侧同规则:required 的 done 必须有 pending_review→done 验收事件背书
+            # (worktree 任务走下方 pending_merge 合并事件检查,不在此列)
             accepted = any(
                 e.get('type') == 'status' and e.get('id') == t.id
                 and normalize_status(e.get('from', '')) == 'pending_review'
@@ -753,6 +809,24 @@ def cmd_check(args: argparse.Namespace) -> int:
                 for e in events)
             if not accepted:
                 errors.append(f'{t.id}: review=required 却直达 done(无 pending_review→done 验收事件)')
+        if t.status == 'pending_merge' and not t.worktree:
+            errors.append(f'{t.id}: pending_merge 缺 worktree 字段(泊位仅限 worktree 任务)')
+        if t.status == 'done' and t.worktree and t.review == 'required':
+            # 重放侧同规则:worktree 任务的 done 必须有 pending_merge→done 合并事件背书,
+            # 且该事件自带合并报告凭据(与写入门对齐;凭据须过文件存在门)
+            merge_ev = next((e for e in events
+                             if e.get('type') == 'status' and e.get('id') == t.id
+                             and normalize_status(e.get('from', '')) == 'pending_merge'
+                             and normalize_status(e.get('to', '')) == 'done'), None)
+            if merge_ev is None:
+                errors.append(f'{t.id}: worktree({t.worktree}) 任务的 done 缺 '
+                              f'pending_merge→done 合并事件(合并者未收敛)')
+            elif not merge_ev.get('criteria'):
+                errors.append(f'{t.id}: pending_merge→done 缺合并报告凭据(--criteria)')
+            else:
+                _, missing = check_file_refs(list(merge_ev.get('criteria') or []), path.parent)
+                if missing:
+                    errors.append(f'{t.id}: 合并报告文件不存在:{",".join(missing)}')
         if t.status in ('pending_review', 'rejected'):
             if not t.criteria:
                 errors.append(f'{t.id}: {t.status} 缺 criteria(交付报告指针)')
@@ -808,15 +882,19 @@ def cmd_add(args: argparse.Namespace) -> int:
     deps = [d.strip() for d in (args.dep or '').split(',') if d.strip()]
     criteria = [c.strip() for c in (args.criteria or '').split(';') if c.strip()]
     task = validate_add(tasks, args.title, args.module, deps, args.cond, criteria,
-                        args.priority, args.review)
-    ev = {'v': 1, 'ts': now_iso(), 'actor': actor_of(args), 'type': 'add',
-          'task': {'id': task.id, 'title': task.title, 'module': task.module,
-                   'status': task.status, 'deps': task.deps, 'cond': task.cond,
-                   'priority': task.priority, 'criteria': task.criteria,
-                   'review': task.review}}
+                        args.priority, args.review, args.worktree)
+    task_spec = {'id': task.id, 'title': task.title, 'module': task.module,
+                 'status': task.status, 'deps': task.deps, 'cond': task.cond,
+                 'priority': task.priority, 'criteria': task.criteria,
+                 'review': task.review}
+    if task.worktree:
+        task_spec['worktree'] = task.worktree  # 无 worktree 不写键=与旧事件形状一致,重放完全兼容
+    ev = {'v': 1, 'ts': now_iso(), 'actor': actor_of(args), 'type': 'add', 'task': task_spec}
     append_event(path, ev)
     gate = 'wait(外部等待)' if task.status == 'wait' else 'todo'
     gate += '(被前置挡,前置过自动就绪)' if task.status == 'todo' and task.deps else ''
+    if task.worktree:
+        gate += f' wt:{task.worktree}'
     print(f'已登记 {task.id} [{gate}] {task.title}')
     return 0
 
@@ -843,6 +921,8 @@ def cmd_status(args: argparse.Namespace) -> int:
         extra = f'@{args.assignee}'
     elif to == 'pending_review':
         extra = '交付:' + ';'.join(criteria)
+    elif to == 'pending_merge':
+        extra = f"进合并泊位 wt:{tasks[args.id].worktree}"
     elif to == 'done':
         t = tasks[args.id]
         merged = list(dict.fromkeys(t.criteria + criteria))
@@ -1000,7 +1080,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument('--actor', help='操作者标识(默认 self;编排者可填子 agent 汇报来源)')
     sub = p.add_subparsers(dest='cmd', required=True)
 
-    sp = sub.add_parser('add', help='登记任务(默认 todo;给 --cond 即 wait)')
+    sp = sub.add_parser('add', help='登记任务(默认 todo;给 --cond 即 wait;给 --worktree 即 worktree 任务)')
     sp.add_argument('title')
     sp.add_argument('--module', required=True, help='流程|决策|支撑')
     sp.add_argument('--dep', help='前置任务 ID,逗号分隔')
@@ -1011,18 +1091,21 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument('--review', default=DEFAULT_REVIEW,
                     help='验收档:required=需验收(缺省,done 只能经 pending_review)|'
                          'none=免审(可直达 done;免审资格判据见 SKILL §14)')
+    sp.add_argument('--worktree', help='git worktree 分支名(如 wt/T-160,只存名不做路径推导);'
+                                       '带此字段=worktree 任务,验收后置 pending_merge 由合并者收敛 done')
     sp.set_defaults(func=cmd_add)
 
     sp = sub.add_parser('status', help='状态流转(按流转矩阵校验)')
     sp.add_argument('id')
-    sp.add_argument('to', help='todo|doing|wait|pending_review|rejected|done|dead(旧名 review 仍收,自动归一)')
+    sp.add_argument('to', help='todo|doing|wait|pending_review|pending_merge|rejected|done|dead(旧名 review 仍收,自动归一)')
     sp.add_argument('--assignee', help='doing 必带:谁在做')
     sp.add_argument('--criteria',
                     help='done 必带(验收过=结论指针);doing→pending_review 必带(交付报告指针);'
-                         '分号分隔,追加不覆盖')
+                         'pending_merge→done 必带(合并报告路径);分号分隔,追加不覆盖')
     sp.add_argument('--cond', help='wait 必带:外部条件+复查时机')
     sp.add_argument('--why', help='dead 必带;done→todo 回退必带;'
-                                  'pending_review→doing 打回必带(原因+验收报告路径)')
+                                  'pending_review→doing 打回必带(原因+验收报告路径);'
+                                  'pending_merge→rejected 必带(合并失败原因+指针)')
     sp.set_defaults(func=cmd_status)
 
     sp = sub.add_parser('note', help='附加一条注记(不改状态)')
@@ -1041,7 +1124,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument('value', type=int)
     sp.set_defaults(func=cmd_prio)
 
-    sp = sub.add_parser('ready', help='可派(按 优先级→关键链→挡下游 排序)+doing+pending_review+wait+被挡(派单入口)')
+    sp = sub.add_parser('ready', help='可派(按 优先级→关键链→挡下游 排序)+doing+pending_review+pending_merge+wait+被挡(派单入口)')
     sp.set_defaults(func=cmd_ready)
 
     sp = sub.add_parser('list', help='活任务列表(--all 含终态)')
@@ -1064,7 +1147,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument('id')
     sp.set_defaults(func=cmd_log)
 
-    sp = sub.add_parser('check', help='体检:重放校验+悬空+环+必带字段+验收档一致性')
+    sp = sub.add_parser('check', help='体检:重放校验+悬空+环+必带字段+验收档与合并凭据一致性')
     sp.set_defaults(func=cmd_check)
     return p
 

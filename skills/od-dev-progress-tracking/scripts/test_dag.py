@@ -731,3 +731,216 @@ class TestRejectedState:
             assert run(['--file', path, 'log', 'T-1']) == 0
         out = buf.getvalue()
         assert '交付 1 次,打回 1 次' in out
+
+
+# ---------- pending_merge 合并泊位(worktree 任务:验收过 ≠ 已合并) ----------
+
+
+class TestPendingMergeState:
+    def touch(self, tmp_path: Path, rel: str) -> None:
+        p = tmp_path / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text('x', encoding='utf-8')
+
+    def seed_delivered(self, tmp_path: Path) -> str:
+        """带 worktree 的任务建到 pending_review;返回账本路径。"""
+        path = f(tmp_path)
+        assert run(['--file', path, 'add', 'x', '--module', '流程',
+                    '--worktree', 'wt/T-1']) == 0
+        assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'w1']) == 0
+        self.touch(tmp_path, 'reports/T-1-r1.md')
+        assert run(['--file', path, 'status', 'T-1', 'pending_review',
+                    '--criteria', 'reports/T-1-r1.md']) == 0
+        return path
+
+    def test_worktree_field_roundtrip(self, tmp_path: Path) -> None:
+        path = f(tmp_path)
+        assert run(['--file', path, 'add', 'x', '--module', '流程',
+                    '--worktree', 'wt/T-160']) == 0
+        tasks, problems = dag.fold(dag.load_events(Path(path)))
+        assert not problems
+        assert tasks['T-1'].worktree == 'wt/T-160'
+        # 无 --worktree = 老流转:事件不带 worktree 键,折叠出 None
+        assert run(['--file', path, 'add', 'y', '--module', '流程']) == 0
+        tasks, problems = dag.fold(dag.load_events(Path(path)))
+        assert not problems and tasks['T-2'].worktree is None
+        assert run(['--file', path, 'add', 'z', '--module', '流程', '--worktree', '']) == 2
+
+    def test_full_merge_chain_then_done(self, tmp_path: Path) -> None:
+        path = self.seed_delivered(tmp_path)
+        # pending_review(验收过)→ pending_merge 泊位
+        assert run(['--file', path, 'status', 'T-1', 'pending_merge']) == 0
+        # pending_merge→done 必带 --criteria(合并报告),且过文件存在门
+        assert run(['--file', path, 'status', 'T-1', 'done']) == 2
+        assert run(['--file', path, 'status', 'T-1', 'done',
+                    '--criteria', 'reports/T-1-merge.md']) == 2
+        self.touch(tmp_path, 'reports/T-1-merge.md')
+        assert run(['--file', path, 'status', 'T-1', 'done',
+                    '--criteria', 'reports/T-1-merge.md']) == 0
+        tasks, problems = dag.fold(dag.load_events(Path(path)))
+        assert not problems and tasks['T-1'].status == 'done'
+        # 追加不覆盖:交付报告+合并报告共存,整链可溯
+        assert tasks['T-1'].criteria == ['reports/T-1-r1.md', 'reports/T-1-merge.md']
+
+    def test_merge_reject_parks_then_rework(self, tmp_path: Path) -> None:
+        path = self.seed_delivered(tmp_path)
+        assert run(['--file', path, 'status', 'T-1', 'pending_merge']) == 0
+        assert run(['--file', path, 'status', 'T-1', 'rejected']) == 2  # 必带 why
+        assert run(['--file', path, 'status', 'T-1', 'rejected',
+                    '--why', 'reviews/T-1-merge-fail.md']) == 2  # 结论文件须真实存在
+        self.touch(tmp_path, 'reviews/T-1-merge-fail.md')
+        assert run(['--file', path, 'status', 'T-1', 'rejected',
+                    '--why', 'reviews/T-1-merge-fail.md']) == 0
+        tasks, problems = dag.fold(dag.load_events(Path(path)))
+        assert not problems and tasks['T-1'].status == 'rejected'
+        # 打回泊位的返工路由不变
+        assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'w2']) == 0
+
+    def test_pending_merge_dead_only_from_berth(self, tmp_path: Path) -> None:
+        path = self.seed_delivered(tmp_path)
+        assert run(['--file', path, 'status', 'T-1', 'pending_merge']) == 0
+        assert run(['--file', path, 'status', 'T-1', 'doing',
+                    '--assignee', 'w2']) == 2  # 矩阵无 pending_merge→doing 边
+        assert run(['--file', path, 'status', 'T-1', 'dead', '--why', '分支废弃']) == 0
+
+    def test_pending_merge_requires_worktree_field(self, tmp_path: Path) -> None:
+        path = f(tmp_path)
+        assert run(['--file', path, 'add', 'x', '--module', '流程']) == 0
+        assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'w1']) == 0
+        self.touch(tmp_path, 'reports/T-1-r1.md')
+        assert run(['--file', path, 'status', 'T-1', 'pending_review',
+                    '--criteria', 'reports/T-1-r1.md']) == 0
+        # 无 worktree 字段:进泊位打回;老流转照常
+        assert run(['--file', path, 'status', 'T-1', 'pending_merge']) == 2
+        self.touch(tmp_path, 'reviews/T-1-r1.md')
+        assert run(['--file', path, 'status', 'T-1', 'done',
+                    '--criteria', 'reviews/T-1-r1.md']) == 0
+
+    def test_worktree_task_direct_done_rejected_with_hint(self, tmp_path: Path) -> None:
+        import contextlib
+        import io
+        path = f(tmp_path)
+        assert run(['--file', path, 'add', 'x', '--module', '流程',
+                    '--worktree', 'wt/T-1']) == 0
+        # doing 直达 done 打回,提示合并路由
+        assert run(['--file', path, 'status', 'T-1', 'doing', '--assignee', 'w1']) == 0
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            assert run(['--file', path, 'status', 'T-1', 'done', '--criteria', 'a.md']) == 2
+        assert 'worktree 任务验收后置 pending_merge,由合并者收敛' in err.getvalue()
+        # pending_review 直达 done 同打回(验收过 ≠ 已合并)
+        self.touch(tmp_path, 'reports/T-1-r1.md')
+        assert run(['--file', path, 'status', 'T-1', 'pending_review',
+                    '--criteria', 'reports/T-1-r1.md']) == 0
+        self.touch(tmp_path, 'reviews/T-1-r1.md')
+        assert run(['--file', path, 'status', 'T-1', 'done',
+                    '--criteria', 'reviews/T-1-r1.md']) == 2
+        # 正路:验收 → 泊位 → 合并者收敛
+        assert run(['--file', path, 'status', 'T-1', 'pending_merge']) == 0
+        self.touch(tmp_path, 'reports/T-1-merge.md')
+        assert run(['--file', path, 'status', 'T-1', 'done',
+                    '--criteria', 'reports/T-1-merge.md']) == 0
+
+    def test_views_show_berth_and_worktree(self, tmp_path: Path) -> None:
+        import contextlib
+        import io
+        path = self.seed_delivered(tmp_path)
+        assert run(['--file', path, 'status', 'T-1', 'pending_merge']) == 0
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            assert run(['--file', path, 'ready']) == 0
+            assert run(['--file', path, 'list']) == 0
+            assert run(['--file', path, 'card', 'T-1']) == 0
+            assert run(['--file', path, 'who', 'T-1']) == 0
+            assert run(['--file', path, 'graph']) == 0
+            assert run(['--file', path, 'graph', '--mermaid']) == 0
+        out = buf.getvalue()
+        assert out.count('== pending_merge 待合并(1) ==') == 2  # ready 与 list 各一段
+        assert out.count('wt/T-1') >= 6  # 泊位段/card/who/graph 文本+mermaid 均展示
+
+    def test_check_catches_worktree_done_without_merge_event(self, tmp_path: Path) -> None:
+        """绕过写入门的坏档(worktree 任务 pending_review→done)在 check 重放侧被抓。"""
+        path = f(tmp_path)
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:00:00', 'actor': 't',
+                                      'type': 'add', 'task': {
+                                          'id': 'T-1', 'title': 'x', 'module': '流程',
+                                          'status': 'todo', 'deps': [], 'cond': None,
+                                          'priority': 0, 'criteria': ['reports/T-1-r1.md'],
+                                          'review': 'required', 'worktree': 'wt/T-1'}})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:01:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'todo',
+                                      'to': 'doing', 'why': None, 'cond': None,
+                                      'criteria': [], 'assignee': 'w1'})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:02:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'doing',
+                                      'to': 'pending_review', 'why': None, 'cond': None,
+                                      'criteria': ['reports/T-1-r1.md'], 'assignee': None})
+        self.touch(tmp_path, 'reports/T-1-r1.md')
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:03:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'pending_review',
+                                      'to': 'done', 'why': None, 'cond': None,
+                                      'criteria': ['reviews/T-1-r1.md'], 'assignee': None})
+        self.touch(tmp_path, 'reviews/T-1-r1.md')
+        assert run(['--file', path, 'check']) == 1  # 缺 pending_merge→done 合并事件
+
+    def test_check_catches_merge_done_without_report(self, tmp_path: Path) -> None:
+        """合并事件缺凭据/合并报告文件被删,check 重放侧抓到。"""
+        path = f(tmp_path)
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:00:00', 'actor': 't',
+                                      'type': 'add', 'task': {
+                                          'id': 'T-1', 'title': 'x', 'module': '流程',
+                                          'status': 'todo', 'deps': [], 'cond': None,
+                                          'priority': 0, 'criteria': ['reports/T-1-r1.md'],
+                                          'review': 'required', 'worktree': 'wt/T-1'}})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:01:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'todo',
+                                      'to': 'doing', 'why': None, 'cond': None,
+                                      'criteria': [], 'assignee': 'w1'})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:02:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'doing',
+                                      'to': 'pending_review', 'why': None, 'cond': None,
+                                      'criteria': ['reports/T-1-r1.md'], 'assignee': None})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:03:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'pending_review',
+                                      'to': 'pending_merge', 'why': None, 'cond': None,
+                                      'criteria': [], 'assignee': None})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:04:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'pending_merge',
+                                      'to': 'done', 'why': None, 'cond': None,
+                                      'criteria': [], 'assignee': None})
+        self.touch(tmp_path, 'reports/T-1-r1.md')
+        assert run(['--file', path, 'check']) == 1  # 合并事件无凭据
+        # 补上凭据但文件不存在,仍打回(按整段 JSON 定位合并事件那条,唯一形状)
+        events_path = Path(path)
+        raw = events_path.read_text(encoding='utf-8').replace(
+            '"from": "pending_merge", "to": "done", "why": null, "cond": null, "criteria": []',
+            '"from": "pending_merge", "to": "done", "why": null, "cond": null, '
+            '"criteria": ["reports/T-1-merge.md"]')
+        events_path.write_text(raw, encoding='utf-8')
+        assert run(['--file', path, 'check']) == 1
+        self.touch(tmp_path, 'reports/T-1-merge.md')
+        assert run(['--file', path, 'check']) == 0
+
+    def test_check_catches_pending_merge_without_worktree(self, tmp_path: Path) -> None:
+        """手工坏档:pending_merge 任务被抹掉 worktree 字段,check 抓必带字段缺失。"""
+        path = f(tmp_path)
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:00:00', 'actor': 't',
+                                      'type': 'add', 'task': {
+                                          'id': 'T-1', 'title': 'x', 'module': '流程',
+                                          'status': 'todo', 'deps': [], 'cond': None,
+                                          'priority': 0, 'criteria': ['reports/T-1-r1.md'],
+                                          'review': 'required'}})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:01:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'todo',
+                                      'to': 'doing', 'why': None, 'cond': None,
+                                      'criteria': [], 'assignee': 'w1'})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:02:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'doing',
+                                      'to': 'pending_review', 'why': None, 'cond': None,
+                                      'criteria': ['reports/T-1-r1.md'], 'assignee': None})
+        dag.append_event(Path(path), {'v': 1, 'ts': '2026-09-11T00:03:00', 'actor': 't',
+                                      'type': 'status', 'id': 'T-1', 'from': 'pending_review',
+                                      'to': 'pending_merge', 'why': None, 'cond': None,
+                                      'criteria': [], 'assignee': None})
+        self.touch(tmp_path, 'reports/T-1-r1.md')
+        assert run(['--file', path, 'check']) == 1  # pending_merge 缺 worktree 字段

@@ -5,7 +5,7 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 
 # 进度记录与防偏离(DAG 任务账本 + 脚本校验)
 
-**全局方法**(不绑具体项目/玩法/框架)。适用于任何复杂多步骤开发。各工件 skill 在各自 SKILL.md 末尾有「进度模板」小节提供叶子完成判据;本 skill 组织成**任务依赖图(DAG,有向无环图:任务间「先完成才解锁」的依赖网)+ 七态状态机(含 pending_review=已交付待验、rejected=打回待返工) + 防偏离**,不发明判据。
+**全局方法**(不绑具体项目/玩法/框架)。适用于任何复杂多步骤开发。各工件 skill 在各自 SKILL.md 末尾有「进度模板」小节提供叶子完成判据;本 skill 组织成**任务依赖图(DAG,有向无环图:任务间「先完成才解锁」的依赖网)+ 八态状态机(含 pending_review=已交付待验、rejected=打回待返工、pending_merge=验收过待合并) + 防偏离**,不发明判据。
 
 ---
 
@@ -53,11 +53,12 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 | `id` | 全局唯一 `T-N`,写入自动分配 | 恒有 |
 | `title` | 一句话主题(含功能词,供检索) | add |
 | `module` | 流程/决策/支撑(封闭枚举) | add |
-| `status` | 七态,见 §4 | 恒有 |
+| `status` | 八态,见 §4 | 恒有 |
 | `deps` | 依赖的前置任务 id 列表;**只存这一侧**,反向查询现算 | 依赖即列 |
 | `cond` | 图外等待条件 + **复查时机** | wait |
 | `criteria` | 完成凭据指针(路径/commit/测试名/关键数字);**追加式**(预注册+实证共存,不覆盖) | done(验收结论) / pending_review(交付报告) |
 | `review` | 验收档:`required`=需验收(缺省)/`none`=免审。**建账时定,不可变**。required 的 done 只能经 pending_review(直达边写入打回);none 可直达 done,升级口照样可走全协议。免审资格判据见 §14 | add 可选(缺省 required);老账本无字段按 required |
+| `worktree` | git worktree 分支名(如 `wt/T-160`,只存名不做路径推导)。带此字段=worktree 按批隔离开发:「验收过」与「已合并」分开——验收后不置 done,进 pending_merge 泊位,done 唯一出口=合并者收敛。无此字段=老流转,零迁移 | add 可选(`--worktree`);空值打回 |
 | `assignee` | 谁在做(编排者起的可读名;`self`=主会话亲做)——由编排者在 →doing 时填,子 agent 不填 | doing |
 | `priority` | 派单优先级(0..10,大者先派;缺省 0=纯图序:关键链→挡下游→id;降权延后用 wait 态而非负值)。**建任务时定数据,派单时零判断** | add 可选;`prio` 命令改 |
 | `since` | 进入 doing 的时刻(自动记) | doing |
@@ -65,7 +66,7 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 
 禁填:`criteria` 禁叙事(「验收过了」无凭据=过期作废);`cond` 禁出现任务 id(该建 deps 边——check 告警);`note` ≤500 字且只放注记(挂账/新证据指针),不是叙事。
 
-## 4. 状态机(七态 + 流转矩阵)
+## 4. 状态机(八态 + 流转矩阵)
 
 | 态 | 语义 | 进入必带 |
 |---|---|---|
@@ -73,11 +74,12 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 | `doing` | 已动手在跑 | assignee |
 | `wait` | 等图外条件(非任务依赖) | cond(含复查时机) |
 | `pending_review` | 已交付待验收 | criteria(交付报告指针) |
+| `pending_merge` | 验收过待合并(泊位;仅限带 worktree 的任务) | 任务须带 worktree 字段 |
 | `rejected` | 打回已裁决,返工未启动(泊位) | why(结论文件指针) |
 | `done` | 判据过 | criteria |
 | `dead` | 不做/被取代 | 原因 |
 
-合法流转:add→todo|wait;todo→doing|done|dead;doing→done|wait|dead|pending_review;wait→todo|done|dead;pending_review→done|doing|rejected|dead;rejected→doing|dead;done→todo;**dead 无出边**。
+合法流转:add→todo|wait;todo→doing|done|dead;doing→done|wait|dead|pending_review|pending_merge;wait→todo|done|dead;pending_review→done|doing|rejected|dead|pending_merge;pending_merge→done|rejected|dead;rejected→doing|dead;done→todo;**dead 无出边**。
 
 > 旧账本事件流里的 `review` 即本态:dag.py 读侧自动归一,`status` 命令仍收旧名(按规范名落盘+更名提醒),历史账本零迁移。
 
@@ -88,7 +90,8 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 3. **`done→todo` 回退必带 why**——下游自动回到被挡(deps 不再满足),返工影响自动传播。
 4. **允许跳步**(todo→done 补记)——doing 只是「已动手」标记;防假完成靠 criteria 必带,不靠禁跳步。**跳步对 `review=required` 任务不适用**:done 只能从 pending_review 到达(直达门,§14)。
 5. **pending_review 与 rejected 的必带项**——doing→pending_review 交付必带 criteria(报告指针,worker 登记);pending_review→done 必带新 criteria(验收结论指针,交付报告不算数,reviewer 登记);pending_review→rejected 打回登记必带 why(结论文件指针,编排者执行)——rejected 是**打回待返工泊位**(reject 之后未必立刻返工),计入 ready 队列;rejected→doing 返工派工必带 assignee(路由决策归编排者)。以上指针均过**文件存在门**(须指向真实存在的文件,相对账本目录解析)——子 agent 自登记的机械担保,假登记在写入时即被打回。
-6. **验收档定在建账,done 的边按档收窄(§14)**——`review=required`(缺省)的任务 todo/doing/wait→done 三条直达边写入打回,done 唯一入口=pending_review→done;`review=none` 全边保留。**预判定档,事实只升不降**:none 任务交付时发现改动摸进核心面/判据说不清,照常升级走 pending_review 全协议。老账本无此字段的任务一律按 required 处理(零迁移,缺省从严)。
+6. **验收档定在建账,done 的边按档收窄(§14)**——`review=required`(缺省)的任务 todo/doing/wait→done 三条直达边写入打回,done 唯一入口=pending_review→done(worktree 任务的 done 入口见第 7 条);`review=none` 全边保留。**预判定档,事实只升不降**:none 任务交付时发现改动摸进核心面/判据说不清,照常升级走 pending_review 全协议。老账本无此字段的任务一律按 required 处理(零迁移,缺省从严)。
+7. **pending_merge 是 worktree 任务的合并泊位**——「验收过」与「已合并」分开:带 worktree 字段的任务验收后不置 done,置 pending_merge(pending_review/doing 进入;无 worktree 字段打回)。合并者合并后以合并报告为凭据 `pending_merge→done --criteria <合并报告路径>`(过文件存在门);合并失败 `pending_merge→rejected --why` 打回泊位,返工路由不变(rejected→doing)。带 worktree 的任务从 pending_review/doing 直达 done 被脚本打回(「worktree 任务验收后置 pending_merge,由合并者收敛」);泊位无 →doing 边(返工一律经 rejected 泊位)。无 worktree 字段的旧任务=老流转,零迁移。
 
 ## 5. 依赖与等待(deps / cond 分判)
 
@@ -116,28 +119,28 @@ description: 复杂多步骤开发(多画面/多模块/多阶段,跨会话/loop/
 
 ```
 dag.py [--file dag.jsonl] [--actor 标识]
-  add <标题> --module 流程|决策|支撑 [--dep T-1,T-2] [--cond ...] [--criteria ...] [--review none|required]
+  add <标题> --module 流程|决策|支撑 [--dep T-1,T-2] [--cond ...] [--criteria ...] [--review none|required] [--worktree <分支名>]
   status <id> <to> [--assignee ..] [--criteria ..] [--cond ..] [--why ..]
   note <id> <文本>            # 注记,不改状态
   dep <id> --add T-N | --del T-N
-  ready                        # 可派(按 优先级→关键链→挡下游 排序,首行=下一个任务;rejected 打回待返工计入)+doing+pending_review+wait+被挡(派单入口)
+  ready                        # 可派(按 优先级→关键链→挡下游 排序,首行=下一个任务;rejected 打回待返工计入)+doing+pending_review+pending_merge+wait+被挡(派单入口)
   list [--all]                 # 活任务(终态隐藏)
   graph [--mermaid]            # 拓扑视图(现算,stdout,不落盘)
   card <id>                    # 任务卡:前置状态+凭据+被依赖(派单任务书直接引用)
   who <id>                     # 它在等谁 / 它挡着谁
   prio <id> <N>                # 设优先级(整数大者先派;缺省 0)
   log <id>                     # 事件时间线+交付/打回计数(历史查询;返工熔断口径)
-  check                        # 体检:重放校验/悬空边/环/必带字段/cond 泄漏 id 告警/验收档一致性
+  check                        # 体检:重放校验/悬空边/环/必带字段/cond 泄漏 id 告警/验收档与合并凭据一致性
 ```
 
-- 记账分工(dag.py 已带账本级写锁,多方并发写安全):谁把任务置成某状态,谁记那条账——→doing 编排者(填 assignee)/→pending_review worker/→rejected reviewer(打回登记=裁决记录)/→done **验收执行者**(按 §14 验收档分流:全审=独立 reviewer,轻验=对账执行者,免审直达=self);流转合法性与必带字段由脚本写入时校验,写错直接打回。
+- 记账分工(dag.py 已带账本级写锁,多方并发写安全):谁把任务置成某状态,谁记那条账——→doing 编排者(填 assignee)/→pending_review worker/→rejected reviewer(打回登记=裁决记录)/→done **验收执行者**(按 §14 验收档分流:全审=独立 reviewer,轻验=对账执行者,免审直达=self;worktree 任务 →pending_merge 验收执行者,→done 合并者);流转合法性与必带字段由脚本写入时校验,写错直接打回。
 - 直改 dag.jsonl 后必须补跑 check;check 不过的任务不得当依据派单。
 - note 是账本注记(≤500 字):挂账/新证据指针/一行补充;**长内容放产物文档,note 存指针——叙事不进账本**。
 
 ## 8. 继续之前任务(跨会话/loop 续)
 
-1. `dag.py list` 拿未完成全集(todo/doing/wait/pending_review/rejected;done/dead 终态不入),`ready` 拿可派集;
-2. `doing` 行=恢复锚点:看 assignee(谁在做)与 since(何时开始);跨会话后 assignee 失效的,人工确认后回 todo 或重派;`pending_review` 行=交付待验收:结论文件已在 reviews/ 的按其结论处置(reject→打回路由),没有的按 §14 验收档补验收(轻验=对账执行者自验,全审=补派独立 reviewer);`rejected` 行=打回待返工:排到返工时 `doing --assignee` 派出;
+1. `dag.py list` 拿未完成全集(todo/doing/wait/pending_review/pending_merge/rejected;done/dead 终态不入),`ready` 拿可派集;
+2. `doing` 行=恢复锚点:看 assignee(谁在做)与 since(何时开始);跨会话后 assignee 失效的,人工确认后回 todo 或重派;`pending_review` 行=交付待验收:结论文件已在 reviews/ 的按其结论处置(reject→打回路由),没有的按 §14 验收档补验收(轻验=对账执行者自验,全审=补派独立 reviewer);`pending_merge` 行=验收过待合并:由合并者以合并报告为凭据收敛 done(合并失败 rejected 打回);`rejected` 行=打回待返工:排到返工时 `doing --assignee` 派出;
 3. `wait` 行逐行核对 cond 复查时机:条件真实吗?到期没?——「没有它这个批真的跑不了吗」答不出=偏好时序,回 todo;
 4. 被挡任务用 `who` 看在等谁;活任务多时标当前焦点(最早 doing 且未阻塞);
 5. 检索定位不上当前工作 → 偏离信号,回最近未闭环任务。
@@ -210,6 +213,7 @@ dag.py [--file dag.jsonl] [--actor 标识]
   - **全审(独立 reviewer)**:判据含主观判断/设计权衡,或改动触核心/策略行为面(机械判据照不到行为面),或存疑——派独立 reviewer 子 agent,五节报告+结论文件全走。
 - **`none`(免审,须显式声明)**——资格判据**全部满足**才可声明:①主会话亲做(`assignee=self`),验证是第一手观察;②凭据是当场产出的客观证据(自己跑的命令/测试/commit),不依赖任何转述;③改动不触核心/策略面;④不引入需复核的新设计权衡。done 直达,criteria 记第一手凭据,免 reports/ 报告文件。**升级口永远开着**:交付时发现改动比建账预判的大 → 照常走 pending_review(预判定档,事实只升不降)。
 - **硬线**:触核心/策略行为面必审,不因建账声明 none 豁免;存疑从审。缺省从严——免审必须建账时显式 `--review none`,声明留痕事件流(`log` 可审计)。账本防漂移不防蓄意:免审断言的抽查面=事件流审计+外部评审提醒网+用户。
+- **worktree 任务(建账带 `--worktree <分支名>`)**:accept/完工 → `pending_merge`,合并者以合并报告为凭据收敛 `done`(`pending_merge→done --criteria <合并报告>`,过文件存在门);`pending_review`/`doing` 直达 `done` 被脚本打回(「worktree 任务验收后置 pending_merge,由合并者收敛」)——「验收过」与「已合并」分开,done 由合并者落账;合并失败 `pending_merge→rejected --why` 打回,返工路由不变。
 
 - **交付=文件,不是会话消息**(走 pending_review 的两档适用;免审档凭据直接进 criteria):worker 完成报告落 `reports/`,验收结论落 `reviews/`,命名 `T-<N>-r<K>.md`,返工轮次递增不覆盖;账本 criteria/note 只存指针(目录图见 §2)。
 - **完成报告五节**:①结论 ②判据对照表(判据/结果/凭据) ③变更面(commit hash+逐文件清单) ④验证记录(可复制命令+耗时+结果摘录,对比数字带符号定义/n/误差) ⑤偏差与未尽事项(新问题给立项建议)。小件可合并章节,判据对照/变更面/凭据三件不可省。报告是给 reviewer 降成本的对照材料,不是被信的证据。**交付含 commit**:worker 完工先提交自己文件面内的改动(逐文件点名 add、message 含任务 id、只 commit 不 push),hash 记入变更面;reviewer 验收边界按 commit(`git show`)对照,不看工作树。
