@@ -513,9 +513,12 @@ def validate_status(tasks: dict[str, Task], tid: str, to: str, why: str | None,
     if (t.status, to) not in ALLOWED_TRANSITIONS:
         raise DagError(f'非法流转 {t.status} -> {to}(dead 是终态;见 ALLOWED_TRANSITIONS)')
     # worktree 合并门(先于验收直达门:worktree 任务直达 done 一律给合并路由提示):
-    # 「验收过」与「已合并」分开——worktree 任务的 done 由合并者收敛
-    if to == 'done' and t.worktree and t.status in ('pending_review', 'doing'):
-        raise DagError(f'{tid} 带 worktree({t.worktree}):worktree 任务验收后置 pending_merge,由合并者收敛')
+    # 「验收过」与「已合并」分开——worktree 任务的 done 唯一入口=pending_merge(合并者收敛)。
+    # 覆盖全部来源态(不只 pending_review/doing:免审档走 todo→done 或 wait→done 同样会
+    # 在账本上写出「done 却未合并」的假账,故一并以来源态判定)
+    if to == 'done' and t.worktree and t.status != 'pending_merge':
+        raise DagError(f'{tid} 带 worktree({t.worktree}):worktree 任务的 done 唯一入口=pending_merge'
+                       f'(验收后进合并泊位,由合并者以合并报告收敛 done)')
     # 验收直达门:required 档 done 入口=pending_review 或 pending_merge(合并泊位仅 worktree
     # 任务可达,合并者收敛 done 即验收记录的合并侧);免审须建账时显式声明
     if to == 'done' and t.review == 'required' and t.status not in ('pending_review', 'pending_merge'):
@@ -811,9 +814,11 @@ def cmd_check(args: argparse.Namespace) -> int:
                 errors.append(f'{t.id}: review=required 却直达 done(无 pending_review→done 验收事件)')
         if t.status == 'pending_merge' and not t.worktree:
             errors.append(f'{t.id}: pending_merge 缺 worktree 字段(泊位仅限 worktree 任务)')
-        if t.status == 'done' and t.worktree and t.review == 'required':
+        if t.status == 'done' and t.worktree:
             # 重放侧同规则:worktree 任务的 done 必须有 pending_merge→done 合并事件背书,
-            # 且该事件自带合并报告凭据(与写入门对齐;凭据须过文件存在门)
+            # 且该事件自带合并报告凭据(与写入门对齐;凭据须过文件存在门);
+            # 不分 review 档——免审只免验收,不免合并
+
             merge_ev = next((e for e in events
                              if e.get('type') == 'status' and e.get('id') == t.id
                              and normalize_status(e.get('from', '')) == 'pending_merge'
