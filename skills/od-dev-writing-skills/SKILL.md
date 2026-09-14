@@ -31,7 +31,7 @@ SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文
 - **写法细则**(frontmatter 全规则 / 触发词覆盖 / token 效率 / 正文结构 / form-to-failure / 拆分 / 重构)见 `references/writing-craft.md`。
 
 ### 3. 自包含:分场景(独立发布 vs 项目内)
-- **硬门(所有引用,不分场景)**:引用的 target 必须**在已提交的仓库里**。gitignored 内容(`.debug/` / `config/` / `.claude/` / `models` 等)、个人 local 文件、**memory**(个人本地、不跨人共享)→ **一律禁止引用** —— 引用闭包外的状态 = 在别人机器 / CI / clean checkout 上不存在(skill 是共享 artifact,不能依赖某人的私有状态)。**范围**:门管 skill **依赖**的内容(facts / helper 脚本 / 引用的 doc,**含 design/ 内**);**不管运行时操作的产物**(日志 / 截图 / 存档 —— skill 执行时生成、本不在仓库,如读 `.debug/` 日志诊断、存截图建档,这类合法)。引用「过时」风险 + 4 档应对谱(吸收 / 校验 / 运行时读 / 抽象)见 `references/design-docs.md` §引用卫生。
+- **硬门(所有引用,不分场景)**:引用的 target 必须**在已提交的仓库里**。gitignored 内容(`.debug/` / `config/` / `.claude/` / `models` 等)、个人 local 文件、**memory**(个人本地、不跨人共享)→ **一律禁止引用** —— 引用闭包外的状态 = 在别人机器 / CI / clean checkout 上不存在(skill 是共享 artifact,不能依赖某人的私有状态)。**范围**:门管 skill **依赖**的内容(facts / helper 脚本 / 引用的 doc,**含 design/ 内**);**不管运行时操作的产物**(日志 / 截图 / 存档 —— skill 执行时生成、本不在仓库,如读 `.debug/` 日志诊断、存截图建档,这类合法)。引用「过时」风险 + 4 档应对谱(吸收 / 校验 / 运行时读 / 抽象)见 `references/design-docs.md` §引用卫生;反向义务同节 §5.3:**删除/改名被引用的实体时,全仓扫描引用点同步清偿,防死标记**。
 - **可引用其它 skill**(写**完整标识符含命名空间**,如「按 superpowers:receiving-code-review 的方法」):用完整标识符,避免裸名解析不到。
 - **兄弟项目模块 / skill 名(操作目标 vs 叙事示例)**:skill 指令 agent 去**读 / 用**别的 application / skill(如「找兄弟骨架:本仓库已有的同构 application / skill(写全名)」)→ **规范 3 允许**(稳定运行时资产,写全名,可留 SKILL.md);作**叙事示例**(「项目 X 里我们…」)→ **规范 4 抽象**。判据同接口名两问:删了这名 agent 还会做吗(会 = 示例 → 抽象;不会 = 指令 → 留)。
 - **引用 skill 目录外的文件,分场景**:
