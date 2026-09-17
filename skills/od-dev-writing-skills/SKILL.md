@@ -28,6 +28,7 @@ SKILL.md 是**智能体要执行的指令与判据**,不是给人读的说明文
 - **指令性枚举(流程步骤/路由分诊表/检查清单)分支完备**:步骤消费的外部状态写全合法取值的处理、路由表带「未命中」去向、检查项带「不过」出口;参考性列表(知识查阅,不匹配无害)不受此条约束(细则见 `references/writing-craft.md` §1.11)。
 - **流程类 skill(有固定步骤序:画面建档 / UI 区域检测 / 写 op / 调试等)开头必须带一条 ordered must-do checklist**:编号 + `☐` + 祈使动作 + 一行判据 + 标「必做」,开头再标一句「没做完这 N 步不算完成」(completion gate 前置);每条链回后文详细 §。**判据 / 踩坑 / 方法论留后文,不混进 checklist 主流程**(主流程只放可勾动作 + 一行判据)。理由:长散文里 must-do 被「判据 / 踩坑」稀释,agent 抓不住「必做哪几步、什么序、缺一不可」→ 频繁漏步;结构式 checklist 才防漏(form-to-failure「漏元素 → 结构式 REQUIRED 槽位」,见 `references/writing-craft.md` §1.5)。**非流程类(纯方法论 / 参考、无固定步骤序)不强制**。
 - frontmatter 的 `description` 是**调用主触发器**(Anthropic 官方:primary mechanism):**以触发为主 + 可带一句 purpose,不写 workflow / 执行步骤**(范围关键词 —— 碰什么组件 / 接口 / 制品 / 扁平列举的动作 —— 属触发上下文,不禁)—— 否则智能体照 description 行事、不读正文。**要 pushy 防 under-trigger**(显式列场景 +「凡是 X 都用,即使没明说」;Claude 倾向漏触发)。详 `references/writing-craft.md` §1.3。
+- **禁日期标注与过程记录**:SKILL.md 正文(含被智能体读取的辅助文件)不带「此规则何时由谁裁定」的日期标注、裁定/迭代过程叙述与过渡状态句(迁移中/临时待办/「实现后再撤」)——正文只写规则的当前语义;出处用语义描述,历史与决策论据归 `design/` 动机段与 git 历史。常驻文本里临时句 = 永久税。
 - **写法细则**(frontmatter 全规则 / 触发词覆盖 / token 效率 / 正文结构 / form-to-failure / 拆分 / 重构)见 `references/writing-craft.md`。
 
 ### 3. 自包含:分场景(独立发布 vs 项目内)

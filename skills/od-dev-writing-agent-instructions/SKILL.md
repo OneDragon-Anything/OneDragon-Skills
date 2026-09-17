@@ -57,7 +57,7 @@ description: 当要创建 / 编辑 / 审查 AI 编码 agent 的 always-on 入口
 ## §4 反模式(高频翻车)
 
 - **臃肿堆积**:把 doc / README 内容复制进入口文件("反正 agent 看得到")—— context rot,越全越没人读。
-- **元信息混入**:维护注释 / TODO / 变更记录 / 试验状态写进正文 —— 入口文件只放给 agent 的指令,元信息归 docs / commit message / git history。
+- **元信息混入**:维护注释 / TODO / 变更记录 / 试验状态写进正文 —— 入口文件只放给 agent 的指令,元信息归 docs / commit message / git history。**日期标注与过程记录同判**:「(某日裁定)」类时间标注、「改了几轮 / 迁移中 / 存量候在飞批落定」类过渡状态句都禁——出处用语义不用日期,过渡状态归进度追踪;入口文件每次会话加载,临时句 = 全体 agent 的永久税。
 - **双源**:同一约束既在入口文件又在 docs / skill 复述 —— 必漂移;入口文件留指针(一行 + 位置),实体在单一源。
 - **叙事 / 会话残留**:「我们之前 / 这次开发中」类措辞 —— 违反干净读者原则(见 od-dev-writing-skills writing-craft §1.9)。
 - **advice 当 enforcement**:写「绝不许 X」指望拦住 —— advisory 不保证遵循;硬拦走 hook / permissions。
