@@ -6,7 +6,7 @@
 
 OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法论 skill。三条主线织在一起:
 1. **探索式开发主线**(地基):自动化脚本需求不可完备 → **建档-led 增量**(建档先粗 → 实现 → 测试 → 发现 → 补建档+补分支 → loop)。它决定 op 该怎么写(拆小 / 多log多截图 / 预料外调研建档 / 调试读日志 / 重复建op)。
-2. **mechanics**:节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱)、round 结果语义、`round_by_*` 选型、op 与 reader 内工具(含非节点上下文的无 round 原语)、单 op 测试机制、**循环驱动玩法的 op 结构选型(flat loop vs node-per-op)**。
+2. **mechanics**:节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱)、round 结果语义、`round_by_*` 选型、op 与 reader 内工具(含非节点上下文的无 round 原语)、单 op 测试机制、**循环驱动玩法的 op 结构选型(flat loop vs node-per-op)**、**多目标特征识别范式(区域特征一次提取 + 模板集匹配 + 几何过滤 + 得分仲裁;含模板分辨率下限 / 造型变体失效两条边界)**。
 3. **op 粒度规范**:看动等验、识别方式选型、建档前置、OCR 关键词独有、click 时序可靠性(项目相关,见 framework-pitfalls)。
 
 给 coding agent 看,框架通用(不绑具体玩法)。
