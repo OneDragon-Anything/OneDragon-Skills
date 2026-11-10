@@ -55,9 +55,11 @@ app 在 op 上加的基础设施:
 
 - **`APP_ID` 全局唯一**(重复注册被拒);与 run-record 的 app_id 一致。
 - **同一目录一个 `_factory.py` + 一个 `_const.py`**(多个 → 该目录跳过)。
-- **factory 必须实现 `create_application`**;需要 run-record 再 `create_run_record`。
+- **factory 必须实现 `create_application`**;需要 run-record 再 `create_run_record`(不需要 run-record 的 app 可不实现)。
 - **app 类继承项目的 Application 子类**(框架基类 `Application`;项目通常有特化子类,带默认 `op_to_enter_game`),构造传 `app_id` + `run_record`。
-- **节点图一个 `is_start_node=True`**;复用 write-operation 的节点图 / round 机制。
+- **节点图一个 `is_start_node=True`**;复用 write-operation 的节点图 / round 机制。⚠️ **节点链必须每个节点 `@node_from` 显式串接**——无边节点不在执行图里**静默不执行**(顺序声明 ≠ 顺序执行),症状 = app 跑完首节点即「成功」结束、后续节点全没跑;`run_record` 同理可选,app 不需要时构造不传即可。
+- **跨画面导航节点用 `round_by_goto_screen` 且独占节点**(每跳一轮重入,同节点前置操作会被重复执行);它依赖画面建档路由图,三类失败(起点识别失败/目标不存在/无法从 X 前往 Y)都是建档缺口——报错时补建档,别改代码。详见 write-operation「`round_by_goto_screen` 使用规范」。
+- **round 调用的 wait 参数显式声明**(按实机动画过渡时间填,不用默认值;`wait_round_time` = 总时长减本轮已耗时)——app 节点同守 write-operation 规范。
 - **改 app 代码后重启 MCP server 生效**(框架缓存 app 实例,同改配置)。
 
 ## 边界(去别的 skill)
@@ -72,8 +74,9 @@ app 在 op 上加的基础设施:
 - [ ] `APP_ID` 全局唯一 + 与 run-record app_id 一致?
 - [ ] 同一目录一个 `_factory.py` + 一个 `_const.py`?
 - [ ] factory 实现 `create_application`(需 record 再 `create_run_record`)?
-- [ ] app 继承项目的 Application 子类,传 `app_id` + `run_record`?
-- [ ] 节点图:一个 `is_start_node`;**第一个 op 回 hub;最后一个 op 回 hub**?
+- [ ] app 继承项目的 Application 子类,传 `app_id`(+ 需要时 `run_record`)?
+- [ ] 节点图:一个 `is_start_node`;**每个节点都有 `@node_from` 串接**(缺边静默跳过,症状 = 跑完首节点即结束)?**第一个 op 回 hub;最后一个 op 回 hub**?
+- [ ] 跨画面导航节点 `round_by_goto_screen` 独占节点?round 调用 wait 参数全部显式声明?
 - [ ] 外部(GUI / 其他 app)要直接访问 app config/record?→ 才需 Context 接线(factory 通常够,默认不接)
 - [ ] 改完代码重启 MCP server?
 
