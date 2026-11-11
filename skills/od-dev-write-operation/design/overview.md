@@ -44,6 +44,7 @@ OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法�
 - `SKILL.md`:compact 核心 —— 探索式主线(开篇)+ 写 op 主线 + round 结果心智 + `round_by_*` 选型 + op 与 reader 内工具 + 必守不变量(含探索式技术)+ 边界 + 自检。框架地基级接口名(`@operation_node` / `@node_from` / `round_by_*` / `controller` / `ocr` ...)。
 - `references/`(progressive disclosure):
   - `runtime-craft.md`:探索式开发的 op 级技术(信息密度 / 调试纪律 / 预料外调研 / 运行时不确定性 / 重复建op)—— op 级方法论 single source(gameplay 引用)。
+  - `multi-target-recognition.md`:多目标特征识别范式全文(适用判据 / 做法四步 / 网格槽位插值补全 / 边界判据);SKILL.md 只留适用判据 + 指针。
   - `round-by-helpers.md`:`round_by_*` 家族逐个语义 + 何时用哪个 + 关键参数 + LCS 机制 + 非节点上下文无 round 底层原语对照。
   - `node-graph.md`:节点图机制 / 路由规则 / 自环陷阱 / `previous_node` / `handle_init`。
   - `loop-driven-op-structure.md`:循环驱动玩法的 op 结构选型(flat loop vs node-per-op)+ committed-but-verifying + 节点作用域预算(single source;gameplay 引用)。
