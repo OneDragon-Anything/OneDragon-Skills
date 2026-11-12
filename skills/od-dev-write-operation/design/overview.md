@@ -60,4 +60,4 @@ OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法�
 
 方法论覆盖型(整合 OneDragon op 开发已成型的实践 + 框架 API + 探索式开发方法论成系统流程)→ RED 可省,**GREEN 必做**(方法见 `od-dev-writing-skills` 的 `references/skill-testing.md`)。
 
-**状态:draft(GREEN-pending,2026-08-04)** —— 结构合规(od-dev-writing-skills 4 硬规范自检过),GREEN utility test 待跑。迁公共仓时已泛化项目专属基础设施为通用说法(如「重启 MCP server」/ 测试仓 / 项目源码路径)。
+**状态:draft(GREEN-pending,2026-08-04)** —— 结构合规(od-dev-writing-skills 完工自检过),GREEN utility test 待跑。迁公共仓时已泛化项目专属基础设施为通用说法(如「重启 MCP server」/ 测试仓 / 项目源码路径)。

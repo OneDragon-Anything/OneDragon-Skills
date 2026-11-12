@@ -5,4 +5,4 @@
 - `overview.md` —— 定位 / 边界 / 构成 / 当前状态(what)。
 - `decisions` —— ADR(why):**仅经用户命令创建**(默认无)。
 
-方法论细则见 `od-dev-writing-skills`(`design-docs.md` / `writing-craft.md`)。
+方法论细则见 `od-dev-writing-skills`(`design-docs.md` / SKILL.md)。

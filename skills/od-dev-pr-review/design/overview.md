@@ -33,4 +33,4 @@
 ## 当前状态(GREEN 语义)
 - **类型**:方法论覆盖型(整合 PR 审查验证方法论成系统流程)。按 `od-dev-writing-skills` 两类 skill,RED 可省、GREEN 不可省。
 - **GREEN**:**draft**(GREEN-pending)。方法论本体经 30 个 open PR 实操提炼(有 dogfooding 证据);但按 `od-dev-writing-skills` 的 utility test(干净上下文子 agent + 扮用户只答所问 + 观察 gap)做正式 GREEN 验证待补。
-- **结构合规**:满足 od-dev-writing-skills 4 硬规范(design/ 分离 / 指令式 / 自包含 / 方法论不写具体例子)。
+- **结构合规**:过 od-dev-writing-skills 完工自检(design/ 分离 / 指令式 / 自包含 / 例子政策)。

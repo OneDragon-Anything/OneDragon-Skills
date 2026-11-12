@@ -20,7 +20,7 @@ OneDragon 公共开发类 skill(`od-dev-*`)。每个 skill 一个目录:`SKILL.m
 | `od-dev-release-ci` | 发布管线与 CI(构建→签名→发布→分发 / 测试仓联动三层 fallback;ZZZ 领先版提炼 + SR 落后点台账) |
 | `od-dev-write-operation` | 新建 / 修改 / 调试单个 Operation |
 | `od-dev-writing-agent-instructions` | 编写 AGENTS.md / CLAUDE.md 类 always-on 入口文件(分层 / 取舍 / 反模式) |
-| `od-dev-writing-skills` | 创建 / 修改 skill 的写作规范(4 硬规范 / writing-craft / testing;本仓方法论基石) |
+| `od-dev-writing-skills` | 创建 / 修改 skill 的写作规范(需求对齐 → 形态 → 写法 → 边界 → 测试 → 总装自检;本仓方法论基石) |
 
 ## 部分安装说明
 

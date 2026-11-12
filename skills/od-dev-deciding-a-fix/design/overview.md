@@ -30,5 +30,5 @@ SKILL.md 正文给出 5 步可执行指令,每步锚定一个业界方法论:
 
 ## 当前状态(GREEN)
 - **draft**(GREEN-pending):按 od-dev-writing-skills「两类 skill」,本 skill 为**方法论覆盖型**,RED 可省;**GREEN utility test 尚未跑**(跳过 GREEN 却声称合规 = 违规,故诚实标 draft)。
-- **GREEN 方法**(待跑):起干净上下文子 agent,给一个真实 bug 决策任务(如 pywin32 #2428 同型场景),扮用户只答所问、不替做,观察 agent 能否自主走完 5 步并产出可 review 的决策,记 gap → RCA 过滤 → 修 skill → 循环(见 od-dev-writing-skills `references/skill-testing.md` §2)。
+- **GREEN 方法**(待跑):起干净上下文子 agent,给一个真实 bug 决策任务(如 pywin32 #2428 同型场景),扮用户只答所问、不替做,观察 agent 能否自主走完 5 步并产出可 review 的决策,记 gap → RCA 过滤 → 修 skill → 循环(见 od-dev-writing-skills `references/skill-testing.md` §3)。
 - baseline(pywin32 #2428)已跑,价值不在「证明 skill 必要」(那是纠正型用法),而在沉淀两个必填槽位的论证。

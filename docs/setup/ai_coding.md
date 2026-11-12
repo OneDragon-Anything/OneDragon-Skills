@@ -46,9 +46,9 @@ cmd /c mklink /J "<项目>\.claude\skills\od-dev-write-operation" "<workspace>\O
 
 ## 在本仓库开发 / 维护 skill
 
-> 先挂载 `od-dev-writing-skills`(本仓自己的 skill)到 `.claude/skills/` —— 编写时它指导你怎么写 skill(4 硬规范 / writing-craft / testing)。
+> 先挂载 `od-dev-writing-skills`(本仓自己的 skill)到 `.claude/skills/` —— 编写时它指导你怎么写 skill(编写全流程 / testing)。
 
-1. 改 `skills/<name>/`(SKILL.md + design/ + 按需 references/),按 `od-dev-writing-skills` + 守 [AGENTS.md](../../AGENTS.md) 的 4 硬规范。
+1. 改 `skills/<name>/`(SKILL.md + design/ + 按需 references/),按 `od-dev-writing-skills` 走(含守 [AGENTS.md](../../AGENTS.md) 的本仓约定)。
 2. junction `skills/<name>` → 本仓库里 AI 工具读 skill 的目录(如 Claude Code 的 `.claude/skills/<name>`,本地不入库),验证可触发。
 3. GREEN 验证(不可省):clean 工作空间 + 子 agent 干真活 + 观察 gap + 修 + 循环。
 4. 提交 `skills/<name>/`。

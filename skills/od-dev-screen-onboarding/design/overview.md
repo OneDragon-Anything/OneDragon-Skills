@@ -26,7 +26,7 @@
 9. **探索未知画面:开放式提问 + 三工具交叉 + 穷尽自查**:画面未知时视觉大模型单看会以偏概全(显著性漏看非显眼区域 / 非文本状态 + 诱导式问法压制输出);先开放式枚举再收窄,视觉大模型 / OCR / 点击交叉(冲突即信号),穷尽自查后才问用户。补第 4 条的对称面(第 4 条讲「OCR 看不见的要 视觉大模型 补」,本条讲「视觉大模型 也会漏看,要 OCR + 点击补」)。
 10. **何时该建档:主动 + 被动两种触发 + 建档/快修硬判据**:`description` 不只「主动拿来截图建档」一个触发面,「调试 / 排查 op 卡在不完全认识的画面」也是(否则 debug framing 下猜修不触发本 skill)。判据:说不出画面全部可交互元素 + 各自点后跳哪 → 先建档别猜修。补第 1 条的触发面对称面(第 1 条锚定主动,本条补被动 + 刹车判据)。
 11. **卡住画面协议:判据触发后的强制可执行探索 + 禁干卡**:第 10 条只给触发判据没给执行步骤 —— 状态不清的动态画面(覆盖层 / 不知怎么进来的子屏)要**主动交互把行为摸清**,不能干卡。判据触发 → 5 步强制 checklist(回溯怎么进 → 系统找出口 → 穷举可交互元素逐个交互观察 → 交互前后状态读取对比 → 收尾判据)+「禁干卡」禁令(form-to-failure:明知故犯用禁令 + checklist,非软建议)。补第 10 条的执行体 / 可操作化;画面行为探索 single source 在本 skill(`od-dev-write-operation` runtime-craft 加引用对齐)。
-12. **开头 must-do checklist 前置 + 顺序重排**:应用 `od-dev-writing-skills` 的规范(流程类 skill 必 checklist)—— 开头 9 步 ordered must-do(进度节点 → analyze → 视觉大模型 → 穷举交互 → screen_info → doc → 归档 → id_mark 测试 → 进度收尾),§1-§6 降级 reference 链回。三处非显然重排:① 穷举交互从 §4 前置到建档前(先摸清全部元素行为再定稿,避免返工);② 进度节点第 1 步(认领)+ 第 9 步(标完成)夹住全程;③ 第 1 步显式 chain od-dev-progress-tracking(深潜建档只加载本 skill 不会自动想起它)。
+12. **开头 must-do checklist 前置 + 顺序重排**:应用 `od-dev-writing-skills` 的规范(含必做动作序列的 skill 必 checklist)—— 开头 9 步 ordered must-do(进度节点 → analyze → 视觉大模型 → 穷举交互 → screen_info → doc → 归档 → id_mark 测试 → 进度收尾),§1-§6 降级 reference 链回。三处非显然重排:① 穷举交互从 §4 前置到建档前(先摸清全部元素行为再定稿,避免返工);② 进度节点第 1 步(认领)+ 第 9 步(标完成)夹住全程;③ 第 1 步显式 chain od-dev-progress-tracking(深潜建档只加载本 skill 不会自动想起它)。
 
 ## 落点
 - 公共仓 `OneDragon-Skills/skills/od-dev-screen-onboarding/`(`SKILL.md` + `design/` + 自带 `convert_to_webp.py`),OneDragon 系列通用(SR / ZZZ 等)。各消费方仓库按其 setup 约定挂载(如 Claude Code junction 进 `.claude/skills/`)。

@@ -25,7 +25,7 @@ skills/<name>/
 └── references/       # 按需:被 SKILL.md 引用的情境细节(helper / API 参考)
 ```
 
-本仓 skill **按 `od-dev-writing-skills` 编写**。4 硬规范:① design/ 与 ADR 分开(**ADR 仅经用户命令创建**,日常决策 why 归 overview 动机段 + commit message);② 内容给 agent 看(指令式);③ 自包含(引用卫生);④ 写方法论,不写具体例子。**完整判据与细则单一源在 `od-dev-writing-skills`**(此处不复制摘要,摘要会漂移);写 / 改 skill 时逐条对照该 skill 自检。
+本仓 skill **按 `od-dev-writing-skills` 编写**(七节主流程:需求对齐 → 产出物形态 → SKILL.md 写法 → 内容边界 → design 档案 → 测试验证 → 总装自检)。**完整判据与细则单一源在 `od-dev-writing-skills`**(此处不复制摘要,摘要会漂移);写 / 改 skill 时按其 §7 完工自检逐条对照。
 
 ## 框架通用,游戏专属要泛化
 
@@ -33,7 +33,7 @@ skills/<name>/
 
 ## 创建 / 修改 skill 流程
 
-写 skill 的完整流程(定位 / 复查过往 ADR / 写 SKILL.md + design / 自检 4 硬规范 / GREEN 验证)单一源在 `od-dev-writing-skills` 的「创建/修改流程」,照它做;此处只列本仓特有步骤:
+写 skill 的完整流程(需求确认 / 定位 / 写 SKILL.md + design / 完工自检 / 实测 / 挂载验证)单一源在 `od-dev-writing-skills` 的 §7「创建/修改流程」,照它做;此处只列本仓特有步骤:
 
 1. 按 `od-dev-writing-skills` 的创建/修改流程完成 skill 本体(ADR 仅经用户命令创建;仅当用户命令加 / 改 ADR 且该 skill 有 `design/decisions/` 时,先复查 INDEX 防撞号 / 重提已否)。
 2. junction `skills/<name>` → 本仓里所用 AI 工具读 skill 的目录(如 `.claude/skills/<name>`,本地不入库),验证可触发。
@@ -47,5 +47,5 @@ skills/<name>/
 
 ## 深入
 
-- skill 写作细则(4 硬规范展开 / writing-craft / testing):`od-dev-writing-skills` skill。
+- skill 写作细则(编写全流程 / testing):`od-dev-writing-skills` skill。
 - AI 工具接入 / 项目如何消费本仓库:`docs/setup/ai_coding.md`。
