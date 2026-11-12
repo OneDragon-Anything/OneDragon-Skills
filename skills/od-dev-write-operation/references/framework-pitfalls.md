@@ -41,7 +41,7 @@ server 的 Python stdout 用 Windows locale(GBK)写 → 进 UTF-8 文件变乱�
 - **判据**:卡死 + OCR 明明有关键词但 handler 不跑 → 查 `round_by_ocr` 关键词是否与同屏 / 邻屏文字共享 2+ 字。
 - **修(两档)**:
   1. **快速止血**:该 `round_by_ocr` / `round_by_ocr_and_click` 传 `lcs_percent=0.7~0.9`(真匹配 1.0 不受影响,假匹配 0.5 被杀);或用更长 / 更独有关键词(如全标题)。
-  2. **根因解(推荐)**:**固定位置识别** —— 关键词只在它**固定的画面位置**识别(screen_info 建 area 圈定该位置,不全文扫),从源头避免冲突。全屏 `round_by_ocr`(loose 全文)天生易冲突;固定位置 area 检测才稳(画面建档见 od-dev-screen-onboarding §3.5)。
+  2. **根因解(推荐)**:**固定位置识别** —— 关键词只在它**固定的画面位置**识别(screen_info 建 area 圈定该位置,不全文扫),从源头避免冲突。全屏 `round_by_ocr`(loose 全文)天生易冲突;固定位置 area 检测才稳(画面建档见 od-dev-screen-onboarding §4.3)。
 - **别只改一个就收工** —— 同 loop 里所有中文关键词都可能踩,逐个审共享子串;长期把派发检测迁到固定位置 screen_info area。
 
 ## 8. 瞬态视觉假阳(动画残影):动作消费判定前要 fresh 复查

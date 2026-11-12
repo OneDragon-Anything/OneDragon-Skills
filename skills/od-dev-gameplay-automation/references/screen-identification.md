@@ -2,12 +2,12 @@
 
 > ⚠️ **归并进行中(2026-08-09)**:画面建档"做什么"的**操作方法论单一源是 `od-dev-screen-onboarding`**(analyze→视觉大模型→doc→缺口→建模→归档)。本文件只保留 **gameplay 流程视角的画面建档判据速查**(识别优先级 / 每状态建档 / 信息 area / LCS 误匹配),**操作细节不重复**(见 screen-onboarding)。
 > **画面建档不分初步/完整档**:每次按完整标准做,探索期标 `进行中` 待实现期补全(详见 SKILL.md 两套做法 + progress-tracking §1)。
-> **LCS 误匹配**(运行时 `round_by_ocr` 分派误火)待迁 `od-dev-write-operation`(运行时分派诊断);其「固定位置识别」根因解见 screen-onboarding §3.5。
+> **LCS 误匹配**(运行时 `round_by_ocr` 分派误火)待迁 `od-dev-write-operation`(运行时分派诊断);其「固定位置识别」根因解见 screen-onboarding §4.3。
 
 ## 识别优先级(判定"当前在哪个画面")
 
 1. **文字 → OCR**(`analyze_screen` 的 `ocr_texts`,1080p 直出坐标)。OCR 关键词**选画面独有的**,别用会出现在多个画面的子串。
-2. **固定 UI 元素 → screen_info**(写 `assets/game_data/screen_info/<screen>.yml`,pc_rect 坐标)。坐标怎么来见 od-dev-screen-onboarding §4.5。
+2. **固定 UI 元素 → screen_info**(写 `assets/game_data/screen_info/<screen>.yml`,pc_rect 坐标)。坐标怎么来见 od-dev-screen-onboarding §4.4。
 3. **状态/选中/计数 → 视觉大模型 兜底**,但 视觉大模型 的状态推理不可信,只信客观描述;坐标对错用数值对拍 ground truth(别用 视觉大模型 当裁判)。
 
 ## 中文关键词 LCS 误匹配(判据 + 修法)
@@ -29,7 +29,7 @@
 
 早期接触玩法**很多画面没见过** —— 每碰到一个新状态就:① 截代表图存 fixture(项目 test 目录 / `.debug/`);② screen_info 建该画面 area;③ 写针对该 fixture 的测试。
 
-**别凭 1-2 张图写整个流程** —— 一个流程通常有多种状态(不同子界面/事件选项/阶段切换/结算页…),只见过一两种就下结论/写代码,必然漏状态、回归不断。不认识的画面别猜,先 `analyze_screen` + 视觉大模型 看清(取坐标视觉直读,方法论见 od-dev-screen-onboarding §4.5)。
+**别凭 1-2 张图写整个流程** —— 一个流程通常有多种状态(不同子界面/事件选项/阶段切换/结算页…),只见过一两种就下结论/写代码,必然漏状态、回归不断。不认识的画面别猜,先 `analyze_screen` + 视觉大模型 看清(取坐标视觉直读,方法论见 od-dev-screen-onboarding §4.4)。
 
 ## 建 automation 所需的所有信息 area(不只动作按钮)
 

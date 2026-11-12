@@ -59,11 +59,11 @@
 | 画面建档方法论(单一源,一套完整标准,不分档) | od-dev-screen-onboarding |
 | 写 op / 实测 / op 级技术 | od-dev-write-operation |
 | 任务树状态机 / 防偏离 / 两套做法进度组织 | od-dev-progress-tracking |
-| UI 区域坐标检测 | od-dev-screen-onboarding §4.5 |
+| UI 区域坐标检测 | od-dev-screen-onboarding §4.4 |
 
 **画面建档单一源**:`od-dev-screen-onboarding` 是画面建档"做什么"的**唯一来源**。`screen-identification.md`(gameplay-automation ref)按 concern 拆分归并:
 - **建库项**(识别优先级的建库角度 / 信息 area / 每状态建档 / 别改原内容)→ **screen-onboarding**(它已是完整建档方法论,补这些深度细节);
-- **运行时分派项**(中文关键词 LCS 误匹配的症状 / 诊断 / 止血 —— 是 `round_by_ocr` 运行时 loop 误火,**op 级调试非建库**)→ **write-operation**(runtime-craft / framework-pitfalls);其中「固定位置识别」根因解与 screen-onboarding §3.5 id_mark/pc_rect 重叠处交叉引用,不重复。
+- **运行时分派项**(中文关键词 LCS 误匹配的症状 / 诊断 / 止血 —— 是 `round_by_ocr` 运行时 loop 误火,**op 级调试非建库**)→ **write-operation**(runtime-craft / framework-pitfalls);其中「固定位置识别」根因解与 screen-onboarding §4.3 id_mark/pc_rect 重叠处交叉引用,不重复。
 
 gameplay-automation 只留"画面建档在两套做法里的位置"(探索做、实现补全、何时触发)。落实「defer 不重复」原则。
 

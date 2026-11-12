@@ -186,12 +186,12 @@ dag.py [--file dag.jsonl] [--actor 标识]
 
 | 叶子任务类型 | skill 模版 | 完成判据 |
 |---|---|---|
-| 画面建档 | od-dev-screen-onboarding | analyze+视觉大模型+doc+核实area+归档fixture(建档9步=拆子任务,别早标 done) |
+| 画面建档 | od-dev-screen-onboarding | analyze+视觉大模型+验交互+doc+核实area+归档fixture+id_mark测(建档7步=拆子任务,别早标 done) |
 | operation 编写/调试 | od-dev-write-operation | 节点图+round结果+探索式主线 |
 | run_op 实测 | od-dev-write-operation(run_op 微循环) | 单 op `run_operation` 实测过 |
 | 代码测试 | od-dev-write-operation/references/testing | fixture+unit 测试过 |
 | 分支覆盖 | 对应流程 skill + 罕见态机制 | 主分支覆盖+连续 M 次无新分支 |
-| UI 区域坐标检测 | od-dev-screen-onboarding §4.5 | 视觉直读默认,像素级精准才 OpenCV |
+| UI 区域坐标检测 | od-dev-screen-onboarding §4.4 | 视觉直读默认,像素级精准才 OpenCV |
 | app 编排/factory/config/GUI | od-dev-write-application | Application=Operation+factory注册(五步=拆子任务,自底向上) |
 | 端到端验证/测试/成文 | 对应流程 skill | run_standalone_app跑通+ruff+测试仓+docs |
 | 罕见路径验证 | 本方法自身 | 无法主动验证→`wait`(cond=实机再现,复查=定期盘点);声明 fallback |

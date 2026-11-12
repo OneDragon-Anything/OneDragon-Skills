@@ -19,7 +19,7 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 |---|---|
 | 开工第一件(建进度结构) | od-dev-progress-tracking §2(迭代目录 + dag.jsonl 任务账本) |
 | 确认能玩/玩法建档调研 | 本 skill §做法一 + references/gameplay-recording.md |
-| 每画面建档 | od-dev-screen-onboarding(画面=目录,进度判据它管) |
+| 每画面建档 | od-dev-screen-onboarding(画面=目录,建档判据它管) |
 | 写 op | od-dev-write-operation(op 完成判据它管) |
 | app 组装 | od-dev-write-application(app 编排判据它管) |
 | 策略设计与调优 | 本 skill 策略节(+ strategy-craft.md) |
@@ -90,7 +90,7 @@ description: 当要从零在一条龙(OneDragon)框架上开发一个新玩法�
 - **写 / 改 / 调试单个 Operation**(节点图 / round 结果 / `round_by_*`)+ **探索式开发主线 + op 级运行时技术(信息密度 / 调试 / 预料外调研 / 重复建op)+ 框架踩坑** → `od-dev-write-operation`(op 粒度地基,本 skill 引用其 `runtime-craft.md` / `framework-pitfalls.md`)
 - **循环驱动玩法(loop 每轮重新发现状态)的 op 结构选型**(flat loop vs node-per-op / committed-but-verifying / 节点作用域预算防卡死)→ `od-dev-write-operation`(做法二实现结构选型 + 迭代时查,引用其 `practices/loop-driven-op.md`)
 - 画面建档 / screen_info area 维护 / 图标按钮模板建模 → `od-dev-screen-onboarding`
-- UI 区域坐标检测(槽位网格/图标按钮阵列/卡牌阵列)→ od-dev-screen-onboarding §4.5
+- UI 区域坐标检测(槽位网格/图标按钮阵列/卡牌阵列)→ od-dev-screen-onboarding §4.4
 - bug 已知故障机制、决定怎么修(修哪里/根因多深/临时 vs 永久)→ deciding-a-fix skill(项目内)
 
 ## 0-9 认知地图(全景参考,非执行序)

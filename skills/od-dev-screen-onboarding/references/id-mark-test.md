@@ -1,6 +1,6 @@
 # id_mark 准确性测试方法论
 
-> 项目测试仓**应提供** id_mark 准确性测试;若缺,照本方法论建。SKILL.md §6 归档后跑它验本屏,亦可作全 corpus 回归(抓跨屏碰撞 + 改屏后 id_mark 漂移)。
+> 项目测试仓**应提供** id_mark 准确性测试;若缺,照本方法论建。SKILL.md §6.2 归档后跑它验本屏,亦可作全 corpus 回归(抓跨屏碰撞 + 改屏后 id_mark 漂移)。
 
 ## 测什么
 
@@ -26,12 +26,12 @@
 
 ## 约定配合(避免假红)
 
-- **遮挡 id_mark 的子态 → 独立 screen_info**(见 SKILL.md §3.5):有自己 id_mark 的进测试;纯覆盖层无 id_mark 的自动 skip。
-- **无 screen_info 的 fixture → skip**:孤儿,该建 screen_info(SKILL.md §3.5 SCREEN 层全建)。
+- **遮挡 id_mark 的子态 → 独立 screen_info**(见 SKILL.md §4.3):有自己 id_mark 的进测试;纯覆盖层无 id_mark 的自动 skip。
+- **无 screen_info 的 fixture → skip**:孤儿,该建 screen_info(SKILL.md §4.2 SCREEN 层全建)。
 
 ## 何时跑
 
-- **建档归档后**(SKILL.md §6):`pytest -k '<本屏>'` 只测本屏,即装即验。
+- **建档归档后**(SKILL.md §6.2):`pytest -k '<本屏>'` 只测本屏,即装即验。
 - **corpus 回归**:全 fixture,抓跨屏碰撞 + id_mark 漂移(改屏后)。
 
 ## 不测什么

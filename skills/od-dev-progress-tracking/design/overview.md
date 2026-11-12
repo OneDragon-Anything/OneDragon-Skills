@@ -7,7 +7,7 @@
 ## 边界
 
 - **只管**:任务图模型(节点字段/状态机/deps-cond 分判)+ 账本存储(事件流 dag.jsonl,状态折叠现算)+ 脚本约定(dag.py)+ 防偏离门(loop 自检)。
-- **不管**:各叶子任务的完成判据(归各工件 skill 的「进度模板」节,如 screen-onboarding 的建档判据、write-operation 的节点图判据;本 skill §12 只做映射)。
+- **不管**:各叶子任务的完成判据(归各工件 skill 的主线完成判据,如 screen-onboarding 的建档 checklist、write-operation 的写完自检;本 skill §12 只做映射)。
 - **不管**:具体应用的阶段骨架与 module 归属语义(gameplay 侧在该 skill 的 references/progress-tracking.md)。
 - **不管**:项目具体事实(画面/流程/数据)。
 

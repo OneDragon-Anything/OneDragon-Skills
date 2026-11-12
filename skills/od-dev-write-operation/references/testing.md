@@ -19,6 +19,7 @@ op 的单元测试在测试仓(独立测试仓库,放消费方仓库根目录)�
 
 - **注入 mock 截图**:op 每轮 `self.screenshot()` 实际由测试喂 fixture 图(项目用 mock 截图注入 helper,如 `add_mock_screenshot`,喂**序列**fixture 模拟跨多屏推进)。跨多屏的流程 op 喂序列;单画面 op 喂一张。
 - **断言客观输出**:节点流转(走到哪个节点)、OCR 结果、检测函数返回值、决策函数选了哪个。**别断言不可观测的运行时副作用**(click 是否真落地 / 时序)。
+- **写断言前先读 node 返回类型**(踩坑固化):`round_success` / `round_by_find_area` 命中判 `is_success`;`round_wait` / `round_retry` 判 `status`(匹配词)—— 先读被测 node 代码确认返回类型再写断言,别照搬别的 app 的测试(不同 op 主态可能返回不同 `OperationRoundResult` 类型,照搬 = 断言键名错、恒红或恒绿)。
 
 ## 3. TDD vs 刻画测试(分情况)
 
