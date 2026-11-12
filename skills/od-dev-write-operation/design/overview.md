@@ -4,60 +4,47 @@
 
 ## 定位(是什么)
 
-OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的完整方法论 skill。三条主线织在一起:
-1. **探索式开发主线**(地基):自动化脚本需求不可完备 → **建档-led 增量**(建档先粗 → 实现 → 测试 → 发现 → 补建档+补分支 → loop)。它决定 op 该怎么写(拆小 / 多log多截图 / 预料外调研建档 / 调试读日志 / 重复建op)。
-2. **mechanics**:节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱)、round 结果语义、`round_by_*` 选型、op 与 reader 内工具(含非节点上下文的无 round 原语)、单 op 测试机制、**循环驱动玩法的 op 结构选型(flat loop vs node-per-op)**、**列表 / 网格内容识别范式(特征匹配系 + 像素匹配系两条路线;含模板分辨率下限 / 造型变体失效 / 模板资产颜色口径 / 网格槽位插值补全等边界与防线)**。
-3. **op 粒度规范**:看动等验、识别方式选型、建档前置、OCR 关键词独有、click 时序可靠性(项目相关,见 framework-pitfalls)。
+OneDragon 框架上「写 / 改 / 调试**单个 Operation**」的方法论 skill。主线是一套**设计先行的六步流程**:op 不是直接写代码,是先把流程摸清成三份设计稿(requirement / screen-flow / nodes),经用户确认后再翻译成节点图代码。
 
-给 coding agent 看,框架通用(不绑具体玩法)。
+## 主线六步
 
-## 为什么单独成一个 skill(边界)
+1. **需求确定**(纸面,不上游戏):从前置来源(用户任务原话 / 玩法文档 / app 编排上下文)收拢目标一句话 + 起终点 + 大致操作 + 红线 → `requirement.md`。
+2. **摸流程**(agent 自主驱动实机走查):沿需求粗线逐跳走——查地图只摸未知段、画面核对三分支(未建档建档 / 一致通过 / 漂移纠档)、副作用三档(可逆直接做 / 不可逆问用户 / 消耗前一步停)、变体枚举三分支(会话内走全 / 不可达记未知项 / 消耗型不摸)→ `screen-flow.md` + 沿途建档。
+3. **拆节点**(流转 → 节点卡):一次流转一节点;循环驱动先选结构(flat loop vs node-per-op);入口判定归位(首节点判 / 中途靠出口验证);子 op 结果 = 分支;节点卡 = 识别→动作→验证→出口的分支链 → `nodes.md`。
+4. **设计确认**(人类裁决点):汇报四件套 → 直接写代码 / 升级正式迭代设计 / 打回。
+5. **写代码**(节点卡 → 代码翻译):字段级翻译对照表(round 函数 + until + wait 纪律)。
+6. **验证**(三层递进):mock 流程快测抓结构逻辑(无实机,素材 = 探索沿途截图)→ 实机单跑验收(唯一真相源)→ 回归测试落盘锁行为(素材按需挑进测试仓);交付 = 接入 app 编排或作为 MCP 可调单元。
 
-按**粒度**把"玩法自动化开发"拆成三层,每层一个自洽完整的 skill:
+## 关键设计决策(动机段)
 
-- **op 粒度**(单 Operation)→ 本 skill(`od-dev-write-operation`)。高频:写 / 改 / 修 op。**也是探索式开发 + 框架踩坑的地基**(op 是最具体单元;gameplay-automation 引用本 skill 的 op 级方法论 + framework-pitfalls)。
-- **app 粒度**(整个 Application 产品化:factory / config / GUI / run-record / app 级编排)→ `od-dev-write-application`(common)。
-- **玩法粒度**(从零做新玩法的全程 pipeline)→ `od-dev-gameplay-automation`(已存在;op 级方法论已迁入本 skill,它瘦成纯生命周期 + 引用本 skill)。
-
-判单项归哪层,问:这是「单个 Operation 的写 / 改 / 修」,还是「整个 app 的搭 / 配 / 编排」,还是「从零做新玩法的全程」?
-
-## 范围 IN(op 作者完整参考)
-
-**探索式主线**(SKILL.md 开篇 + `runtime-craft.md`):建档-led 增量;信息密度论(多 log 多截图根因);调试先读日志 + 补日志;预料外画面调研 + 建档;运行时不确定性预留日志;重复手动建op。
-
-**mechanics**:Operation 结构(`__init__` / `handle_init` / `node_max_retry_times` / `need_check_game_win`);节点图(`@operation_node` / `@node_from` / 路由 / 自环陷阱 / `previous_node`);round 结果语义;`round_by_*` 选型 + LCS 机制;op 与 reader 内工具(`screenshot` / `controller` / `ocr` / 子 op / 非节点上下文无 round 原语);单 op 测试机制(`run_operation` 单跑 / mock 截图 / TDD vs 刻画);**循环驱动玩法的 op 结构选型**(flat loop vs node-per-op)。
-
-**op 粒度规范(织入主线)**:看动等验;每屏定识别方式;建档前置(引 `od-dev-screen-onboarding`);OCR 关键词独有(LCS 坑);click 时序可靠性(项目相关,见 framework-pitfalls)。
-
-**框架踩坑**(single source,`framework-pitfalls.md`):click 与鼠标移动无间隔(项目相关)/ MCP 异步 / ONNX / 配置生效 / 录屏 / GBK 日志。`od-dev-gameplay-automation` 引用本文件。
+- **设计先行、三份稿**:自动化需求不可完备(分支实机才暴露),但"先摸清再写"仍是比"边写边猜"更优的路径;设计稿放 `.debug/temp/operation-explore/`(临时区,寿命=开发期),**事实与设计分离**——画面事实即时进 screen_info/画面 doc(零草稿),设计稿只记编排;代码 docstring + `@node_from` 节点图是设计的持久镜像(修改 op 时的现状反推源)。
+- **④人类裁决点**:①②③ agent 全自主,④必须停下汇报裁定——防止 agent 带着未审设计滑进实现;复杂度判据由 agent 给推荐、用户拍板。
+- **一次流转一节点**:每节点出口验证转移是纪律,节点内做两次流转 = 第一次流转没验证就做第二步;「弹窗确认链逻辑上是一件事」不构成聚合理由。
+- **入口判定归位**:出口验证就是下一节点的入口保证,中途重复判定是白付的开销;防线归出口验证(画面不对修锚,不加中途判定当补丁)。
+- **修改分诊**:A 行为不符合设计(bug)→ 调试路径(根因→复现→按层修→防回归,铁律"只有明确复现流程才能修改");B 设计本身要变 → 重走主线(现状核对替代从零摸)。「复现流程」双向:修前验证根因,修后是回归剧本。
+- **先实测后测试**:实测验证设计、测试锁定行为;实测大概率改代码,测试先写就是白写(与通用 TDD 相反的理由:mock 锁不住运行时问题)。
+- **practices/ 增量扩展**:特定形态 op 的实践(循环驱动/列表网格识别/选择类)独立目录 + SKILL.md 特征触发表——主线保持纯流程,新实践 = 加文档 + 表加一行。
 
 ## 范围 OUT(指针,不重复)
 
-- 从零做新玩法全程 → `od-dev-gameplay-automation`
-- app 产品化(factory / config / GUI / run-record / app 级编排)→ `od-dev-write-application`(common;app 节点复用本 skill 的节点图机制,不重复讲)
-- 建一张屏的机制(analyze → 视觉大模型 → doc → screen_info area → 存模板)→ `od-dev-screen-onboarding`
-- 检测 / 验证 UI 区域坐标(槽位网格 / 图标阵列)→ od-dev-screen-onboarding §4.5
-- 非 op 领域的通用调试 / 修复决策 → 所在项目的调试类 skill(如有);通用调试纪律已内联本 skill
+- 从零做新玩法全程 → `od-dev-gameplay-automation`(它引用本 skill 的 practices/loop-driven-op.md 与 references/framework-pitfalls.md)
+- app 产品化 → `od-dev-write-application`
+- 建一张屏的机制 → `od-dev-screen-onboarding`(②开工前前置加载;建档/纠档手法全归它)
+- 修复决策 → `od-dev-deciding-a-fix`;不在场的事后排查 → `od-dev-debug-automation`
 
 ## 构成(文件结构)
 
-- `SKILL.md`:compact 核心 —— 探索式主线(开篇)+ 写 op 主线 + round 结果心智 + `round_by_*` 选型 + op 与 reader 内工具 + 必守不变量(含探索式技术)+ 边界 + 自检。框架地基级接口名(`@operation_node` / `@node_from` / `round_by_*` / `controller` / `ocr` ...)。
-- `references/`(progressive disclosure):
-  - `runtime-craft.md`:探索式开发的 op 级技术(信息密度 / 调试纪律 / 预料外调研 / 运行时不确定性 / 重复建op)—— op 级方法论 single source(gameplay 引用)。
-  - `list-grid-content-recognition.md`:列表 / 网格内容识别范式全文(适用判据 / 特征匹配系与像素匹配系两条做法路线 / 网格槽位插值补全 / 边界判据);SKILL.md 只留适用判据 + 指针。
-  - `round-by-helpers.md`:`round_by_*` 家族逐个语义 + 何时用哪个 + 关键参数 + LCS 机制 + 非节点上下文无 round 底层原语对照。
-  - `node-graph.md`:节点图机制 / 路由规则 / 自环陷阱 / `previous_node` / `handle_init`。
-  - `loop-driven-op-structure.md`:循环驱动玩法的 op 结构选型(flat loop vs node-per-op)+ committed-but-verifying + 节点作用域预算(single source;gameplay 引用)。
-  - `testing.md`:单 op 测试机制 + TDD / fixture 策略。
-  - `framework-pitfalls.md`:框架踩坑完整清单(single source)。
-- `design/`:本目录(overview + ADR)。
+- `SKILL.md`:六步主线 + 7 最佳实践索引 + 8 必守不变量 + 9 修改与调试 + 10 边界 + 11 自检。
+- `practices/`(场景触发,增量扩充):`loop-driven-op.md`(循环驱动实现形态,single source)、`list-grid-recognition.md`、`select-and-proceed.md`。
+- `references/`(主线机制深化):`explore-docs-template.md`(三份设计稿模板)、`round-by-helpers.md`(函数细节 + LCS 机制 + 非节点上下文)、`node-graph.md`(节点图机制/自环陷阱)、`framework-pitfalls.md`(框架踩坑 single source)、`testing.md`、`runtime-craft.md`(运行时技术:信息密度/预料外调研/钩子代码手法——与主线⑧⑨章分工:主线留判据,此文件留展开)。
+- `design/`:本目录。
 
 ## 落点
 
-公共仓 `OneDragon-Skills/skills/od-dev-write-operation/`,OneDragon 系列通用(SR/ZZZ 等)。各消费方仓库按其 setup 约定挂载(如 Claude Code junction 进 `.claude/skills/`)。挂载 / 命名 / 路径约定是**所在仓库的 setup**,不在本 skill(见 od-dev-writing-skills)。
+公共仓 `OneDragon-Skills/skills/od-dev-write-operation/`,OneDragon 系列通用(SR/ZZZ 等)。各消费方仓库按其 setup 约定挂载。`.debug/temp/operation-explore/` 为系列通用约定直接写进 SKILL.md(用户裁定)。
 
 ## 类型(RED / GREEN)
 
-方法论覆盖型(整合 OneDragon op 开发已成型的实践 + 框架 API + 探索式开发方法论成系统流程)→ RED 可省,**GREEN 必做**(方法见 `od-dev-writing-skills` 的 `references/skill-testing.md`)。
+方法论覆盖型 → RED 可省,**GREEN 必做**:干净上下文给 op 开发任务,验证六步主线被正确触发与执行(方法见 `od-dev-writing-skills` 的 `references/skill-testing.md`;重实机流程类 skill 的验证需适配——回放真实案例 + 纸面章节分段测 + 下一个真实任务现场观察)。
 
-**状态:draft(GREEN-pending,2026-08-04)** —— 结构合规(od-dev-writing-skills 完工自检过),GREEN utility test 待跑。迁公共仓时已泛化项目专属基础设施为通用说法(如「重启 MCP server」/ 测试仓 / 项目源码路径)。
+**状态:draft** —— 重构版经独立子 agent 评审,必改项(孤儿 reference 挂点 / 死引用清偿 / 状态节)已修复;GREEN 实测未跑,待下一个真实 op 开发任务现场验证。
