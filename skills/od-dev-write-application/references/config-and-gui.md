@@ -2,7 +2,7 @@
 
 > 本 skill 的 situational reference。app 配置(YamlConfig)+ 设置界面(setting card)怎么写。
 
-## Config(YamlConfig 子类)
+## 1. Config(YamlConfig 子类)
 
 每个配置字段写三件:property(读)+ setter 调 `update`(写内存)+ `xxx_adapter` property(给 GUI)。
 
@@ -25,7 +25,7 @@ class MyAppConfig(YamlConfig):
 - **多账号**:传 `instance_idx` → 读对应账号 yml;切换账号 → 项目的 Context reload。
 - **PlanItem 列表配置**(如规划):app 自定义 PlanItem 类 + `init_xxx_list` 从 yml 反序列化 + `add/update/delete/move` + 重写 `save` 序列化(框架不管,纯 app 职责)。
 
-## GUI(setting card interface)
+## 2. GUI(setting card interface)
 
 每个 app 一个 `gui/interface/<app>/` 目录(**可选**;app 可无 GUI,用公共 interface)。
 - 继承 `VerticalScrollInterface`(简单)或 `PivotNavigatorInterface`(复杂,多 tab 子页)。

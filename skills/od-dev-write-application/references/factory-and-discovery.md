@@ -2,7 +2,7 @@
 
 > 本 skill(`od-dev-write-application`)的 situational reference。app 怎么被框架发现 + factory / const 怎么写。
 
-## 自动发现(约定式扫描,零手工注册)
+## 1. 自动发现(约定式扫描,零手工注册)
 
 框架的 `ApplicationFactoryManager` 扫描 `application_plugin_dirs` 声明的目录:
 - **内置应用**:`src/<project>/application/<app>/`(提交进仓;绝对导入)。
@@ -14,7 +14,7 @@
 - **`APP_ID` 全局唯一**,重复注册被拒。
 - 运行时可 `ctx.refresh_application_registration()` 重新扫描(开发期 / 第三方插件更新后)。
 
-## const 文件(必需字段)
+## 2. const 文件(必需字段)
 
 ```python
 APP_ID = 'my_app'           # 全局唯一
@@ -25,7 +25,7 @@ NEED_NOTIFY = True           # 是否要通知能力
 
 第三方插件可加 GUI 元数据:`PLUGIN_AUTHOR` / `PLUGIN_HOMEPAGE` / `PLUGIN_VERSION` / `PLUGIN_DESCRIPTION`。
 
-## Factory 类
+## 3. Factory 类
 
 文件名必须 `*_factory.py`;同目录最多一个。最小签名:
 
@@ -45,7 +45,7 @@ class MyAppFactory(ApplicationFactory):
         return MyAppConfig(instance_idx=instance_idx)
 ```
 
-## 第三方插件
+## 4. 第三方插件
 
 - 放 `plugins/<plugin>/` 子目录(**不是** `plugins/` 根);`plugins/` gitignored。
 - 插件内可用相对导入(`from . import xxx_const`)。
