@@ -1,13 +1,13 @@
 ---
 name: od-dev-stop-hooks
-description: 实机游戏自动化(无模拟环境,靠埋在运行代码里的钩子定位问题、捕获随机态、停机接手)中凡涉及**停机钩子/留证钩子**的场景都用本 skill——①停机现场:run 停止/状态 STOPPED/日志显示人工结束,现场有 sentinel flag 或钩子特征日志行,确认是钩子预期停机后必走本 skill 处理协议(禁降级带病跑/降阈值硬配/单源归因);不知道谁停的先用 od-dev-debug-automation §1 判死因;②写/改/降级/审计钩子:为定位 bug、捕获未知或随机态、加未识别兜底而埋钩子或写 sentinel 时(生命周期两分类、flag 三要素、停机→留证降级须用户决定);③钩子触发后想「先跑起来要紧」绕过现场处理时,更要用。埋钩子代码手法见 od-dev-write-operation、停机 vs 采集分流见 od-dev-gameplay-automation、现场建档见 od-dev-screen-onboarding。英文:handle bot stopped by an in-code stop hook (sentinel flag on-site), author/audit stop hooks, hook lifecycle & flag contract, stop-to-log downgrade governance。
+description: 实机游戏自动化(无模拟环境,靠埋在运行代码里的钩子定位问题、捕获随机态、停机接手)中凡涉及**停机钩子/留证钩子**的场景都用本 skill——①停机现场:run 停止/状态 STOPPED/日志显示人工结束,现场有 sentinel flag 或钩子特征日志行,确认是钩子预期停机后必走本 skill 处理协议(禁降级带病跑/降阈值硬配/单源归因);不知道谁停的先用 od-dev-debug-automation §1 判死因;②写/改/降级/审计钩子:为定位 bug、捕获未知或随机态、加未识别兜底而埋钩子或写 sentinel 时(生命周期两分类、flag 三要素、停机→留证降级须用户决定);③钩子触发后想「先跑起来要紧」绕过现场处理时,更要用。埋钩子代码手法见 od-dev-write-operation、停机 vs 采集分流判据在本 skill 正文、现场建档见 od-dev-screen-onboarding。英文:handle bot stopped by an in-code stop hook (sentinel flag on-site), author/audit stop hooks, hook lifecycle & flag contract, stop-to-log downgrade governance。
 ---
 
 # 停机钩子生命周期与停机现场处理
 
 实机范式前提:没有模拟环境、对游戏当前状态无先验理解 → **实机是唯一测试环境**,埋在运行代码里的钩子就是观察与断点基础设施(定位发生的时间地点 / 捕获会话内造不出的随机态 / 停机等 AI 现场接手)。**停机现场是不可按需复现的实机证据**——该状态错过可能不再现,本 skill 所有纪律由此派生。
 
-单一源切分:本 skill 只管**停机钩子的生命周期判据 + 停机现场处理协议**。埋钩子的代码手法(方案 / 前置门实现 / sentinel 写入代码)→ `od-dev-write-operation` runtime-craft「钩子触发停 bot 留画面」;停机 vs 采集的分流判据 → `od-dev-gameplay-automation` runtime-iteration「随机态钩子分流判据」;现场建档流程 → `od-dev-screen-onboarding`;run 被停的死因排查(不知道谁停的)→ `od-dev-debug-automation` §1。
+单一源切分:本 skill 只管**停机钩子的生命周期判据 + 停机现场处理协议**。埋钩子的代码手法(方案 / 前置门实现 / sentinel 写入代码)→ `od-dev-write-operation` runtime-craft「钩子触发停 bot 留画面」;停机 vs 采集的分流判据 → 本 skill §2 埋钩子纪律的行内判据;现场建档流程 → `od-dev-screen-onboarding`;run 被停的死因排查(不知道谁停的)→ `od-dev-debug-automation` §1。
 
 ## 0. 停机现场必做清单(遇钩子预期停机;没做完这 5 步不算完成)
 
@@ -78,7 +78,7 @@ Red flags(说出即停,回本清单对照):「先跑完这局再建档」「大�
 
 ### 2.4 埋钩子前置与分层
 
-- 埋之前:①分流判据(bot 卡住无法推进 → 停机;bot 能推进但 reader(画面读取 / 识别代码)不可靠 → 采集)→ `od-dev-gameplay-automation` runtime-iteration「随机态钩子分流判据」;②该态是否每 run 必现(必现 → 先建档别停机)与前置门实现 → `od-dev-write-operation` runtime-craft 钩子节步 1a / 步 2。
+- 埋之前:①分流判据(bot 卡住无法推进 → 停机;bot 能推进但 reader(画面读取 / 识别代码)不可靠 → 采集);②该态是否每 run 必现(必现 → 先建档别停机)与前置门实现 → `od-dev-write-operation` runtime-craft 钩子节步 1a / 步 2。
 - **分层架构**(识别可疑类钩子):识别先行(低置信只留证记录,不阻塞流程)+ 语义确认停机(留证攒够证据、确认真信号后才升停机)——别一疑就停,停机是确认后的动作不是第一反应。
 - 临时捕获钩子代码内必带自指针注释(「确认建档后删本段」);常驻兜底钩子注释首行标分类。
 
@@ -89,6 +89,6 @@ Red flags(说出即停,回本清单对照):「先跑完这局再建档」「大�
 - ☐ 现场事实载体合格(框架处置壳:reason 可定位 + 截图开启;存量 flag:文件写入在否)
 - ☐ 三要素齐否(逐条:触发定位 / 可执行处理步骤 / 删除或移除条件;框架壳的处理步骤细则有守卫文档承接)
 - ☐ 分类标注在否(临时捕获 / 常驻兜底,注释首行)
-- ☐ 前置门在否(画面态锚点命中才检测,防过渡帧伪触发;判据见 `od-dev-gameplay-automation` 分流判据头部)
+- ☐ 前置门在否(画面态锚点命中才检测,防过渡帧伪触发;判据见 §2 埋之前①)
 
 不合格 → 按 §2 补;属「常驻兜底被按临时型写」→ 改分类与收尾条件,别删钩子。

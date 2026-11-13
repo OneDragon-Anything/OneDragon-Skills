@@ -19,4 +19,4 @@
 
 ## 来源
 
-从 `od-dev-gameplay-automation/references/progress-tracking.md` 提取通用部分演化而来;gameplay 专属语义(种子任务模板/module 归属/生长触发)留在该 reference,通用机制以本 skill 为准。
+从玩法开发 skill 的账本实践演化而来(原 od-dev-gameplay-automation 的 reference,该 skill 已废弃并入 `od-dev-write-application`);通用机制以本 skill 为准,玩法开发的账本用法见 `od-dev-write-application` §5。

@@ -1,28 +1,22 @@
 ---
 name: od-dev-write-operation
-description: 当要在一条龙(OneDragon)框架上**新建、修改或调试单个 Operation** 时用 —— 写一个 op(用 `@operation_node` 声明节点、用 `round_by_*` 做画面判定与点击、返回 round 结果),或改/修已有 op 的逻辑与 bug。Use when writing, modifying, or debugging a single Operation on the OneDragon framework, incl. fixing its logic/bugs. 不触发:从零做新玩法(od-dev-gameplay-automation)、搭/改 app 骨架与配置(od-dev-write-application)、bug 已知故障机制后决定怎么修(od-dev-deciding-a-fix)、用户反馈的运行失败排查(od-dev-debug-automation)。
+description: 当要在一条龙(OneDragon)框架上**新建、修改或调试单个 Operation** 时用 —— 写一个 op(用 `@operation_node` 声明节点、用 `round_by_*` 做画面判定与点击、返回 round 结果),或改/修已有 op 的逻辑与 bug;含 op 作为 MCP 可运行单元暴露给 agent 探查调用的写法契约(放置位置/类名/构造函数签名/docstring 使用说明)——「写一个给 MCP agent 用的 op」也用本 skill,即使没明说。Use when writing, modifying, or debugging a single Operation on the OneDragon framework, incl. fixing its logic/bugs, incl. ops meant to be invoked by MCP agents. 不触发:搭/改 app 骨架与配置(od-dev-write-application,含从零做新玩法全程)、bug 已知故障机制后决定怎么修(od-dev-deciding-a-fix)、用户反馈的运行失败排查(od-dev-debug-automation)、MCP 工具本身的实现(od-dev-mcp-backend)。
 ---
 
 # 写 / 改 / 调试单个 Operation(OneDragon)
 
-OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation_node` 节点 + `@node_from` 边。框架每轮截图 → 跑当前节点 → 按其返回的 round 结果沿边找下一节点。**写 op = 先把流程摸清成设计(三份文档),再把设计翻译成节点图代码。**
+OneDragon 的 Operation(下文简称 op)是**节点图状态机**:一个 op = 若干 `@operation_node` 节点 + `@node_from` 边。框架每轮截图 → 跑当前节点 → 按其返回的 round 结果沿边找下一节点。**写 op = 先把流程摸清成设计(三份文档),再把设计翻译成节点图代码。**
 
 > 全程守「**看(screenshot/OCR)→ 动(click/key)→ 等(sleep)→ 验(再读屏)**」。别凭猜硬写 —— 凭猜只覆盖一种情况、漏另一种,必回归。
 
-**没做完这 6 步不算完成**(改已有 op 走「修改与调试」的分诊,轻改可免走全程):
-
-1. ☐ 需求确定:一句话目标 + 起终点 + 大致操作,确认要新建后建探索目录落 `requirement.md` → ①
-2. ☐ 摸流程:agent 自主驱动实机走查,沿粗线逐跳建档落档,产出 `screen-flow.md` → ②
-3. ☐ 拆节点:流转翻译成节点卡(识别→动作→验证→出口),产出 `nodes.md` → ③
-4. ☐ 设计确认:向用户汇报四件套,裁定直接写 / 升级迭代设计 / 打回 → ④
-5. ☐ 写代码:节点卡逐字段翻译成 round 函数 → ⑤
-6. ☐ 验证:mock 快测抓结构 bug → 实机过 requirement 目标验收 → 回归测试落盘 → 最后过 §11 自检收口,全过才算完成
+**改已有 op**:走「修改与调试」的分诊,轻改可免走全程。
 
 ## ① 需求确定(纸面,不上游戏)
 
-先收拢前置信息(用户任务原话 / 玩法文档 / app 编排上下文),**确认要新建这个 op 后**,建探索目录 `.debug/temp/operation-explore/<yyyy-MM-dd-<简述>>/`,需求写进 `requirement.md`(三份文档模板见 `references/explore-docs-template.md`):
+先收拢前置信息(用户任务原话 / 玩法文档 / app 编排上下文);**新建确认 = 查重**——扫同域 / 同画面的兄弟 op 包 + `list_operations` 按域词过滤:已有 op 覆盖需求大半的,优先复用或扩展它(完整版常比裁剪新建更稳),确要新建的能说出理由(职责不同 / 轻量裁剪版)。确认新建后,建探索目录 `.debug/temp/operation-explore/<yyyy-MM-dd-<简述>>/`,需求写进 `requirement.md`(三份文档模板见 `references/explore-docs-template.md`):
 
 - **目标一句话**,合格判据 = 动词 + 对象 + 结果形态:读数类说清**读到什么**;操作类说清**做完后画面/状态变成什么**。一句话塞两件事 = 该拆成两个 op。
+- **放置位置**:跨 app 域复用 → 项目顶层 operations 包;只在单个玩法域用 → 该域的 application 包(application 包是域分组,**不要求域里有 app**——纯给 MCP agent 用的 op 也放这里,通常默认落此);无现成域包可新建。位置建议(判定依据一句话 + 目标路径)写进 requirement.md,④ 随四件套向用户确认。
 - **起点 / 结束画面**:从前置来源收拢(上游编排给的固定起点 / 用户说的;「任意起点」也是合法需求);来源没有的,问用户 / 查玩法文档,**不许上游戏瞎摸代替问**。
 - **中间大致操作**:粗粒度动词级(打开 → 读取 → 关闭),细到点哪个区域是后面建档的事。
 - **红线(有则声明,普通 op 不写)**:碰真实消耗 / 不可逆操作的 op 必须显式写边界(如「零消耗,永不代点某控件」)。
@@ -37,7 +31,7 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 ### 2.1 查地图,只摸未知段
 
-逐画面核对粗线的建档状态:screen_info 建了吗 / id_mark 齐吗 / goto 边在吗 / 画面 doc 有知识吗;兄弟 op 源码是活地图(它的入口集合与走过的路径)。→ 产出已知段/未知段清单,只摸未知段。
+逐画面核对粗线的建档状态:screen_info 建了吗 / id_mark 齐吗 / goto 边在吗 / 画面 doc 有知识吗;兄弟 op 源码是活地图(它的入口集合与走过的路径)。**查地图同时查现成 op**:按域词 / 画面词过滤 `list_operations` 读命中项 docstring、扫兄弟 op 包,判断这段有没有现成 op 可复用——有覆盖的段不必深摸。→ 产出已知段/未知段清单(边摸边记,最终复用标注落 screen-flow.md 主干,中间清单不单独落盘),只摸未知段。
 
 ### 2.2 主干走查:边走边建边落
 
@@ -135,11 +129,44 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 ①②③ 全是 agent 自主推进,到此为止,向用户汇报后等裁定:
 
-- **汇报四件套**:目标 + 起终点;流转概要(几屏几跳几变体);节点数 + 复用点 + 红线声明;**未知项清单**(顺带裁掉:哪些回②补摸、哪些带进⑥实测盯防)。
+- **汇报四件套**:目标 + 起终点 + 放置位置;流转概要(几屏几跳几变体);节点数 + 复用点 + 红线声明;**未知项清单**(顺带裁掉:哪些回②补摸、哪些带进⑥实测盯防)。
 - **裁定三分支**:直接写代码(多数)/ 升级为正式迭代设计(按所在项目的迭代设计流程,三份稿作设计输入)/ 打回修正(回对应章节改稿,改完**回本节重新裁定**)。
 - **agent 先给推荐**(用户拍板):倾向升级 = 涉及消耗/不可逆、多分支多回环、失败代价高、用户表现不确定;倾向直接写 = 路径单一、零消耗、读数导航类、未知项不阻塞。
 
 ## ⑤ 写代码(节点卡 → 代码)
+
+### 5.0 op 的第二身份:MCP 可运行单元(写法契约)
+
+每个 op 除了是节点图状态机,默认同时是 **MCP 可运行单元**——经 `list_operations` / `describe_operation` / `run_operation` 被 agent 探查与调用。探查对构造函数签名、类名、docstring 做**纯反射**:写错不报错,只静默劣化(清单缺席 / schema 缺项 / run 拒收)。**所有新 op 统一按以下契约写,不按用途分档**——「给谁用」写时判不准(今天编排用,明天调试想单跑),统一标准消掉预判;JSON 边界友好的参数本身也是更好的接口(传名字不传对象)。
+
+**构造函数 = 参数 schema 的反射源**:
+- 第一参数**逐字**叫 `ctx` —— 协议字段名,反射按名剔除;叫别的名字会被当成必填业务参数 → run 校验卡死,该 op MCP 侧不可用;
+- 禁 `*args` / `**kwargs`(反射跳过,schema 盲区);
+- 每参数显式注解真实类型,注解引用的类型**运行时可解析**——普通 import,不进 TYPE_CHECKING(本处是对「仅类型注解用 TYPE_CHECKING」的唯一例外区,范围就这一处签名);
+- 参数类型**只允许两型**:① JSON 直传(标量 / `list` / `dict` / `Optional` 内含 JSON 型);② `@dataclass` + `from_dict`(dict 值自动反序列化)。领域对象(角色/光锥实例)不进签名——传名字或键,`__init__` 内转换;**转换失败抛带可用值的 `ValueError`**(调用方要能自纠);
+- 默认值用可读字面量(describe 把默认值展示给调用方,是它传参的第一提示);
+- 豁免出口:参数天然是运行时对象(地图数据 / 图像)的框架级 op,在构造函数 docstring 声明「非 MCP 传参单元,仅限代码内调用」——豁免可见可审计,不做默认后门。
+
+**类名**:`[域前缀][层/角色段]语义名`,语义名动宾结构;新 op **不带 `Op` 后缀**(存量带后缀的保留,同域混用是接受的过渡态)。四判据:全库唯一(起名前 `list_operations` 查重)/ 含域词可检索 / 干净读者能猜出用途(单动词泛名 Open/Check/Select 禁用)/ 中间抽象基类以 `Base` 结尾(扫描按此后缀排除出清单)。
+
+**类 docstring = 使用说明**(describe 整段透传;远程使用者看不到源码,这是它了解 op 的唯一来源):
+
+```python
+"""进行一次跃迁抽取,获得角色或光锥。
+起点:跃迁画面;终点:跃迁画面(抽取结果展示)。
+副作用:消耗星琼或跃迁票,不可逆。
+
+:param xxx: 参数语义 + 单位 + 取值范围。
+"""
+```
+
+- 第一段**效果一句话 + 起终点**:效果 = 使用者可感知的状态变化(资源增减 / 物品获得 / 信息读到 / 位置到达),动作 + 产出,如「花费星琼进行角色抽取」;过程动作(导航 / 开界面 / 等待)不是效果,不写。内容直接从 requirement.md 的目标 / 起终点 / 大致操作 / 红线转写;读数类 op 的效果 = 信息产出,注明结果经运行结果 data 返回;
+- **副作用行**:明显消耗 / 不可逆单独一行,有则必写;普通 op 无则整行省略(缺省视为无)。**例外**:处在高消耗风险画面(抽卡 / 商店 / 兑换类)的 op,零消耗承诺本身是安全信息,要显式写(如「消耗:零 —— 只读,永不触碰某扣费控件」),不能靠缺省传达;
+- **参数段**:`:param 名:` 风格,每参数语义 + 单位 + 取值范围;写在**类 docstring**(透传的是它;存量 op 写在 `__init__` docstring 的属过渡态,别照抄)。
+
+**参数注解的边界**(校验与 describe 判定一致,按元素类型递归):容器元素注解决定可传性——`list[str]` 直传;`list[计划项]`(元素为 `@dataclass`+`from_dict`)传 `list[dict]` 自动规整;元素为**普通自定义类**的容器(`list[角色]` 等)与 `Optional[普通自定义类]` 一律拒——签名里出现即说明该参数该改传名字/键。`tuple`/`set` 注解传 list 自动转换(JSON 只有 list)。机制与判定全表见 `references/mcp-runnable.md`(schema 输出不符预期 / run 拒收时读)。
+
+### 5.1 节点卡翻译
 
 先找职责相近的兄弟 op 抄类结构(`__init__` / `handle_init` / 节点声明);对 `@operation_node` 参数、`@node_from` 路由规则、自环陷阱等节点图机制不熟 → 先读 `references/node-graph.md`。然后逐卡逐字段翻译:
 
@@ -169,9 +196,9 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 ### 6.2 实机单跑
 
-`run_operation '<op_id>'` 单跑:
+实机前先过 **MCP 验收三连**(本 op 已作为 MCP 可运行单元成形):`list_operations` 按域词过滤找得到 → `describe_operation` 核对参数 schema / `debuggable` / docstring 使用说明(§5.0 两段式以 describe 实际输出为准)→ `run_operation` 单跑。缓存细节:**新写的 op 用完整 op_id 随时可调**(实时解析不经缓存);**类名短名依赖进程内扫描缓存,重启 MCP server 后才命中**(改了任何代码同样要重启才生效)。
 
-- 验收基准 = requirement.md 的目标一句话(结果形态);未知项盯防 = screen-flow.md 未知项清单逐项过;
+验收基准 = requirement.md 的目标一句话(结果形态);未知项盯防 = screen-flow.md 未知项清单逐项过;
 - **日志纪律**:status 写给人看的诊断句(框架每轮打它,它就是日志主体,禁写 'ok'/'fail' 废字);读数节点把读到的值落日志;retry / fail 时 `self.save_screenshot(prefix=节点名)` 存图,文件名进日志(返回空串 = 没存上,别当存上了);
 - **预料外画面 / 行为 → 回②补档补分支**(不是就地硬修),循环到稳定。
 
@@ -181,7 +208,7 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 ### 6.4 交付
 
-交给调用方:**接入 app 编排**(→ `od-dev-write-application`)或**作为 MCP 可调单元直接用**(`run_operation` 即入口)。探索目录收尾:有价值的画面样本进正式归档,其余清理。
+交给调用方:**接入 app 编排**(→ `od-dev-write-application`)或**作为 MCP 可调单元直接用**(`run_operation` 即入口,describe 输出的 docstring 即对外使用说明)。探索目录收尾:有价值的画面样本进正式归档,其余清理。
 
 ## 7. 最佳实践(按场景取用)
 
@@ -231,19 +258,26 @@ OneDragon 的 Operation 是**节点图状态机**:一个 op = 若干 `@operation
 
 ## 10. 边界(这些去别的 skill)
 
-- 从零做新玩法全程 → `od-dev-gameplay-automation`
+- 从零做新玩法全程 → `od-dev-write-application`
 - app 产品化(factory / config / GUI / run-record / app 编排)→ `od-dev-write-application`
 - 建一张屏的机制 → `od-dev-screen-onboarding`
+- MCP 探查工具(list/describe/run operation)的实现与 backend 设计 → `od-dev-mcp-backend`(本 skill 只管「写 op 时满足探查契约」)
 - 修复决策(已定位后怎么修:介入点 / 根因深度 / 临时 vs 永久 / 多方案)→ `od-dev-deciding-a-fix`
 - 用户反馈的运行失败排查(你不在场,从零重建现场)→ `od-dev-debug-automation`
 
 ## 11. 写完自检
 
+**全过才算完成**(改已有 op 按 §9 分诊豁免对应项):
+
 - [ ] 三份设计稿齐(requirement / screen-flow / nodes),粗流程线闭环、节点卡分支链完备(每分支:识别→动作→验证→出口)?
 - [ ] ④设计确认已过用户裁定(直接写 / 升级迭代设计 / 打回后再裁),不是 agent 自行放行?
 - [ ] 探索途中画面档案零漂移(三分支核对走过);检测 / 点击坐标全在 screen_info,无硬编码 `Point(x,y)`?
 - [ ] 一次流转一节点(弹窗确认链拆开);goto 独占节点;首节点入口判定、中途不重复判定?
+- [ ] 循环驱动玩法过结构选型(flat loop vs node-per-op,判据 = 有无逻辑单元生命周期)?
+- [ ] 节点图三查:每节点有入边可达 / 每分支有去向 / 意外画面有兜底出口?
 - [ ] 子 op 结果分支全部显式处理,无隐式默认?
+- [ ] 构造签名过 MCP 契约(ctx 逐字命名 / 参数只允许两型 / 注解运行时可解析,豁免有显式声明);类名过四判据(唯一 / 域词 / 可读 / Base 语义)?
+- [ ] 类 docstring 两段式(前段自然语言:效果一句话 + 起终点 + 副作用有则写;后段 `:param` 参数段:每参数语义 + 单位 + 取值),验收三连走通(list 找得到 + describe 实际输出核对 + run 单跑)?
 - [ ] 固定位置元素用区域识别;全屏 OCR 仅 last-resort(高 lcs + 独有关键词 + 不在别屏全等出现)?
 - [ ] 所有 round 调用 wait 显式声明、按实机动画过渡时间填?
 - [ ] 全文零 ESC 键输入;红线 op 消耗控件零触碰?

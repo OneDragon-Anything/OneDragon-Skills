@@ -1,7 +1,7 @@
 # 框架级踩坑(op 作者视角,reference)
 
 > 本 skill(`od-dev-write-operation`)的 situational reference。这些是 op 里反复发作的 **one_dragon 公共框架**行为,遇过就守;SR/ZZZ 等 OneDragon 系列共有。SKILL.md 列了最频发的;本文件给完整 + 缓解。
-> **单源**:本文件是框架踩坑清单的唯一源;`od-dev-gameplay-automation` 也引用它(不重复维护)。
+> **单源**:本文件是框架踩坑清单的唯一源;兄弟 skill(`od-dev-write-application`)也引用它(不重复维护)。
 
 ## 1. click 与鼠标移动无间隔 → 被游戏判拖拽(通用;举例:截图卫生移鼠标)
 

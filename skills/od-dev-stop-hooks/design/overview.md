@@ -16,7 +16,7 @@ OneDragon 系列项目是**实机开发范式**:没有模拟环境、对游戏�
 - **管**:停机钩子(含其降级为留证的形态)的**生命周期判据**(两分类 / flag 三要素 / 降级治理)+ **停机现场处理协议**(预期触发后接管者怎么走)。
 - **不管**(指针出去,防双源):
   - 埋钩子的**代码手法**(方案选择 / 前置门实现 / sentinel 写入代码)→ `od-dev-write-operation` runtime-craft「钩子触发停 bot 留画面」;
-  - **停机 vs 采集的分流判据** → `od-dev-gameplay-automation` runtime-iteration「随机态钩子分流判据」;
+  - **停机 vs 采集的分流判据** → 本 skill §2 埋钩子纪律的行内判据;
   - **现场建档流程**(含停机后画面已流转降级路径)→ `od-dev-screen-onboarding`;
   - **死因排查**(不知道谁停的)→ `od-dev-debug-automation` §1;两 skill 互为对侧(预期触发场景 vs 异常死因场景),§1 层 3 有移交指针。
 - **消歧**:本 skill 的 "stop hook" 指游戏自动化运行时代码里埋的停机钩子,与 AI 工具 harness 层的 Stop / SubagentStop 事件钩子无关。
@@ -36,7 +36,7 @@ OneDragon 系列项目是**实机开发范式**:没有模拟环境、对游戏�
 
 - `od-dev-write-operation` runtime-craft 钩子节:sentinel 示例补「可执行处理步骤」行 + 指向本 skill 三要素契约与两分类。
 - `od-dev-debug-automation` §1 层 3:查明 flag 写入者是活钩子 → 移交本 skill 现场协议;description 补移交句。
-- `od-dev-gameplay-automation` runtime-iteration 分流判据:停机钩子句补本 skill 指针。
+- 分流判据(原引 gameplay-automation runtime-iteration,该 skill 已废弃并入 write-application):停机钩子句收编为本 skill 行内判据。
 
 ## 当前状态
 

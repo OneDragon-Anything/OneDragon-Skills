@@ -1,6 +1,6 @@
 # 循环驱动玩法的 op 结构(flat loop vs node-per-op)
 
-> 本 skill(`od-dev-write-operation`)的最佳实践。SKILL.md ③「拆节点」给选型判据 + 模式名;本文件给完整实现形态(为什么 flat loop 会卡死 / committed-but-verifying 伪码 / round 结果如何映射单元生命周期 / 迁移策略)。`od-dev-gameplay-automation` 的生命周期视角也引用本文件(单源,不重复)。
+> 本 skill(`od-dev-write-operation`)的最佳实践。SKILL.md ③「拆节点」给选型判据 + 模式名;本文件给完整实现形态(为什么 flat loop 会卡死 / committed-but-verifying 伪码 / round 结果如何映射单元生命周期 / 迁移策略)。`od-dev-write-application` §5(迭代实现循环)的推进单元生命周期视角同引本文件(单源,不重复)。
 
 ## 1. 何时 flat loop / 何时 node-per-op
 

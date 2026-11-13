@@ -1,6 +1,6 @@
 # 单个 Operation 的测试(reference)
 
-> 本 skill(`od-dev-write-operation`)的 situational reference。**何时测**(SKILL.md 主线⑥三层:mock 快测抓结构逻辑 → 实机验证识别/时序 → 回归测试锁行为)+ **TDD vs 刻画策略**(本文件后半)+ 玩法级测试编排(`od-dev-gameplay-automation`)分层各管一段;本文件主体给 op 级测试**机制**(怎么单跑 / 怎么 mock / 怎么断言)。
+> 本 skill(`od-dev-write-operation`)的 situational reference。**何时测**(SKILL.md 主线⑥三层:mock 快测抓结构逻辑 → 实机验证识别/时序 → 回归测试锁行为)+ **TDD vs 刻画策略**(本文件后半)+ 玩法级(app 级)测试(`od-dev-write-application` 端到端验收章)分层各管一段;本文件主体给 op 级测试**机制**(怎么单跑 / 怎么 mock / 怎么断言)。
 
 ## 1. 实机单跑(最快定位)
 

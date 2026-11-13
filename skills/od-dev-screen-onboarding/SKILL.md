@@ -48,7 +48,7 @@ bot 在目标玩法 A 运行 / 调试,`analyze` 命中**非 A 玩法** B 的画�
 
 1. **入口画面 + 各子玩法画面**各自建档(每画面独立 doc,或同 doc 多子态)。
 2. **app 编排**(节点链 / 分支 / 入口循环)单独成 develop doc(项目的 `docs/develop/` 下),不进 screen doc。
-3. **玩法机制**(目标 / 资源 / 循环)进 gameplay doc → 此时**触发 `od-dev-gameplay-automation`** 对玩法建档(不在本 skill 内直接写玩法,避免写成代码说明书)。
+3. **玩法机制**(目标 / 资源 / 循环)进 gameplay doc → 此时**触发 `od-dev-write-application` §1**(需求理解的玩法理解)对玩法建档(不在本 skill 内直接写玩法,避免写成代码说明书)。
 4. **跨画面 op 联动**(子 op 委托另一个 op,如缺料 → 跳补料):screen doc 记「跨画面流转入口」,develop doc 记编排。
 
 单画面 / 独立 app 走 §2-§6 常规流程。
@@ -306,7 +306,7 @@ bot 在目标玩法 A 运行 / 调试,`analyze` 命中**非 A 玩法** B 的画�
 ## 7. 边界(这些去别的 skill)
 
 - 写 / 改 / 调试**单个 Operation**(含探索式走查的主线)→ `od-dev-write-operation`(它 ② 摸流程加载本 skill 做沿途建档)
-- **从零做新玩法全程**(玩法机制建档 / 策略 / 迭代)→ `od-dev-gameplay-automation`
+- **从零做新玩法全程**(玩法机制建档 / 策略 / 迭代)→ `od-dev-write-application`
 - app 产品化 → `od-dev-write-application`
 - 停机钩子 / 留证钩子的生命周期与停机现场处理 → `od-dev-stop-hooks`
 - 用户反馈的运行失败排查(你不在场)→ `od-dev-debug-automation`

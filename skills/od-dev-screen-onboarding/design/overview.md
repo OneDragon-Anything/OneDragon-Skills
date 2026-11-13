@@ -12,7 +12,7 @@
 
 **不管**:
 - 运行时识别(框架 screen matching 自己跑);
-- gameplay 跨画面流程文档(归 `docs/game/gameplay/`,本 skill 只管单画面;重 app 的玩法建档触发 gameplay-automation skill);
+- gameplay 跨画面流程文档(归 `docs/game/gameplay/`,本 skill 只管单画面;重 app 的玩法建档触发 `od-dev-write-application` §1);
 - 整 screen 级 CRUD(增删整个画面,本 skill 只 area 级);
 - 任务账本 / 进度结构(od-dev-progress-tracking;本 skill 不内置进度模板);
 - **本游戏特定的操作事实**(交互标记约定如「名字旁三角形=可交互」、导航副作用如「传送后朝向继承」)归消费方项目的画面约定 doc,不在本 skill 硬编码(规范 4:具体游戏事实归 doc 不归 skill)。本 skill 只记「这类约定存在、建档前查它」的方法论;例子已匿名化,只留通用结论。
@@ -33,7 +33,7 @@
 ## 设计动机(2026-11-12 重构)
 
 - **正文序改为流程序**:原 362 行是历史生长序(checklist 顺序与正文 § 顺序对不上、无序号章与 §3.5/§3.6/§4.5 半级编号混杂)→ 重排为 checklist↔§1-§8 一一对齐(2026-11-12 用户裁定,对齐 write-operation/write-application 改造基准)。
-- **删除全部进度内容**(零指针):checklist 步 1/9 与「进度模板」节整删 —— 任务账本单一源在 od-dev-progress-tracking;单画面建档不属「复杂多步开发」不该强制建账本;上层流程(gameplay-automation)自带货本纪律。外部 3 处表述同步(progress-tracking overview / SKILL 路由表「9步→7步」、gameplay-automation「进度判据它管→建档判据它管」)。
+- **删除全部进度内容**(零指针):checklist 步 1/9 与「进度模板」节整删 —— 任务账本单一源在 od-dev-progress-tracking;单画面建档不属「复杂多步开发」不该强制建账本;上层流程(od-dev-write-application,原 gameplay-automation)自带账本纪律。外部 3 处表述同步(progress-tracking overview / SKILL 路由表「9步→7步」、gameplay-automation「进度判据它管→建档判据它管」)。
 - **id_mark 全部留正文**:id_mark 是建档主线必经(每次建档都定)+ gotcha 集(LCS 撞车 / 遮挡双向配合的触发条件 agent 认不出),按 writing-skills「核心但长留正文 / gotchas 不进 references / 重构时别误伤」(2026-11-12 用户裁定)。
 - **随机态判据留正文压缩**(23→~15 行):判据 / 三种错法 / 珍贵性 / 钩子捕获分派是建档工作流的分支本体;钩子**代码实现**归 write-operation runtime-craft(判据 vs 实现分层,经对抗评审确认归属)。
 - **两个撞画面协议各归其位**(对抗评审裁定,置信度高):跨玩法偏离 → §1 分诊(使用时机=进 skill 第一问);卡住协议 → §3 验交互(它是穷举交互的探索细则,使用时机=执行中;原 §4→协议 的跨章回引降级为章内整合,「不可逆出口最后」升格章级探查纪律)。
